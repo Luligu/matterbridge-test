@@ -3,10 +3,6 @@ import { AnsiLogger } from 'node-ansi-logger';
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
   // Config
-  private username = '';
-  private password = '';
-  private whiteList: string[] = [];
-  private blackList: string[] = [];
   private noDevices = false;
   private delayStart = false;
   private throwLoad = false;
@@ -19,10 +15,6 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     this.log.info('Initializing platform:', this.config.name);
 
-    if (config.username) this.username = config.username as string;
-    if (config.password) this.password = config.password as string;
-    if (config.whiteList) this.whiteList = config.whiteList as string[];
-    if (config.blackList) this.blackList = config.blackList as string[];
     if (config.noDevices) this.noDevices = config.noDevices as boolean;
     if (config.delayStart) this.delayStart = config.delayStart as boolean;
     if (config.throwLoad) this.throwLoad = config.throwLoad as boolean;
