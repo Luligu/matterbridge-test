@@ -2,9 +2,14 @@
 
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import jesteslint from 'eslint-plugin-jest';
 import eslintPluginPrettier from 'eslint-plugin-prettier/recommended';
 
-export default tseslint.config(
+export default [
+  {
+    name: 'global ignores',
+    ignores: ['dist/', 'build/', 'node_modules/', 'coverage/', 'frontend/'],
+  },
   eslint.configs.recommended,
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
@@ -12,18 +17,13 @@ export default tseslint.config(
   // ...tseslint.configs.stylisticTypeChecked,
   eslintPluginPrettier,
   {
-    name: 'global ignores',
-    ignores: ['dist/', 'build/', 'node_modules/'],
-  },
-  {
-    name: 'javascript',
-    files: ['**/*.js'],
-    // ...tseslint.configs.disableTypeChecked,
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
+      parser: tseslint.parser,
       parserOptions: {
-        project: false,
+        project: './tsconfig.eslint.json',
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     linterOptions: {
@@ -34,6 +34,11 @@ export default tseslint.config(
       'no-undef': 'off',
       'spaced-comment': ['error', 'always'],
     },
+  },
+  {
+    name: 'javascript',
+    files: ['**/*.js'],
+    // ...tseslint.configs.disableTypeChecked,
   },
   {
     name: 'typescript',
@@ -45,18 +50,23 @@ export default tseslint.config(
       parser: tseslint.parser,
       parserOptions: {
         project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname,
       },
-    },
-    linterOptions: {
-      reportUnusedDisableDirectives: 'warn',
     },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
     },
+  },
+  {
+    name: 'jest',
+    files: ['**/__test__/*', '**/*.test.ts', '**/*.spec.ts'],
+    // ...tseslint.configs.disableTypeChecked,
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+      jest: jesteslint,
+    },
     rules: {
-      'no-console': 'warn',
-      'no-undef': 'off',
-      'spaced-comment': ['error', 'always'],
+      ...jesteslint.configs['flat/recommended'].rules,
     },
   },
-);
+];

@@ -27,7 +27,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     this.log.info('Finished initializing platform:', this.config.name);
   }
 
-  override async onStart(reason?: string) {
+  override async onStart(reason?: string): Promise<void> {
     this.log.info('onStart called with reason:', reason ?? 'none');
     if (this.throwStart) throw new Error('Throwing error in start');
 
@@ -41,15 +41,19 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     mbDevice.createDefaultModeSelectClusterServer();
 
     if (!this.noDevices) await this.registerDevice(mbDevice);
+
+    return Promise.resolve();
   }
 
-  override async onConfigure() {
+  override async onConfigure(): Promise<void> {
     this.log.info('onConfigure called');
     if (this.throwConfigure) throw new Error('Throwing error in configure');
+    return Promise.resolve();
   }
 
-  override async onShutdown(reason?: string) {
+  override async onShutdown(reason?: string): Promise<void> {
     this.log.info('onShutdown called with reason:', reason ?? 'none');
     if (this.throwShutdown) throw new Error('Throwing error in shutdown');
+    return Promise.resolve();
   }
 }
