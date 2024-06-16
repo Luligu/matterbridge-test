@@ -17,6 +17,12 @@ import {
   waiter,
   waterFreezeDetector,
   waterLeakDetector,
+  ElectricalPowerMeasurement,
+  ElectricalEnergyMeasurement,
+  deviceEnergyManagement,
+  CarbonMonoxideConcentrationMeasurement,
+  FanControlCluster,
+  FanControl,
 } from 'matterbridge';
 
 import { AnsiLogger } from 'node-ansi-logger';
@@ -55,7 +61,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     // Create a new Matterbridge device
     const mbDevice = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
-    mbDevice.createDefaultBridgedDeviceBasicInformationClusterServer('First device', 'serial_9874563121', 0xfff1, 'Test plugin', 'Test device', 2, '2.1.1');
+    mbDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Color Temperature Light', 'serial_9874563121', 0xfff1, 'Test plugin', 'colorTemperatureLight', 2, '2.1.1');
     // mbDevice.addDeviceType(powerSource);
     // mbDevice.createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac);
     // mbDevice.createDefaultModeSelectClusterServer();
@@ -89,28 +95,51 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     const waterFreeze = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     waterFreeze.createDefaultBridgedDeviceBasicInformationClusterServer('Water freeze detector', 'serial_98745631223', 0xfff1, 'Test plugin', 'waterFreezeDetector', 2, '2.1.1');
-    waterFreeze.addDeviceTypeWithClusterServer([waterFreezeDetector], []);
+    waterFreeze.addDeviceTypeWithClusterServer([waterFreezeDetector], [BooleanStateConfiguration.Cluster.id]);
     if (!this.noDevices) await this.registerDevice(waterFreeze);
 
     const rain = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     rain.createDefaultBridgedDeviceBasicInformationClusterServer('Rain sensor', 'serial_98745631224', 0xfff1, 'Test plugin', 'rainSensor', 2, '2.1.1');
-    rain.addDeviceTypeWithClusterServer([rainSensor], []);
+    rain.addDeviceTypeWithClusterServer([rainSensor], [BooleanStateConfiguration.Cluster.id]);
     if (!this.noDevices) await this.registerDevice(rain);
 
     const smoke = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     smoke.createDefaultBridgedDeviceBasicInformationClusterServer('Smoke alarm sensor', 'serial_98745631225', 0xfff1, 'Test plugin', 'smokeCoAlarm', 2, '2.1.1');
-    smoke.addDeviceTypeWithClusterServer([smokeCoAlarm], []);
+    smoke.addDeviceTypeWithClusterServer([smokeCoAlarm], [CarbonMonoxideConcentrationMeasurement.Cluster.id]);
     if (!this.noDevices) await this.registerDevice(smoke);
 
     const electrical = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     electrical.createDefaultBridgedDeviceBasicInformationClusterServer('Electrical sensor', 'serial_98745631226', 0xfff1, 'Test plugin', 'electricalSensor', 2, '2.1.1');
-    electrical.addDeviceTypeWithClusterServer([electricalSensor], []);
+    electrical.addDeviceTypeWithClusterServer([electricalSensor], [ElectricalPowerMeasurement.Cluster.id, ElectricalEnergyMeasurement.Cluster.id]);
     if (!this.noDevices) await this.registerDevice(electrical);
 
-    const fan = new MatterbridgeDevice(DeviceTypes.FAN, undefined, this.config.debug as boolean);
-    fan.createDefaultBridgedDeviceBasicInformationClusterServer('Fan', 'serial_98745631227', 0xfff1, 'Test plugin', 'Test fan device', 2, '2.1.1');
+    const energy = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
+    energy.createDefaultBridgedDeviceBasicInformationClusterServer('Device Energy Management', 'serial_98745631227', 0xfff1, 'Test plugin', 'deviceEnergyManagement', 2, '2.1.1');
+    energy.addDeviceTypeWithClusterServer([deviceEnergyManagement], []);
+    if (!this.noDevices) await this.registerDevice(energy);
+
+    const fan = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
+    fan.createDefaultBridgedDeviceBasicInformationClusterServer('Fan', 'serial_98745631228', 0xfff1, 'Test plugin', 'Test fan device', 2, '2.1.1');
     fan.addDeviceTypeWithClusterServer([DeviceTypes.FAN], []);
     if (!this.noDevices) await this.registerDevice(fan);
+    const fcc = fan.getClusterServer(FanControlCluster.with(FanControl.Feature.MultiSpeed, FanControl.Feature.Auto));
+    if (fcc) {
+      fcc.subscribeFanModeAttribute((newValue: FanControl.FanMode, oldValue: FanControl.FanMode) => {
+        this.log.info(`Fan mode changed from ${oldValue} to ${newValue}`);
+      });
+      fcc.subscribePercentSettingAttribute((newValue: number | null, oldValue: number | null) => {
+        this.log.info(`Percent setting changed from ${oldValue} to ${newValue}`);
+      });
+      fcc.subscribePercentCurrentAttribute((newValue: number | null, oldValue: number | null) => {
+        this.log.info(`Percent current changed from ${oldValue} to ${newValue}`);
+      });
+      fcc.subscribeSpeedSettingAttribute((newValue: number | null, oldValue: number | null) => {
+        this.log.info(`Speed setting changed from ${oldValue} to ${newValue}`);
+      });
+      fcc.subscribeSpeedCurrentAttribute((newValue: number | null, oldValue: number | null) => {
+        this.log.info(`Speed current changed from ${oldValue} to ${newValue}`);
+      });
+    }
 
     return Promise.resolve();
   }

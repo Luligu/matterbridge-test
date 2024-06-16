@@ -20,11 +20,13 @@ export default [
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
+      /*
       parser: tseslint.parser,
       parserOptions: {
         project: './tsconfig.eslint.json',
         tsconfigRootDir: import.meta.dirname,
       },
+      */
     },
     linterOptions: {
       reportUnusedDisableDirectives: 'warn',
