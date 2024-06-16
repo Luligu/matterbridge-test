@@ -59,6 +59,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     if (this.delayStart) await waiter('Delay start', () => false, false, 20000, 1000);
 
+    if (this.config.longDelayStart) await waiter('Delay start', () => false, false, 60000, 1000);
+
     // Create a new Matterbridge device
     const mbDevice = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     mbDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Color Temperature Light', 'serial_9874563121', 0xfff1, 'Test plugin', 'colorTemperatureLight', 2, '2.1.1');

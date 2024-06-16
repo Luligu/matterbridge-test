@@ -1,0 +1,54 @@
+{
+  "title": "Matterbridge test plugin",
+  "description": "matterbridge-test v. 1.0.0 by https://github.com/Luligu",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "Plugin name",
+      "type": "string",
+      "readOnly": true
+    },
+    "type": {
+      "description": "Plugin type",
+      "type": "string",
+      "readOnly": true
+    },
+    "noDevices": {
+      "description": "Do not registers any devices (development only)",
+      "type": "boolean"
+    },
+    "delayStart": {
+      "description": "Delay start by 20 seconds (development only)",
+      "type": "boolean"
+    },
+    "longDelayStart": {
+      "description": "Delay start by 60 seconds (development only)",
+      "type": "boolean"
+    },
+    "throwLoad": {
+      "description": "Throw on load (development only)",
+      "type": "boolean"
+    },
+    "throwStart": {
+      "description": "Throw on start (development only)",
+      "type": "boolean"
+    },
+    "throwConfigure": {
+      "description": "Throw on configure (development only)",
+      "type": "boolean"
+    },
+    "throwShutdown": {
+      "description": "Throw on shutdown (development only)",
+      "type": "boolean"
+    },
+    "debug": {
+      "description": "Enable the debug for the plugin (development only)",
+      "type": "boolean",
+      "default": false
+    },
+    "unregisterOnShutdown": {
+      "description": "Unregister all devices on shutdown (development only)",
+      "type": "boolean"
+    }
+  }
+}
