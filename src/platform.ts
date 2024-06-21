@@ -55,6 +55,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
   override async onStart(reason?: string): Promise<void> {
     this.log.info('onStart called with reason:', reason ?? 'none');
+
     if (this.throwStart) throw new Error('Throwing error in start');
 
     if (this.delayStart) await waiter('Delay start', () => false, false, 20000, 1000);
@@ -64,30 +65,13 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     // Create a new Matterbridge device
     const mbDevice = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     mbDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Color Temperature Light', 'serial_9874563121', 0xfff1, 'Test plugin', 'colorTemperatureLight', 2, '2.1.1');
-    // mbDevice.addDeviceType(powerSource);
-    // mbDevice.createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac);
+    mbDevice.addDeviceType(powerSource);
+    mbDevice.createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac);
     // mbDevice.createDefaultModeSelectClusterServer();
-
-    // Test 1.0.7 composed with label and PowerSource wired added first
     const child = mbDevice.addChildDeviceTypeWithClusterServer('PowerSource', [powerSource], [PowerSource.Cluster.id]);
     child.addClusterServer(mbDevice.getDefaultPowerSourceWiredClusterServer());
-
     mbDevice.addChildDeviceTypeWithClusterServer('Dimmer', [DeviceTypes.COLOR_TEMPERATURE_LIGHT], [OnOff.Cluster.id, LevelControl.Cluster.id, ColorControl.Cluster.id]);
     mbDevice.addFixedLabel('composed', 'Dimmer');
-
-    // Test 1.0.2 not composed: success
-    // mbDevice.addDeviceTypeWithClusterServer([DeviceTypes.DIMMABLE_LIGHT], []);
-
-    // Test 1.0.3 composed: success
-    // mbDevice.addChildDeviceTypeWithClusterServer('Dimmer', [DeviceTypes.DIMMABLE_LIGHT], []);
-
-    // Test 1.0.4 composed with label: success
-    // mbDevice.addFixedLabel('composed', 'Dimmer');
-
-    // Test 1.0.5 composed with label and PowerSource wired: success
-    // const child = mbDevice.addChildDeviceTypeWithClusterServer('PowerSource', [powerSource], [PowerSource.Cluster.id]);
-    // child.addClusterServer(mbDevice.getDefaultPowerSourceWiredClusterServer());
-
     if (!this.noDevices) await this.registerDevice(mbDevice);
 
     const waterLeak = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
@@ -142,19 +126,15 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         this.log.info(`Speed current changed from ${oldValue} to ${newValue}`);
       });
     }
-
-    return Promise.resolve();
   }
 
   override async onConfigure(): Promise<void> {
     this.log.info('onConfigure called');
     if (this.throwConfigure) throw new Error('Throwing error in configure');
-    return Promise.resolve();
   }
 
   override async onShutdown(reason?: string): Promise<void> {
     this.log.info('onShutdown called with reason:', reason ?? 'none');
     if (this.throwShutdown) throw new Error('Throwing error in shutdown');
-    return Promise.resolve();
   }
 }

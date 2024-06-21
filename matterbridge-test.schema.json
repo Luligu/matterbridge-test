@@ -15,31 +15,38 @@
     },
     "noDevices": {
       "description": "Do not registers any devices (development only)",
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "delayStart": {
       "description": "Delay start by 20 seconds (development only)",
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "longDelayStart": {
       "description": "Delay start by 60 seconds (development only)",
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "throwLoad": {
       "description": "Throw on load (development only)",
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "throwStart": {
       "description": "Throw on start (development only)",
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "throwConfigure": {
       "description": "Throw on configure (development only)",
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "throwShutdown": {
       "description": "Throw on shutdown (development only)",
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "debug": {
       "description": "Enable the debug for the plugin (development only)",
@@ -48,7 +55,8 @@
     },
     "unregisterOnShutdown": {
       "description": "Unregister all devices on shutdown (development only)",
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     }
   }
 }
