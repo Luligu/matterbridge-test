@@ -23,9 +23,22 @@ import {
   CarbonMonoxideConcentrationMeasurement,
   FanControlCluster,
   FanControl,
+  airQualitySensor,
+  TemperatureMeasurement,
+  RelativeHumidityMeasurement,
+  CarbonDioxideConcentrationMeasurement,
+  NitrogenDioxideConcentrationMeasurement,
+  OzoneConcentrationMeasurement,
+  FormaldehydeConcentrationMeasurement,
+  Pm1ConcentrationMeasurement,
+  Pm25ConcentrationMeasurement,
+  Pm10ConcentrationMeasurement,
+  RadonConcentrationMeasurement,
+  TvocMeasurement,
+  AirQuality,
 } from 'matterbridge';
 
-import { AnsiLogger } from 'node-ansi-logger';
+import { AnsiLogger } from 'matterbridge/logger';
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
   // Config
@@ -73,6 +86,30 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     mbDevice.addChildDeviceTypeWithClusterServer('Dimmer', [DeviceTypes.COLOR_TEMPERATURE_LIGHT], [OnOff.Cluster.id, LevelControl.Cluster.id, ColorControl.Cluster.id]);
     mbDevice.addFixedLabel('composed', 'Dimmer');
     if (!this.noDevices) await this.registerDevice(mbDevice);
+
+    const airQuality = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
+    airQuality.createDefaultBridgedDeviceBasicInformationClusterServer('Air Quality sensor', 'serial_98748431222', 0xfff1, 'Test plugin', 'airQualitySensor', 2, '2.1.1');
+    airQuality.addDeviceTypeWithClusterServer(
+      [airQualitySensor],
+      [
+        TemperatureMeasurement.Cluster.id,
+        RelativeHumidityMeasurement.Cluster.id,
+        CarbonMonoxideConcentrationMeasurement.Cluster.id,
+        CarbonDioxideConcentrationMeasurement.Cluster.id,
+        NitrogenDioxideConcentrationMeasurement.Cluster.id,
+        OzoneConcentrationMeasurement.Cluster.id,
+        FormaldehydeConcentrationMeasurement.Cluster.id,
+        Pm1ConcentrationMeasurement.Cluster.id,
+        Pm25ConcentrationMeasurement.Cluster.id,
+        Pm10ConcentrationMeasurement.Cluster.id,
+        RadonConcentrationMeasurement.Cluster.id,
+        TvocMeasurement.Cluster.id,
+      ],
+    );
+    airQuality.getClusterServerById(AirQuality.Cluster.id)?.setAirQualityAttribute(AirQuality.AirQualityType.Good);
+    airQuality.getClusterServerById(TemperatureMeasurement.Cluster.id)?.setMeasuredValueAttribute(2150);
+    airQuality.getClusterServerById(RelativeHumidityMeasurement.Cluster.id)?.setMeasuredValueAttribute(5500);
+    if (!this.noDevices) await this.registerDevice(airQuality);
 
     const waterLeak = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     waterLeak.createDefaultBridgedDeviceBasicInformationClusterServer('Water leak detector', 'serial_98745631222', 0xfff1, 'Test plugin', 'waterLeakDetector', 2, '2.1.1');

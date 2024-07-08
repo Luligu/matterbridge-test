@@ -1,3 +1,0 @@
-# matterbridge-test
-
-Test peer
