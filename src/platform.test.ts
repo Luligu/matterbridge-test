@@ -1,5 +1,5 @@
 import { Matterbridge, PlatformConfig } from 'matterbridge';
-import { AnsiLogger } from 'node-ansi-logger';
+import { AnsiLogger } from 'matterbridge/logger';
 import { TestPlatform } from './platform';
 import { jest } from '@jest/globals';
 
@@ -13,9 +13,7 @@ describe('TestPlatform', () => {
 
   beforeEach(() => {
     mockMatterbridge = { addBridgedDevice: jest.fn() } as unknown as Matterbridge;
-
     mockLog = { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() } as unknown as AnsiLogger;
-
     mockConfig = {
       'name': 'matterbridge-test',
       'type': 'DynamicPlatform',

@@ -147,8 +147,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     if (!this.noDevices) await this.registerDevice(fan);
     const fcc = fan.getClusterServer(FanControlCluster.with(FanControl.Feature.MultiSpeed, FanControl.Feature.Auto));
     if (fcc) {
+      const fanModeLookup = ['Off', 'Low', 'Medium', 'High', 'On', 'Auto', 'Smart'];
       fcc.subscribeFanModeAttribute((newValue: FanControl.FanMode, oldValue: FanControl.FanMode) => {
-        this.log.info(`Fan mode changed from ${oldValue} to ${newValue}`);
+        this.log.info(`Fan mode changed from ${fanModeLookup[oldValue]} to ${fanModeLookup[newValue]}`);
       });
       fcc.subscribePercentSettingAttribute((newValue: number | null, oldValue: number | null) => {
         this.log.info(`Percent setting changed from ${oldValue} to ${newValue}`);
