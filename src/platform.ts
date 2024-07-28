@@ -14,7 +14,6 @@ import {
   powerSource,
   rainSensor,
   smokeCoAlarm,
-  waiter,
   waterFreezeDetector,
   waterLeakDetector,
   ElectricalPowerMeasurement,
@@ -36,7 +35,9 @@ import {
   RadonConcentrationMeasurement,
   TvocMeasurement,
   AirQuality,
+  BooleanState,
 } from 'matterbridge';
+import { waiter } from 'matterbridge/utils';
 
 import { AnsiLogger } from 'matterbridge/logger';
 
@@ -114,16 +115,19 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     const waterLeak = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     waterLeak.createDefaultBridgedDeviceBasicInformationClusterServer('Water leak detector', 'serial_98745631222', 0xfff1, 'Test plugin', 'waterLeakDetector', 2, '2.1.1');
     waterLeak.addDeviceTypeWithClusterServer([waterLeakDetector], [BooleanStateConfiguration.Cluster.id]);
+    waterLeak.getClusterServerById(BooleanState.Cluster.id)?.setStateValueAttribute(false);
     if (!this.noDevices) await this.registerDevice(waterLeak);
 
     const waterFreeze = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     waterFreeze.createDefaultBridgedDeviceBasicInformationClusterServer('Water freeze detector', 'serial_98745631223', 0xfff1, 'Test plugin', 'waterFreezeDetector', 2, '2.1.1');
     waterFreeze.addDeviceTypeWithClusterServer([waterFreezeDetector], [BooleanStateConfiguration.Cluster.id]);
+    waterFreeze.getClusterServerById(BooleanState.Cluster.id)?.setStateValueAttribute(false);
     if (!this.noDevices) await this.registerDevice(waterFreeze);
 
     const rain = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
     rain.createDefaultBridgedDeviceBasicInformationClusterServer('Rain sensor', 'serial_98745631224', 0xfff1, 'Test plugin', 'rainSensor', 2, '2.1.1');
     rain.addDeviceTypeWithClusterServer([rainSensor], [BooleanStateConfiguration.Cluster.id]);
+    rain.getClusterServerById(BooleanState.Cluster.id)?.setStateValueAttribute(false);
     if (!this.noDevices) await this.registerDevice(rain);
 
     const smoke = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
