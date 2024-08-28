@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 
 const tag = execSync('git describe --tags --abbrev=0').toString().trim();
 const title = `Release ${tag}`;
