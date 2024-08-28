@@ -1,4 +1,17 @@
 /* eslint-disable no-console */
+
+/*
+Add the following scripts to package.json file:
+    "prepublishOnly": "npm run lint && npm run test && npm run cleanBuild",
+    "npmPublish": "npm publish",
+    "gitPublish": "npm run lint && npm run test && npm run cleanBuild && node create-release.js",
+    "preversion": "npm run lint && npm run test && npm run cleanBuild",
+    "postversion": "git push && git push --tags && node create-release.js",
+    "version:patch": "npm version patch",
+    "version:minor": "npm version minor",
+    "version:major": "npm version major",
+*/
+
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync, unlinkSync } from 'fs';
 import path from 'path';
