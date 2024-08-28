@@ -55,7 +55,7 @@
     "checkDependencies": "npx npm-check-updates",
     "updateDependencies": "npx npm-check-updates -u && npm install & npm run cleanBuild",
     "preversion": "npm run lint && npm run test && npm run build",
-    "postversion": "git push && git push --tags",
+    "postversion": "git push && git push --tags && node create-release.js",
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
     "version:major": "npm version major",
