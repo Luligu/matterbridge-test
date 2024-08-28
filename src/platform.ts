@@ -2,7 +2,6 @@ import {
   ColorControl,
   DeviceTypes,
   LevelControl,
-  BooleanStateConfiguration,
   Matterbridge,
   MatterbridgeDevice,
   MatterbridgeDynamicPlatform,
@@ -16,15 +15,19 @@ import {
   smokeCoAlarm,
   waterFreezeDetector,
   waterLeakDetector,
-  ElectricalPowerMeasurement,
-  ElectricalEnergyMeasurement,
   deviceEnergyManagement,
-  CarbonMonoxideConcentrationMeasurement,
   FanControlCluster,
   FanControl,
   airQualitySensor,
   TemperatureMeasurement,
   RelativeHumidityMeasurement,
+  BooleanState,
+} from 'matterbridge';
+import {
+  BooleanStateConfiguration,
+  ElectricalPowerMeasurement,
+  ElectricalEnergyMeasurement,
+  CarbonMonoxideConcentrationMeasurement,
   CarbonDioxideConcentrationMeasurement,
   NitrogenDioxideConcentrationMeasurement,
   OzoneConcentrationMeasurement,
@@ -35,8 +38,7 @@ import {
   RadonConcentrationMeasurement,
   TvocMeasurement,
   AirQuality,
-  BooleanState,
-} from 'matterbridge';
+} from 'matterbridge/cluster';
 import { waiter } from 'matterbridge/utils';
 
 import { AnsiLogger } from 'matterbridge/logger';
