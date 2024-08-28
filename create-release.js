@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { execSync } from 'child_process';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, unlinkSync } from 'fs';
 import path from 'path';
 import readline from 'readline';
 
@@ -21,13 +21,20 @@ const title = `Release ${tag}`;
 const notes = `Release notes for version ${tag}\n\n## [${tag}] ${changelogSection}`;
 
 // Log the release details
-console.log(`Creating release ${tag} with the following details:\nTitle: ${title}\nNotes:\n${notes}`);
+console.log(`Creating release ${tag} with the following details:\nTitle:\n${title}\nNotes:\n${notes}`);
+
+// Write the release notes to a temporary file
+const notesFilePath = path.join(process.cwd(), 'release-notes.md');
+writeFileSync(notesFilePath, notes);
 
 // Wait for user input before proceeding
 await pressAnyKey();
 
-// Create the release
-execSync(`gh release create ${tag} -t "${title}" -n "${notes}"`, { stdio: 'inherit' });
+// Create the release using the temporary file
+execSync(`gh release create ${tag} -t "${title}" -F "${notesFilePath}"`, { stdio: 'inherit' });
+
+// Clean up the temporary file
+unlinkSync(notesFilePath);
 
 /**
  * Extracts the relevant section from the changelog for the given tag.
@@ -53,7 +60,7 @@ function pressAnyKey() {
       output: process.stdout,
     });
 
-    rl.question('Press any key to continue... (CTRL-C to abort)', () => {
+    rl.question('Press any key to continue...', () => {
       rl.close();
       resolve();
     });
