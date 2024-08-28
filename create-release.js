@@ -18,10 +18,10 @@ const changelog = readFileSync(changelogPath, 'utf8');
 const changelogSection = extractChangelogSection(changelog, tag);
 
 const title = `Release ${tag}`;
-const notes = `Release notes for version ${tag}\n\n${changelogSection}`;
+const notes = `Release notes for version ${tag}\n\n## [${tag}] ${changelogSection}`;
 
 // Log the release details
-console.log(`Creating release with the following details:\nTitle: ${title}\nNotes:\n${notes}`);
+console.log(`Creating release ${tag} with the following details:\nTitle: ${title}\nNotes:\n${notes}`);
 
 // Wait for user input before proceeding
 await pressAnyKey();
@@ -53,7 +53,7 @@ function pressAnyKey() {
       output: process.stdout,
     });
 
-    rl.question('Press any key to continue...', () => {
+    rl.question('Press any key to continue... (CTRL-C to abort)', () => {
       rl.close();
       resolve();
     });
