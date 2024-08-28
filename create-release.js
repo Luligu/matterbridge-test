@@ -1,6 +1,10 @@
 import { execSync } from 'child_process';
 
-const tag = execSync('git describe --tags --abbrev=0').toString().trim();
+let tag = execSync('git describe --tags --abbrev=0').toString().trim();
+if (tag.startsWith('v')) {
+  tag = tag.substring(1);
+}
+
 const title = `Release ${tag}`;
 const notes = `Release notes for version ${tag}`;
 
