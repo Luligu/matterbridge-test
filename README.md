@@ -13,6 +13,6 @@
 
 ---
 
-This a bad plugin to test matterbridge.
+This is a bad plugin to test matterbridge.
 
 Internal use only!
