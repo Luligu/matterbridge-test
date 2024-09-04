@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 If you like this project and find it useful, please consider giving it a star on GitHub at https://github.com/Luligu/matterbridge-mqtt and sponsoring it.
 
+## [0.0.12] - 2024-09-04
+
+### Added
+
+- Update to Matter 1.3
+
+<a href="https://www.buymeacoffee.com/luligugithub">
+  <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
+</a>
+
 ## [0.0.11] - 2024-09-04
 
 ### Added
