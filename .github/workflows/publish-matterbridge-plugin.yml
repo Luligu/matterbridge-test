@@ -23,7 +23,7 @@ jobs:
       - name: Install matterbridge
         run: npm install -g matterbridge
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Lint the project
         run: npm run lint
       - name: Test the project
@@ -31,6 +31,6 @@ jobs:
       - name: Build the project
         run: npm run build
       - name: Publish to npm
-        run: npm publish
+        run: npm list -g
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
