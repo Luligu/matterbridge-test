@@ -1,41 +1,18 @@
 import {
-  ColorControl,
-  DeviceTypes,
-  LevelControl,
   Matterbridge,
   MatterbridgeDevice,
   MatterbridgeDynamicPlatform,
-  OnOff,
   PlatformConfig,
-  PowerSource,
   bridgedNode,
   electricalSensor,
-  powerSource,
-  rainSensor,
-  smokeCoAlarm,
-  waterFreezeDetector,
-  waterLeakDetector,
   deviceEnergyManagement,
-  FanControlCluster,
-  FanControl,
-  airQualitySensor,
-  TemperatureMeasurement,
-  RelativeHumidityMeasurement,
-  BooleanState,
-  BooleanStateConfiguration,
   ElectricalPowerMeasurement,
   ElectricalEnergyMeasurement,
-  CarbonMonoxideConcentrationMeasurement,
-  CarbonDioxideConcentrationMeasurement,
-  NitrogenDioxideConcentrationMeasurement,
-  OzoneConcentrationMeasurement,
-  FormaldehydeConcentrationMeasurement,
-  Pm1ConcentrationMeasurement,
-  Pm25ConcentrationMeasurement,
-  Pm10ConcentrationMeasurement,
-  RadonConcentrationMeasurement,
-  TotalVolatileOrganicCompoundsConcentrationMeasurement,
-  AirQuality,
+  DeviceEnergyManagement,
+  DeviceEnergyManagementMode,
+  onOffSwitch,
+  onOffLight,
+  onOffOutlet,
 } from 'matterbridge';
 
 import { waiter } from 'matterbridge/utils';
@@ -46,6 +23,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   // Config
   private noDevices = false;
   private delayStart = false;
+  private loadSwitches = 0;
+  private loadOutlets = 0;
+  private loadLights = 0;
   private throwLoad = false;
   private throwStart = false;
   private throwConfigure = false;
@@ -58,6 +38,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     if (config.noDevices) this.noDevices = config.noDevices as boolean;
     if (config.delayStart) this.delayStart = config.delayStart as boolean;
+    if (config.loadSwitches) this.loadSwitches = config.loadSwitches as number;
+    if (config.loadOutlets) this.loadOutlets = config.loadOutlets as number;
+    if (config.loadLights) this.loadLights = config.loadLights as number;
     if (config.throwLoad) this.throwLoad = config.throwLoad as boolean;
     if (config.throwStart) this.throwStart = config.throwStart as boolean;
     if (config.throwConfigure) this.throwConfigure = config.throwConfigure as boolean;
@@ -77,98 +60,36 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     if (this.config.longDelayStart) await waiter('Delay start', () => false, false, 60000, 1000);
 
-    // Create a new Matterbridge device
-    const mbDevice = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
-    mbDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Color Temperature Light', 'serial_9874563121', 0xfff1, 'Test plugin', 'colorTemperatureLight', 2, '2.1.1');
-    mbDevice.addDeviceType(powerSource);
-    mbDevice.createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac);
-    // mbDevice.createDefaultModeSelectClusterServer();
-    const child = mbDevice.addChildDeviceTypeWithClusterServer('PowerSource', [powerSource], [PowerSource.Cluster.id]);
-    child.addClusterServer(mbDevice.getDefaultPowerSourceWiredClusterServer());
-    mbDevice.addChildDeviceTypeWithClusterServer('Dimmer', [DeviceTypes.COLOR_TEMPERATURE_LIGHT], [OnOff.Cluster.id, LevelControl.Cluster.id, ColorControl.Cluster.id]);
-    mbDevice.addFixedLabel('composed', 'Dimmer');
-    if (!this.noDevices) await this.registerDevice(mbDevice);
+    for (let i = 0; i < this.loadSwitches; i++) {
+      const switchDevice = new MatterbridgeDevice([onOffSwitch, bridgedNode], undefined, this.config.debug as boolean);
+      switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Switch ' + i, 'serial_switch_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
+      switchDevice.addDeviceTypeWithClusterServer([onOffSwitch], []);
+      if (!this.noDevices) await this.registerDevice(switchDevice);
+    }
 
-    const airQuality = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
-    airQuality.createDefaultBridgedDeviceBasicInformationClusterServer('Air Quality sensor', 'serial_98748431222', 0xfff1, 'Test plugin', 'airQualitySensor', 2, '2.1.1');
-    airQuality.addDeviceTypeWithClusterServer(
-      [airQualitySensor],
-      [
-        TemperatureMeasurement.Cluster.id,
-        RelativeHumidityMeasurement.Cluster.id,
-        CarbonMonoxideConcentrationMeasurement.Cluster.id,
-        CarbonDioxideConcentrationMeasurement.Cluster.id,
-        NitrogenDioxideConcentrationMeasurement.Cluster.id,
-        OzoneConcentrationMeasurement.Cluster.id,
-        FormaldehydeConcentrationMeasurement.Cluster.id,
-        Pm1ConcentrationMeasurement.Cluster.id,
-        Pm25ConcentrationMeasurement.Cluster.id,
-        Pm10ConcentrationMeasurement.Cluster.id,
-        RadonConcentrationMeasurement.Cluster.id,
-        TotalVolatileOrganicCompoundsConcentrationMeasurement.Cluster.id,
-      ],
-    );
-    airQuality.getClusterServerById(AirQuality.Cluster.id)?.setAirQualityAttribute(AirQuality.AirQualityEnum.Good);
-    airQuality.getClusterServerById(TemperatureMeasurement.Cluster.id)?.setMeasuredValueAttribute(2150);
-    airQuality.getClusterServerById(RelativeHumidityMeasurement.Cluster.id)?.setMeasuredValueAttribute(5500);
-    if (!this.noDevices) await this.registerDevice(airQuality);
+    for (let i = 0; i < this.loadOutlets; i++) {
+      const outletDevice = new MatterbridgeDevice([onOffOutlet, bridgedNode], undefined, this.config.debug as boolean);
+      outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Outlet ' + i, 'serial_outlet_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
+      outletDevice.addDeviceTypeWithClusterServer([onOffOutlet], []);
+      if (!this.noDevices) await this.registerDevice(outletDevice);
+    }
 
-    const waterLeak = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
-    waterLeak.createDefaultBridgedDeviceBasicInformationClusterServer('Water leak detector', 'serial_98745631222', 0xfff1, 'Test plugin', 'waterLeakDetector', 2, '2.1.1');
-    waterLeak.addDeviceTypeWithClusterServer([waterLeakDetector], [BooleanStateConfiguration.Cluster.id]);
-    waterLeak.getClusterServerById(BooleanState.Cluster.id)?.setStateValueAttribute(false);
-    if (!this.noDevices) await this.registerDevice(waterLeak);
+    for (let i = 0; i < this.loadLights; i++) {
+      const lightDevice = new MatterbridgeDevice([onOffLight, bridgedNode], undefined, this.config.debug as boolean);
+      lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Light ' + i, 'serial_light_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
+      lightDevice.addDeviceTypeWithClusterServer([onOffLight], []);
+      if (!this.noDevices) await this.registerDevice(lightDevice);
+    }
 
-    const waterFreeze = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
-    waterFreeze.createDefaultBridgedDeviceBasicInformationClusterServer('Water freeze detector', 'serial_98745631223', 0xfff1, 'Test plugin', 'waterFreezeDetector', 2, '2.1.1');
-    waterFreeze.addDeviceTypeWithClusterServer([waterFreezeDetector], [BooleanStateConfiguration.Cluster.id]);
-    waterFreeze.getClusterServerById(BooleanState.Cluster.id)?.setStateValueAttribute(false);
-    if (!this.noDevices) await this.registerDevice(waterFreeze);
-
-    const rain = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
-    rain.createDefaultBridgedDeviceBasicInformationClusterServer('Rain sensor', 'serial_98745631224', 0xfff1, 'Test plugin', 'rainSensor', 2, '2.1.1');
-    rain.addDeviceTypeWithClusterServer([rainSensor], [BooleanStateConfiguration.Cluster.id]);
-    rain.getClusterServerById(BooleanState.Cluster.id)?.setStateValueAttribute(false);
-    if (!this.noDevices) await this.registerDevice(rain);
-
-    const smoke = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
-    smoke.createDefaultBridgedDeviceBasicInformationClusterServer('Smoke alarm sensor', 'serial_98745631225', 0xfff1, 'Test plugin', 'smokeCoAlarm', 2, '2.1.1');
-    smoke.addDeviceTypeWithClusterServer([smokeCoAlarm], [CarbonMonoxideConcentrationMeasurement.Cluster.id]);
-    if (!this.noDevices) await this.registerDevice(smoke);
-
-    const electrical = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
+    const electrical = new MatterbridgeDevice([electricalSensor, bridgedNode], undefined, this.config.debug as boolean);
     electrical.createDefaultBridgedDeviceBasicInformationClusterServer('Electrical sensor', 'serial_98745631226', 0xfff1, 'Test plugin', 'electricalSensor', 2, '2.1.1');
     electrical.addDeviceTypeWithClusterServer([electricalSensor], [ElectricalPowerMeasurement.Cluster.id, ElectricalEnergyMeasurement.Cluster.id]);
     if (!this.noDevices) await this.registerDevice(electrical);
 
-    const energy = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
+    const energy = new MatterbridgeDevice([deviceEnergyManagement, bridgedNode], undefined, this.config.debug as boolean);
     energy.createDefaultBridgedDeviceBasicInformationClusterServer('Device Energy Management', 'serial_98745631227', 0xfff1, 'Test plugin', 'deviceEnergyManagement', 2, '2.1.1');
-    energy.addDeviceTypeWithClusterServer([deviceEnergyManagement], []);
+    energy.addDeviceTypeWithClusterServer([deviceEnergyManagement], [DeviceEnergyManagement.Cluster.id, DeviceEnergyManagementMode.Cluster.id]);
     if (!this.noDevices) await this.registerDevice(energy);
-
-    const fan = new MatterbridgeDevice(bridgedNode, undefined, this.config.debug as boolean);
-    fan.createDefaultBridgedDeviceBasicInformationClusterServer('Fan', 'serial_98745631228', 0xfff1, 'Test plugin', 'Test fan device', 2, '2.1.1');
-    fan.addDeviceTypeWithClusterServer([DeviceTypes.FAN], []);
-    if (!this.noDevices) await this.registerDevice(fan);
-    const fcc = fan.getClusterServer(FanControlCluster.with(FanControl.Feature.MultiSpeed, FanControl.Feature.Auto));
-    if (fcc) {
-      const fanModeLookup = ['Off', 'Low', 'Medium', 'High', 'On', 'Auto', 'Smart'];
-      fcc.subscribeFanModeAttribute((newValue: FanControl.FanMode, oldValue: FanControl.FanMode) => {
-        this.log.info(`Fan mode changed from ${fanModeLookup[oldValue]} to ${fanModeLookup[newValue]}`);
-      });
-      fcc.subscribePercentSettingAttribute((newValue: number | null, oldValue: number | null) => {
-        this.log.info(`Percent setting changed from ${oldValue} to ${newValue}`);
-      });
-      fcc.subscribePercentCurrentAttribute((newValue: number | null, oldValue: number | null) => {
-        this.log.info(`Percent current changed from ${oldValue} to ${newValue}`);
-      });
-      fcc.subscribeSpeedSettingAttribute((newValue: number | null, oldValue: number | null) => {
-        this.log.info(`Speed setting changed from ${oldValue} to ${newValue}`);
-      });
-      fcc.subscribeSpeedCurrentAttribute((newValue: number | null, oldValue: number | null) => {
-        this.log.info(`Speed current changed from ${oldValue} to ${newValue}`);
-      });
-    }
   }
 
   override async onConfigure(): Promise<void> {

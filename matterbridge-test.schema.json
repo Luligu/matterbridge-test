@@ -28,6 +28,21 @@
       "type": "boolean",
       "default": false
     },
+    "loadSwitches": {
+      "description": "Load a defined number of switches (development only)",
+      "type": "number",
+      "default": 1
+    },
+    "loadOutlets": {
+      "description": "Load a defined number of outlets (development only)",
+      "type": "number",
+      "default": 1
+    },
+    "loadLights": {
+      "description": "Load a defined number of lights (development only)",
+      "type": "number",
+      "default": 1
+    },
     "throwLoad": {
       "description": "Throw on load (development only)",
       "type": "boolean",
