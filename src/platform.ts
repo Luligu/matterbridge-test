@@ -22,8 +22,6 @@ import {
   TemperatureMeasurement,
   RelativeHumidityMeasurement,
   BooleanState,
-} from 'matterbridge';
-import {
   BooleanStateConfiguration,
   ElectricalPowerMeasurement,
   ElectricalEnergyMeasurement,
@@ -36,9 +34,10 @@ import {
   Pm25ConcentrationMeasurement,
   Pm10ConcentrationMeasurement,
   RadonConcentrationMeasurement,
-  TvocMeasurement,
+  TotalVolatileOrganicCompoundsConcentrationMeasurement,
   AirQuality,
-} from 'matterbridge/cluster';
+} from 'matterbridge';
+
 import { waiter } from 'matterbridge/utils';
 
 import { AnsiLogger } from 'matterbridge/logger';
@@ -106,10 +105,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         Pm25ConcentrationMeasurement.Cluster.id,
         Pm10ConcentrationMeasurement.Cluster.id,
         RadonConcentrationMeasurement.Cluster.id,
-        TvocMeasurement.Cluster.id,
+        TotalVolatileOrganicCompoundsConcentrationMeasurement.Cluster.id,
       ],
     );
-    airQuality.getClusterServerById(AirQuality.Cluster.id)?.setAirQualityAttribute(AirQuality.AirQualityType.Good);
+    airQuality.getClusterServerById(AirQuality.Cluster.id)?.setAirQualityAttribute(AirQuality.AirQualityEnum.Good);
     airQuality.getClusterServerById(TemperatureMeasurement.Cluster.id)?.setMeasuredValueAttribute(2150);
     airQuality.getClusterServerById(RelativeHumidityMeasurement.Cluster.id)?.setMeasuredValueAttribute(5500);
     if (!this.noDevices) await this.registerDevice(airQuality);
