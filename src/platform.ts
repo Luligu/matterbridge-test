@@ -13,6 +13,9 @@ import {
   onOffSwitch,
   onOffLight,
   onOffOutlet,
+  ElectricalPowerMeasurementCluster,
+  ElectricalEnergyMeasurementCluster,
+  DeviceEnergyManagementModeCluster,
 } from 'matterbridge';
 
 import { waiter } from 'matterbridge/utils';
@@ -84,11 +87,19 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     const electrical = new MatterbridgeDevice([electricalSensor, bridgedNode], undefined, this.config.debug as boolean);
     electrical.createDefaultBridgedDeviceBasicInformationClusterServer('Electrical sensor', 'serial_98745631226', 0xfff1, 'Test plugin', 'electricalSensor', 2, '2.1.1');
     electrical.addDeviceTypeWithClusterServer([electricalSensor], [ElectricalPowerMeasurement.Cluster.id, ElectricalEnergyMeasurement.Cluster.id]);
+    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', 220, electrical.log);
+    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', 2.5, electrical.log);
+    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', 220 * 2.5, electrical.log);
+    electrical.setAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', { energy: 1.2 }, electrical.log);
     if (!this.noDevices) await this.registerDevice(electrical);
 
     const energy = new MatterbridgeDevice([deviceEnergyManagement, bridgedNode], undefined, this.config.debug as boolean);
     energy.createDefaultBridgedDeviceBasicInformationClusterServer('Device Energy Management', 'serial_98745631227', 0xfff1, 'Test plugin', 'deviceEnergyManagement', 2, '2.1.1');
     energy.addDeviceTypeWithClusterServer([deviceEnergyManagement], [DeviceEnergyManagement.Cluster.id, DeviceEnergyManagementMode.Cluster.id]);
+    energy.addCommandHandler('changeToMode', async ({ request: { newMode }, attributes: { currentMode } }) => {
+      this.log.info('Received changeToMode command with mode:', newMode, 'current mode:', currentMode.getLocal());
+      energy.setAttribute(DeviceEnergyManagementModeCluster.id, 'currentMode', newMode, energy.log);
+    });
     if (!this.noDevices) await this.registerDevice(energy);
   }
 
