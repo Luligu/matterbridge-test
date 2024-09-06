@@ -81,16 +81,27 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       const lightDevice = new MatterbridgeDevice([onOffLight, bridgedNode], undefined, this.config.debug as boolean);
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Light ' + i, 'serial_light_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       lightDevice.addDeviceTypeWithClusterServer([onOffLight], []);
+      lightDevice.addClusterServer(
+        lightDevice.getDefaultModeSelectClusterServer(
+          'Light ' + i,
+          [
+            { label: 'Mode 1', mode: 1, semanticTags: [] },
+            { label: 'Mode 2', mode: 2, semanticTags: [] },
+          ],
+          1,
+          1,
+        ),
+      );
       if (!this.noDevices) await this.registerDevice(lightDevice);
     }
 
     const electrical = new MatterbridgeDevice([electricalSensor, bridgedNode], undefined, this.config.debug as boolean);
     electrical.createDefaultBridgedDeviceBasicInformationClusterServer('Electrical sensor', 'serial_98745631226', 0xfff1, 'Test plugin', 'electricalSensor', 2, '2.1.1');
     electrical.addDeviceTypeWithClusterServer([electricalSensor], [ElectricalPowerMeasurement.Cluster.id, ElectricalEnergyMeasurement.Cluster.id]);
-    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', 220, electrical.log);
-    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', 2.5, electrical.log);
-    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', 220 * 2.5, electrical.log);
-    electrical.setAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', { energy: 1.2 }, electrical.log);
+    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', 220 * 1000, electrical.log);
+    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', 2.5 * 1000, electrical.log);
+    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', 220 * 2.5 * 1000, electrical.log);
+    electrical.setAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', { energy: 1.2 * 1000 }, electrical.log);
     if (!this.noDevices) await this.registerDevice(electrical);
 
     const energy = new MatterbridgeDevice([deviceEnergyManagement, bridgedNode], undefined, this.config.debug as boolean);
