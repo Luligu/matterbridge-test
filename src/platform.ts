@@ -81,6 +81,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       const lightDevice = new MatterbridgeDevice([onOffLight, bridgedNode], undefined, this.config.debug as boolean);
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Light ' + i, 'serial_light_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       lightDevice.addDeviceTypeWithClusterServer([onOffLight], []);
+      /*
       lightDevice.addClusterServer(
         lightDevice.getDefaultModeSelectClusterServer(
           'Light ' + i,
@@ -92,6 +93,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           1,
         ),
       );
+      */
       if (!this.noDevices) await this.registerDevice(lightDevice);
     }
 
