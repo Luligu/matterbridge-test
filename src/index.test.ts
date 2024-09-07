@@ -15,14 +15,18 @@ describe('initializePlugin', () => {
     mockConfig = {
       'name': 'matterbridge-test',
       'type': 'DynamicPlatform',
+      'delayStart': false,
+      'longDelayStart': false,
       'noDevices': false,
       'throwLoad': false,
       'throwStart': false,
       'throwConfigure': false,
       'throwShutdown': false,
+      'loadSwitches': 0,
+      'loadOutlets': 0,
+      'loadLights': 0,
+      'debug': false,
       'unregisterOnShutdown': false,
-      'delayStart': false,
-      'longDelayStart': false,
     } as PlatformConfig;
   });
 

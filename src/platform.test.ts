@@ -13,19 +13,23 @@ describe('TestPlatform', () => {
 
   beforeEach(() => {
     mockMatterbridge = { addBridgedDevice: jest.fn() } as unknown as Matterbridge;
-    mockLog = { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() } as unknown as AnsiLogger;
+    mockLog = { fatal: jest.fn(), error: jest.fn(), warn: jest.fn(), notice: jest.fn(), info: jest.fn(), debug: jest.fn() } as unknown as AnsiLogger;
     mockConfig = {
       'name': 'matterbridge-test',
       'type': 'DynamicPlatform',
+      'delayStart': false,
+      'longDelayStart': false,
       'noDevices': false,
       'throwLoad': false,
       'throwStart': false,
       'throwConfigure': false,
       'throwShutdown': false,
+      'loadSwitches': 0,
+      'loadOutlets': 0,
+      'loadLights': 0,
+      'debug': false,
       'unregisterOnShutdown': false,
-      'delayStart': false,
     } as PlatformConfig;
-
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, mockConfig);
   });
 
