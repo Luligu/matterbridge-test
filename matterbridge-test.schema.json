@@ -43,6 +43,21 @@
       "type": "number",
       "default": 1
     },
+    "enableElectrical": {
+      "description": "Add electrical measurements to the devices (development only)",
+      "type": "boolean",
+      "default": false
+    },
+    "enablePowerSource": {
+      "description": "Add power source to the devices (development only)",
+      "type": "boolean",
+      "default": false
+    },
+    "enableModeSelect": {
+      "description": "Add mode select to the devices (development only)",
+      "type": "boolean",
+      "default": false
+    },
     "throwLoad": {
       "description": "Throw on load (development only)",
       "type": "boolean",

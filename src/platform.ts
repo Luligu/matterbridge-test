@@ -5,17 +5,14 @@ import {
   PlatformConfig,
   bridgedNode,
   electricalSensor,
-  deviceEnergyManagement,
   ElectricalPowerMeasurement,
   ElectricalEnergyMeasurement,
-  DeviceEnergyManagement,
-  DeviceEnergyManagementMode,
   onOffSwitch,
   onOffLight,
   onOffOutlet,
   ElectricalPowerMeasurementCluster,
   ElectricalEnergyMeasurementCluster,
-  DeviceEnergyManagementModeCluster,
+  PowerSource,
 } from 'matterbridge';
 
 import { waiter } from 'matterbridge/utils';
@@ -33,6 +30,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   private throwStart = false;
   private throwConfigure = false;
   private throwShutdown = false;
+  private enableElectrical = false;
+  private enableModeSelect = false;
+  private enablePowerSource = false;
 
   constructor(matterbridge: Matterbridge, log: AnsiLogger, config: PlatformConfig) {
     super(matterbridge, log, config);
@@ -41,6 +41,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     if (config.noDevices) this.noDevices = config.noDevices as boolean;
     if (config.delayStart) this.delayStart = config.delayStart as boolean;
+    if (config.enableElectrical) this.enableElectrical = config.enableElectrical as boolean;
+    if (config.enableModeSelect) this.enableModeSelect = config.enableModeSelect as boolean;
+    if (config.enablePowerSource) this.enablePowerSource = config.enablePowerSource as boolean;
     if (config.loadSwitches) this.loadSwitches = config.loadSwitches as number;
     if (config.loadOutlets) this.loadOutlets = config.loadOutlets as number;
     if (config.loadLights) this.loadLights = config.loadLights as number;
@@ -67,6 +70,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       const switchDevice = new MatterbridgeDevice([onOffSwitch, bridgedNode], undefined, this.config.debug as boolean);
       switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Switch ' + i, 'serial_switch_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       switchDevice.addDeviceTypeWithClusterServer([onOffSwitch], []);
+      if (this.enableElectrical) this.addElectricalMeasurements(switchDevice);
+      if (this.enablePowerSource) this.addPowerSource(switchDevice);
+      if (this.enableModeSelect) this.addModeSelect(switchDevice, 'Switch ' + i);
       if (!this.noDevices) await this.registerDevice(switchDevice);
     }
 
@@ -74,6 +80,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       const outletDevice = new MatterbridgeDevice([onOffOutlet, bridgedNode], undefined, this.config.debug as boolean);
       outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Outlet ' + i, 'serial_outlet_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       outletDevice.addDeviceTypeWithClusterServer([onOffOutlet], []);
+      if (this.enableElectrical) this.addElectricalMeasurements(outletDevice);
+      if (this.enablePowerSource) this.addPowerSource(outletDevice);
+      if (this.enableModeSelect) this.addModeSelect(outletDevice, 'Outlet ' + i);
       if (!this.noDevices) await this.registerDevice(outletDevice);
     }
 
@@ -81,22 +90,13 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       const lightDevice = new MatterbridgeDevice([onOffLight, bridgedNode], undefined, this.config.debug as boolean);
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Light ' + i, 'serial_light_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       lightDevice.addDeviceTypeWithClusterServer([onOffLight], []);
-      /*
-      lightDevice.addClusterServer(
-        lightDevice.getDefaultModeSelectClusterServer(
-          'Light ' + i,
-          [
-            { label: 'Mode 1', mode: 1, semanticTags: [] },
-            { label: 'Mode 2', mode: 2, semanticTags: [] },
-          ],
-          1,
-          1,
-        ),
-      );
-      */
+      if (this.enableElectrical) this.addElectricalMeasurements(lightDevice);
+      if (this.enablePowerSource) this.addPowerSource(lightDevice);
+      if (this.enableModeSelect) this.addModeSelect(lightDevice, 'Light ' + i);
       if (!this.noDevices) await this.registerDevice(lightDevice);
     }
 
+    /*
     const electrical = new MatterbridgeDevice([electricalSensor, bridgedNode], undefined, this.config.debug as boolean);
     electrical.createDefaultBridgedDeviceBasicInformationClusterServer('Electrical sensor', 'serial_98745631226', 0xfff1, 'Test plugin', 'electricalSensor', 2, '2.1.1');
     electrical.addDeviceTypeWithClusterServer([electricalSensor], [ElectricalPowerMeasurement.Cluster.id, ElectricalEnergyMeasurement.Cluster.id]);
@@ -105,7 +105,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', 220 * 2.5 * 1000, electrical.log);
     electrical.setAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', { energy: 1.2 * 1000 }, electrical.log);
     if (!this.noDevices) await this.registerDevice(electrical);
+    */
 
+    /*
     const energy = new MatterbridgeDevice([deviceEnergyManagement, bridgedNode], undefined, this.config.debug as boolean);
     energy.createDefaultBridgedDeviceBasicInformationClusterServer('Device Energy Management', 'serial_98745631227', 0xfff1, 'Test plugin', 'deviceEnergyManagement', 2, '2.1.1');
     energy.addDeviceTypeWithClusterServer([deviceEnergyManagement], [DeviceEnergyManagement.Cluster.id, DeviceEnergyManagementMode.Cluster.id]);
@@ -114,6 +116,33 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       energy.setAttribute(DeviceEnergyManagementModeCluster.id, 'currentMode', newMode, energy.log);
     });
     if (!this.noDevices) await this.registerDevice(energy);
+    */
+  }
+
+  addElectricalMeasurements(device: MatterbridgeDevice): void {
+    device.addDeviceTypeWithClusterServer([electricalSensor], [ElectricalPowerMeasurement.Cluster.id, ElectricalEnergyMeasurement.Cluster.id]);
+    device.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', 220 * 1000, device.log);
+    device.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', 2.5 * 1000, device.log);
+    device.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', 220 * 2.5 * 1000, device.log);
+    device.setAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', { energy: 1500 * 1000 }, device.log);
+  }
+
+  addModeSelect(device: MatterbridgeDevice, description: string): void {
+    device.addClusterServer(
+      device.getDefaultModeSelectClusterServer(
+        description,
+        [
+          { label: 'Led ON', mode: 1, semanticTags: [] },
+          { label: 'Led OFF', mode: 2, semanticTags: [] },
+        ],
+        1,
+        1,
+      ),
+    );
+  }
+
+  addPowerSource(device: MatterbridgeDevice): void {
+    device.addClusterServer(device.getDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac));
   }
 
   override async onConfigure(): Promise<void> {
