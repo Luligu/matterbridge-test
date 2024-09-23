@@ -53,7 +53,7 @@
     "deepCleanRebuild": "npm run deepClean && npm install && npm run build",
     "checkDependencies": "npx npm-check-updates",
     "updateDependencies": "npx npm-check-updates -u && npm install & npm run cleanBuild",
-    "prepublishOnly": "npm run lint && npm run test && npm run cleanBuild",
+    "prepublishOnly": "npm run lint && npm run cleanBuild && npm shrinkwrap --omit=dev",
     "npmPublish": "npm publish",
     "gitPublish": "npm run lint && npm run test && npm run cleanBuild && node create-release.js",
     "preversion": "npm run lint && npm run test && npm run cleanBuild",
@@ -77,24 +77,24 @@
     "install:jest": "npm install --save-dev jest ts-jest @types/jest eslint-plugin-jest"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.1",
-    "@types/eslint__js": "^8.42.3",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^22.5.3",
-    "eslint": "^9.9.1",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-jest": "^28.8.3",
-    "eslint-plugin-prettier": "^5.2.1",
-    "install": "^0.13.0",
-    "jest": "^29.7.0",
-    "prettier": "^3.3.3",
-    "rimraf": "^6.0.1",
-    "ts-jest": "^29.2.5",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.4.0"
+    "@eslint/js": "9.11.0",
+    "@types/eslint__js": "8.42.3",
+    "@types/jest": "29.5.13",
+    "@types/node": "22.5.5",
+    "eslint": "9.11.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-jest": "28.8.3",
+    "eslint-plugin-prettier": "5.2.1",
+    "install": "0.13.0",
+    "jest": "29.7.0",
+    "prettier": "3.3.3",
+    "rimraf": "6.0.1",
+    "ts-jest": "29.2.5",
+    "typescript": "5.6.2",
+    "typescript-eslint": "8.7.0"
   },
   "dependencies": {
-    "node-ansi-logger": "^3.0.0",
-    "node-persist-manager": "^1.0.8"
+    "node-ansi-logger": "3.0.0",
+    "node-persist-manager": "1.0.8"
   }
 }
