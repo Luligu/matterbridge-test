@@ -39,6 +39,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
   
+      - name: Link matterbridge
+        run: npm link matterbridge
+
       - name: Lint the project
         run: npm run lint
 

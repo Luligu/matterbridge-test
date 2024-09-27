@@ -14,9 +14,6 @@ coverage/
 # Output of 'npm pack'
 *.tgz
 
-# Npm install
-# package-lock.json
-
 # Compiled class file
 *.class
 
