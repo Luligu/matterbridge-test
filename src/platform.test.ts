@@ -12,7 +12,14 @@ describe('TestPlatform', () => {
   // const log = new AnsiLogger({ logName: 'shellyDeviceTest', logTimestampFormat: TimestampFormat.TIME_MILLIS, logDebug: true });
 
   beforeEach(() => {
-    mockMatterbridge = { addBridgedDevice: jest.fn() } as unknown as Matterbridge;
+    mockMatterbridge = {
+      addBridgedDevice: jest.fn(),
+      matterbridgeDirectory: '',
+      matterbridgePluginDirectory: 'temp',
+      systemInformation: { ipv4Address: undefined },
+      matterbridgeVersion: '1.6.0',
+      removeAllBridgedDevices: jest.fn(),
+    } as unknown as Matterbridge;
     mockLog = { fatal: jest.fn(), error: jest.fn(), warn: jest.fn(), notice: jest.fn(), info: jest.fn(), debug: jest.fn() } as unknown as AnsiLogger;
     mockConfig = {
       'name': 'matterbridge-test',
@@ -24,11 +31,14 @@ describe('TestPlatform', () => {
       'throwStart': false,
       'throwConfigure': false,
       'throwShutdown': false,
-      'loadSwitches': 0,
-      'loadOutlets': 0,
-      'loadLights': 0,
+      'loadSwitches': 1,
+      'loadOutlets': 1,
+      'loadLights': 1,
+      'enableElectrical': true,
+      'enablePowerSource': true,
+      'enableModeSelect': true,
       'debug': false,
-      'unregisterOnShutdown': false,
+      'unregisterOnShutdown': true,
     } as PlatformConfig;
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, mockConfig);
   });
@@ -47,6 +57,14 @@ describe('TestPlatform', () => {
   it('should throw error in load when throwLoad is true', () => {
     mockConfig.throwLoad = true;
     expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow('Throwing error in load');
+  });
+
+  it('should throw error in load when version is not valid', () => {
+    mockMatterbridge.matterbridgeVersion = '1.5.0';
+    expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow(
+      'This plugin requires Matterbridge version >= "1.6.0". Please update Matterbridge to the latest version in the frontend.',
+    );
+    mockMatterbridge.matterbridgeVersion = '1.6.0';
   });
 
   it('should call onStart with reason', async () => {
