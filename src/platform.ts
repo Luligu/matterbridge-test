@@ -38,8 +38,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('1.5.9')) {
-      throw new Error(`This plugin requires Matterbridge version >= "1.6.0". Please update Matterbridge to the latest version in the frontend.`);
+    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('1.5.10')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "1.5.10". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -100,17 +100,6 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       if (this.enableModeSelect) this.addModeSelect(lightDevice, 'Light ' + i);
       if (!this.noDevices) await this.registerDevice(lightDevice);
     }
-
-    /*
-    const electrical = new MatterbridgeDevice([electricalSensor, bridgedNode], undefined, this.config.debug as boolean);
-    electrical.createDefaultBridgedDeviceBasicInformationClusterServer('Electrical sensor', 'serial_98745631226', 0xfff1, 'Test plugin', 'electricalSensor', 2, '2.1.1');
-    electrical.addDeviceTypeWithClusterServer([electricalSensor], [ElectricalPowerMeasurement.Cluster.id, ElectricalEnergyMeasurement.Cluster.id]);
-    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', 220 * 1000, electrical.log);
-    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', 2.5 * 1000, electrical.log);
-    electrical.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', 220 * 2.5 * 1000, electrical.log);
-    electrical.setAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', { energy: 1.2 * 1000 }, electrical.log);
-    if (!this.noDevices) await this.registerDevice(electrical);
-    */
 
     /*
     const energy = new MatterbridgeDevice([deviceEnergyManagement, bridgedNode], undefined, this.config.debug as boolean);
