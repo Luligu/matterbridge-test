@@ -1,6 +1,7 @@
 import {
   Matterbridge,
   MatterbridgeDevice,
+  // MatterbridgeEndpoint as MatterbridgeDevice,
   MatterbridgeDynamicPlatform,
   PlatformConfig,
   bridgedNode,
@@ -8,11 +9,11 @@ import {
   ElectricalPowerMeasurement,
   ElectricalEnergyMeasurement,
   onOffSwitch,
-  onOffLight,
   onOffOutlet,
   ElectricalPowerMeasurementCluster,
   ElectricalEnergyMeasurementCluster,
   PowerSource,
+  colorTemperatureLight,
 } from 'matterbridge';
 
 import { waiter } from 'matterbridge/utils';
@@ -38,8 +39,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('1.5.10')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "1.5.10". Please update Matterbridge to the latest version in the frontend.`);
+    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('1.6.0')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "1.6.0". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -72,9 +73,15 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     if (this.config.longDelayStart) await waiter('Delay start', () => false, false, 60000, 1000);
 
     for (let i = 0; i < this.loadSwitches; i++) {
-      const switchDevice = new MatterbridgeDevice([onOffSwitch, bridgedNode], undefined, this.config.debug as boolean);
+      const switchDevice = new MatterbridgeDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i }, this.config.debug as boolean);
       switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Switch ' + i, 'serial_switch_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       switchDevice.addDeviceTypeWithClusterServer([onOffSwitch], []);
+      switchDevice.addCommandHandler('on', async () => {
+        this.log.info('Received on command');
+      });
+      switchDevice.addCommandHandler('off', async () => {
+        this.log.info('Received off command');
+      });
       if (this.enableElectrical) this.addElectricalMeasurements(switchDevice);
       if (this.enablePowerSource) this.addPowerSource(switchDevice);
       if (this.enableModeSelect) this.addModeSelect(switchDevice, 'Switch ' + i);
@@ -82,9 +89,15 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
 
     for (let i = 0; i < this.loadOutlets; i++) {
-      const outletDevice = new MatterbridgeDevice([onOffOutlet, bridgedNode], undefined, this.config.debug as boolean);
+      const outletDevice = new MatterbridgeDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i }, this.config.debug as boolean);
       outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Outlet ' + i, 'serial_outlet_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       outletDevice.addDeviceTypeWithClusterServer([onOffOutlet], []);
+      outletDevice.addCommandHandler('on', async () => {
+        this.log.info('Received on command');
+      });
+      outletDevice.addCommandHandler('off', async () => {
+        this.log.info('Received off command');
+      });
       if (this.enableElectrical) this.addElectricalMeasurements(outletDevice);
       if (this.enablePowerSource) this.addPowerSource(outletDevice);
       if (this.enableModeSelect) this.addModeSelect(outletDevice, 'Outlet ' + i);
@@ -92,9 +105,21 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
 
     for (let i = 0; i < this.loadLights; i++) {
-      const lightDevice = new MatterbridgeDevice([onOffLight, bridgedNode], undefined, this.config.debug as boolean);
+      const lightDevice = new MatterbridgeDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i }, this.config.debug as boolean);
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Light ' + i, 'serial_light_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
-      lightDevice.addDeviceTypeWithClusterServer([onOffLight], []);
+      lightDevice.addDeviceTypeWithClusterServer([colorTemperatureLight], []);
+      lightDevice.addCommandHandler('on', async () => {
+        this.log.info('Received on command');
+      });
+      lightDevice.addCommandHandler('off', async () => {
+        this.log.info('Received off command');
+      });
+      lightDevice.addCommandHandler('moveToLevel', async (data) => {
+        this.log.info('Received moveTolevel command', data.request.level);
+      });
+      lightDevice.addCommandHandler('moveToLevelWithOnOff', async (data) => {
+        this.log.info('Received moveTolevel command', data.request.level);
+      });
       if (this.enableElectrical) this.addElectricalMeasurements(lightDevice);
       if (this.enablePowerSource) this.addPowerSource(lightDevice);
       if (this.enableModeSelect) this.addModeSelect(lightDevice, 'Light ' + i);

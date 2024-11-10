@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 If you like this project and find it useful, please consider giving it a star on GitHub at https://github.com/Luligu/matterbridge-mqtt and sponsoring it.
 
+## [0.0.18] - 2024-11-10
+
+- Update dependencies
+- Update to matterbridge edge requirements
+ 
+<a href="https://www.buymeacoffee.com/luligugithub">
+  <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
+</a>
+
 ## [0.0.17] - 2024-10-15
 
 - Update to new package
