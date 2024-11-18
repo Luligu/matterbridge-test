@@ -14,6 +14,11 @@ import {
   ElectricalEnergyMeasurementCluster,
   PowerSource,
   colorTemperatureLight,
+  DeviceTypeDefinition,
+  EndpointOptions,
+  AtLeastOne,
+  MatterbridgeEndpoint,
+  OnOffCluster,
 } from 'matterbridge';
 
 import { waiter } from 'matterbridge/utils';
@@ -27,6 +32,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   private loadSwitches = 0;
   private loadOutlets = 0;
   private loadLights = 0;
+  private setUpdateInterval = 0;
   private throwLoad = false;
   private throwStart = false;
   private throwConfigure = false;
@@ -34,6 +40,15 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   private enableElectrical = false;
   private enableModeSelect = false;
   private enablePowerSource = false;
+  private interval: NodeJS.Timeout | undefined;
+  private bridgedDevices = new Map<string, MatterbridgeDevice>();
+
+  createMutableDevice(definition: DeviceTypeDefinition | AtLeastOne<DeviceTypeDefinition>, options: EndpointOptions = {}, debug = false): MatterbridgeDevice {
+    let device: MatterbridgeDevice | MatterbridgeEndpoint;
+    if ('edge' in this.matterbridge && this.matterbridge.edge === true) device = new MatterbridgeEndpoint(definition, options, debug);
+    else device = new MatterbridgeDevice(definition, options, debug);
+    return device as unknown as MatterbridgeDevice;
+  }
 
   constructor(matterbridge: Matterbridge, log: AnsiLogger, config: PlatformConfig) {
     super(matterbridge, log, config);
@@ -53,6 +68,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     if (config.loadSwitches) this.loadSwitches = config.loadSwitches as number;
     if (config.loadOutlets) this.loadOutlets = config.loadOutlets as number;
     if (config.loadLights) this.loadLights = config.loadLights as number;
+    if (config.setUpdateInterval) this.setUpdateInterval = config.setUpdateInterval as number;
     if (config.throwLoad) this.throwLoad = config.throwLoad as boolean;
     if (config.throwStart) this.throwStart = config.throwStart as boolean;
     if (config.throwConfigure) this.throwConfigure = config.throwConfigure as boolean;
@@ -73,7 +89,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     if (this.config.longDelayStart) await waiter('Delay start', () => false, false, 60000, 1000);
 
     for (let i = 0; i < this.loadSwitches; i++) {
-      const switchDevice = new MatterbridgeDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i }, this.config.debug as boolean);
+      // const switchDevice = new MatterbridgeDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i }, this.config.debug as boolean);
+      const switchDevice = this.createMutableDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i });
       switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Switch ' + i, 'serial_switch_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       switchDevice.addDeviceTypeWithClusterServer([onOffSwitch], []);
       switchDevice.addCommandHandler('on', async () => {
@@ -86,10 +103,12 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       if (this.enablePowerSource) this.addPowerSource(switchDevice);
       if (this.enableModeSelect) this.addModeSelect(switchDevice, 'Switch ' + i);
       if (!this.noDevices) await this.registerDevice(switchDevice);
+      this.bridgedDevices.set('Switch' + i, switchDevice);
     }
 
     for (let i = 0; i < this.loadOutlets; i++) {
-      const outletDevice = new MatterbridgeDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i }, this.config.debug as boolean);
+      // const outletDevice = new MatterbridgeDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i }, this.config.debug as boolean);
+      const outletDevice = this.createMutableDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i });
       outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Outlet ' + i, 'serial_outlet_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       outletDevice.addDeviceTypeWithClusterServer([onOffOutlet], []);
       outletDevice.addCommandHandler('on', async () => {
@@ -102,10 +121,12 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       if (this.enablePowerSource) this.addPowerSource(outletDevice);
       if (this.enableModeSelect) this.addModeSelect(outletDevice, 'Outlet ' + i);
       if (!this.noDevices) await this.registerDevice(outletDevice);
+      this.bridgedDevices.set('Outlet' + i, outletDevice);
     }
 
     for (let i = 0; i < this.loadLights; i++) {
-      const lightDevice = new MatterbridgeDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i }, this.config.debug as boolean);
+      // const lightDevice = new MatterbridgeDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i }, this.config.debug as boolean);
+      const lightDevice = this.createMutableDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i });
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Light ' + i, 'serial_light_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       lightDevice.addDeviceTypeWithClusterServer([colorTemperatureLight], []);
       lightDevice.addCommandHandler('on', async () => {
@@ -115,15 +136,32 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         this.log.info('Received off command');
       });
       lightDevice.addCommandHandler('moveToLevel', async (data) => {
-        this.log.info('Received moveTolevel command', data.request.level);
+        this.log.info('Received moveTolevel command request:', data.request.level);
       });
       lightDevice.addCommandHandler('moveToLevelWithOnOff', async (data) => {
-        this.log.info('Received moveTolevel command', data.request.level);
+        this.log.info('Received moveTolevel command request:', data.request.level);
       });
+      lightDevice.addCommandHandler('moveToColor', async ({ request: { colorX, colorY } }) => {
+        lightDevice?.log.debug(`Command moveToColor called request: X ${colorX / 65536} Y ${colorY / 65536}`);
+      });
+      lightDevice.addCommandHandler('moveToHueAndSaturation', async ({ request: { hue, saturation } }) => {
+        lightDevice?.log.debug(`Command moveToHueAndSaturation called request: hue ${hue} saturation ${saturation}`);
+      });
+      lightDevice.addCommandHandler('moveToHue', async ({ request: { hue } }) => {
+        lightDevice?.log.debug(`Command moveToHue called request: ${hue}`);
+      });
+      lightDevice.addCommandHandler('moveToSaturation', async ({ request: { saturation } }) => {
+        lightDevice?.log.debug(`Command moveToSaturation called request: ${saturation}`);
+      });
+      lightDevice.addCommandHandler('moveToColorTemperature', async ({ request }) => {
+        lightDevice?.log.debug(`Command moveToColorTemperature called request: ${request.colorTemperatureMireds}`);
+      });
+
       if (this.enableElectrical) this.addElectricalMeasurements(lightDevice);
       if (this.enablePowerSource) this.addPowerSource(lightDevice);
       if (this.enableModeSelect) this.addModeSelect(lightDevice, 'Light ' + i);
       if (!this.noDevices) await this.registerDevice(lightDevice);
+      this.bridgedDevices.set('Light' + i, lightDevice);
     }
 
     /*
@@ -167,10 +205,33 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   override async onConfigure(): Promise<void> {
     this.log.info('onConfigure called');
     if (this.throwConfigure) throw new Error('Throwing error in configure');
+
+    if (this.setUpdateInterval === 0) return;
+
+    this.interval = setInterval(async () => {
+      this.log.info('Interval called');
+      for (let i = 0; i < this.loadSwitches; i++) {
+        const device = this.bridgedDevices.get('Switch' + i);
+        const state = device?.getAttribute(OnOffCluster.id, 'onOff');
+        await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
+      }
+      for (let i = 0; i < this.loadOutlets; i++) {
+        const device = this.bridgedDevices.get('Outlet' + i);
+        const state = device?.getAttribute(OnOffCluster.id, 'onOff');
+        await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
+      }
+      for (let i = 0; i < this.loadLights; i++) {
+        const device = this.bridgedDevices.get('Light' + i);
+        const state = device?.getAttribute(OnOffCluster.id, 'onOff');
+        await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
+      }
+    }, this.setUpdateInterval * 1000);
   }
 
   override async onShutdown(reason?: string): Promise<void> {
     this.log.info('onShutdown called with reason:', reason ?? 'none');
+    if (this.interval) clearInterval(this.interval);
+    this.interval = undefined;
     if (this.throwShutdown) throw new Error('Throwing error in shutdown');
   }
 }

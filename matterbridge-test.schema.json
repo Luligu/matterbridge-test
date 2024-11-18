@@ -43,6 +43,11 @@
       "type": "number",
       "default": 1
     },
+    "setUpdateInterval": {
+      "description": "Set an update interval in seconds (development only)",
+      "type": "number",
+      "default": 0
+    },
     "enableElectrical": {
       "description": "Add electrical measurements to the devices (development only)",
       "type": "boolean",
