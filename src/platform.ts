@@ -1,7 +1,6 @@
 import {
   Matterbridge,
   MatterbridgeDevice,
-  // MatterbridgeEndpoint as MatterbridgeDevice,
   MatterbridgeDynamicPlatform,
   PlatformConfig,
   bridgedNode,
@@ -17,7 +16,6 @@ import {
   DeviceTypeDefinition,
   EndpointOptions,
   AtLeastOne,
-  MatterbridgeEndpoint,
   OnOffCluster,
 } from 'matterbridge';
 
@@ -43,11 +41,15 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   private interval: NodeJS.Timeout | undefined;
   private bridgedDevices = new Map<string, MatterbridgeDevice>();
 
-  createMutableDevice(definition: DeviceTypeDefinition | AtLeastOne<DeviceTypeDefinition>, options: EndpointOptions = {}, debug = false): MatterbridgeDevice {
-    let device: MatterbridgeDevice | MatterbridgeEndpoint;
-    if ('edge' in this.matterbridge && this.matterbridge.edge === true) device = new MatterbridgeEndpoint(definition, options, debug);
-    else device = new MatterbridgeDevice(definition, options, debug);
-    return device as unknown as MatterbridgeDevice;
+  async createMutableDevice(definition: DeviceTypeDefinition | AtLeastOne<DeviceTypeDefinition>, options: EndpointOptions = {}, debug = false): Promise<MatterbridgeDevice> {
+    let device: MatterbridgeDevice;
+    const matterbridge = await import('matterbridge');
+    if ('edge' in this.matterbridge && this.matterbridge.edge === true && 'MatterbridgeEndpoint' in matterbridge) {
+      // Dynamically resolve the MatterbridgeEndpoint class from the imported module and instantiate it without throwing a TypeScript error for old versions of Matterbridge
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      device = new (matterbridge as any).MatterbridgeEndpoint(definition, options, debug) as MatterbridgeDevice;
+    } else device = new MatterbridgeDevice(definition, options, debug);
+    return device;
   }
 
   constructor(matterbridge: Matterbridge, log: AnsiLogger, config: PlatformConfig) {
@@ -89,8 +91,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     if (this.config.longDelayStart) await waiter('Delay start', () => false, false, 60000, 1000);
 
     for (let i = 0; i < this.loadSwitches; i++) {
-      // const switchDevice = new MatterbridgeDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i }, this.config.debug as boolean);
-      const switchDevice = this.createMutableDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i });
+      const switchDevice = await this.createMutableDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i });
       switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Switch ' + i, 'serial_switch_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       switchDevice.addDeviceTypeWithClusterServer([onOffSwitch], []);
       switchDevice.addCommandHandler('on', async () => {
@@ -107,8 +108,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
 
     for (let i = 0; i < this.loadOutlets; i++) {
-      // const outletDevice = new MatterbridgeDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i }, this.config.debug as boolean);
-      const outletDevice = this.createMutableDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i });
+      const outletDevice = await this.createMutableDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i });
       outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Outlet ' + i, 'serial_outlet_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       outletDevice.addDeviceTypeWithClusterServer([onOffOutlet], []);
       outletDevice.addCommandHandler('on', async () => {
@@ -125,8 +125,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
 
     for (let i = 0; i < this.loadLights; i++) {
-      // const lightDevice = new MatterbridgeDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i }, this.config.debug as boolean);
-      const lightDevice = this.createMutableDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i });
+      const lightDevice = await this.createMutableDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i });
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Light ' + i, 'serial_light_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
       lightDevice.addDeviceTypeWithClusterServer([colorTemperatureLight], []);
       lightDevice.addCommandHandler('on', async () => {

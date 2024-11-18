@@ -8,7 +8,7 @@ If you like this project and find it useful, please consider giving it a star on
 
 - Update dependencies
 - Update to matterbridge edge requirements
- 
+
 <a href="https://www.buymeacoffee.com/luligugithub">
   <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
 </a>
