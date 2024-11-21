@@ -5,18 +5,18 @@ import {
   PlatformConfig,
   bridgedNode,
   electricalSensor,
-  ElectricalPowerMeasurement,
-  ElectricalEnergyMeasurement,
   onOffSwitch,
   onOffOutlet,
-  ElectricalPowerMeasurementCluster,
-  ElectricalEnergyMeasurementCluster,
-  PowerSource,
   colorTemperatureLight,
   DeviceTypeDefinition,
   EndpointOptions,
   AtLeastOne,
   OnOffCluster,
+  powerSource,
+  ElectricalPowerMeasurementCluster,
+  ElectricalEnergyMeasurementCluster,
+  ModeSelectCluster,
+  PowerSourceCluster,
 } from 'matterbridge';
 
 import { waiter } from 'matterbridge/utils';
@@ -176,11 +176,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   }
 
   addElectricalMeasurements(device: MatterbridgeDevice): void {
-    device.addDeviceTypeWithClusterServer([electricalSensor], [ElectricalPowerMeasurement.Cluster.id, ElectricalEnergyMeasurement.Cluster.id]);
-    device.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', 220 * 1000, device.log);
-    device.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', 2.5 * 1000, device.log);
-    device.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', 220 * 2.5 * 1000, device.log);
-    device.setAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', { energy: 1500 * 1000 }, device.log);
+    device.addDeviceType(electricalSensor);
+    device.addClusterServer(device.getDefaultPowerTopologyClusterServer());
+    device.addClusterServer(device.getDefaultElectricalPowerMeasurementClusterServer(220 * 1000, 2.5 * 1000, 220 * 2.5 * 1000, 50 * 1000));
+    device.addClusterServer(device.getDefaultElectricalEnergyMeasurementClusterServer(1500 * 1000));
   }
 
   addModeSelect(device: MatterbridgeDevice, description: string): void {
@@ -198,7 +197,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   }
 
   addPowerSource(device: MatterbridgeDevice): void {
-    device.addClusterServer(device.getDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac));
+    device.addDeviceType(powerSource);
+    device.addClusterServer(device.getDefaultPowerSourceReplaceableBatteryClusterServer(100));
   }
 
   override async onConfigure(): Promise<void> {
@@ -207,22 +207,92 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     if (this.setUpdateInterval === 0) return;
 
+    const getRandomNumberInRange = (min: number, max: number): number => {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    };
+
     this.interval = setInterval(async () => {
       this.log.info('Interval called');
       for (let i = 0; i < this.loadSwitches; i++) {
         const device = this.bridgedDevices.get('Switch' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
+        if (this.enableElectrical) {
+          const voltage = getRandomNumberInRange(220, 240);
+          const current = getRandomNumberInRange(20, 30);
+          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', voltage * 1000, device.log);
+          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', current * 1000, device.log);
+          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', voltage * current * 1000, device.log);
+          const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', device.log);
+          await device?.setAttribute(
+            ElectricalEnergyMeasurementCluster.id,
+            'cumulativeEnergyImported',
+            { energy: cumulativeEnergy ? cumulativeEnergy.energy + 1000 : 1500 * 1000 },
+            device.log,
+          );
+        }
+        if (this.enableModeSelect) {
+          const currentMode = device?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
+          await device?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+        }
+        if (this.enablePowerSource) {
+          const battery = device?.getAttribute(PowerSourceCluster.id, 'batPercentRemaining', device?.log);
+          await device?.setAttribute(PowerSourceCluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+        }
       }
       for (let i = 0; i < this.loadOutlets; i++) {
         const device = this.bridgedDevices.get('Outlet' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
+        if (this.enableElectrical) {
+          const voltage = getRandomNumberInRange(220, 240);
+          const current = getRandomNumberInRange(20, 30);
+          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', voltage * 1000, device.log);
+          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', current * 1000, device.log);
+          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', voltage * current * 1000, device.log);
+          const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', device.log);
+          await device?.setAttribute(
+            ElectricalEnergyMeasurementCluster.id,
+            'cumulativeEnergyImported',
+            { energy: cumulativeEnergy ? cumulativeEnergy.energy + 1000 : 1500 * 1000 },
+            device.log,
+          );
+        }
+        if (this.enableModeSelect) {
+          const currentMode = device?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
+          await device?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+        }
+        if (this.enablePowerSource) {
+          const battery = device?.getAttribute(PowerSourceCluster.id, 'batPercentRemaining', device?.log);
+          await device?.setAttribute(PowerSourceCluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+        }
       }
       for (let i = 0; i < this.loadLights; i++) {
         const device = this.bridgedDevices.get('Light' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
+        if (this.enableElectrical) {
+          const voltage = getRandomNumberInRange(220, 240);
+          const current = getRandomNumberInRange(20, 30);
+          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', voltage * 1000, device.log);
+          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', current * 1000, device.log);
+          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', voltage * current * 1000, device.log);
+          const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', device.log);
+          await device?.setAttribute(
+            ElectricalEnergyMeasurementCluster.id,
+            'cumulativeEnergyImported',
+            { energy: cumulativeEnergy ? cumulativeEnergy.energy + 1000 : 1500 * 1000 },
+            device.log,
+          );
+        }
+        if (this.enableModeSelect) {
+          const currentMode = device?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
+          await device?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+        }
+        if (this.enablePowerSource) {
+          const battery = device?.getAttribute(PowerSourceCluster.id, 'batPercentRemaining', device?.log);
+          await device?.setAttribute(PowerSourceCluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+        }
       }
     }, this.setUpdateInterval * 1000);
   }

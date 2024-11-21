@@ -2,12 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-If you like this project and find it useful, please consider giving it a star on GitHub at https://github.com/Luligu/matterbridge-mqtt and sponsoring it.
+If you like this project and find it useful, please consider giving it a star on GitHub at https://github.com/Luligu/matterbridge-example-dynamic-platform and sponsoring it.
+
+## [0.0.19] - 2024-11-21
+
+- [package]: Verified to work with matterbridge edge (matter.js new API).
+- [package]: Updated dependencies.
+
+<a href="https://www.buymeacoffee.com/luligugithub">
+  <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
+</a>
 
 ## [0.0.18] - 2024-11-10
 
-- Update dependencies
-- Update to matterbridge edge requirements
+- [package]: Update dependencies
+- [package]: Update to matterbridge edge requirements
 
 <a href="https://www.buymeacoffee.com/luligugithub">
   <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
@@ -15,7 +24,7 @@ If you like this project and find it useful, please consider giving it a star on
 
 ## [0.0.17] - 2024-10-15
 
-- Update to new package
+- [package]: Update to new package
 
 <a href="https://www.buymeacoffee.com/luligugithub">
   <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
@@ -23,7 +32,7 @@ If you like this project and find it useful, please consider giving it a star on
 
 ## [0.0.16] - 2024-09-30
 
-- Update to new workflows
+- [package]: Update to new workflows
 
 <a href="https://www.buymeacoffee.com/luligugithub">
   <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
@@ -68,38 +77,6 @@ If you like this project and find it useful, please consider giving it a star on
 <a href="https://www.buymeacoffee.com/luligugithub">
   <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
 </a>
-
-## [0.0.4] - 2024-08-28
-
-### Added
-
-- [Feature 1]: Description of the feature.
-- [Feature 2]: Description of the feature.
-
-<a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
-</a>
-
-## [0.0.2] - 2024-08-28
-
-### Added
-
-- [Feature 1]: Description of the feature.
-- [Feature 2]: Description of the feature.
-
-<a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
-</a>
-
-## [0.0.1] - 2024-08-28
-
-First published release.
-
-<a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
-</a>
-
-## [0.0.0] - 2024-08-28
 
 <!-- Commented out section
 ## [1.1.2] - 2024-03-08

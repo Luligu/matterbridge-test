@@ -4,9 +4,7 @@
     "incremental": true,
     "composite": true,
     "target": "esnext",
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
     "module": "nodenext",
     "rootDir": "./src",
     "moduleResolution": "nodenext",
@@ -27,10 +25,6 @@
     "noImplicitOverride": true,
     "skipLibCheck": true
   },
-  "include": [
-    "**/__test__/*",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ],
+  "include": ["**/__test__/*", "**/*.test.ts", "**/*.spec.ts"],
   "exclude": []
 }
