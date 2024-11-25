@@ -17,6 +17,7 @@ import {
   ElectricalEnergyMeasurementCluster,
   ModeSelectCluster,
   PowerSourceCluster,
+  modeSelect,
 } from 'matterbridge';
 
 import { waiter } from 'matterbridge/utils';
@@ -56,8 +57,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('1.6.0')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "1.6.0". Please update Matterbridge to the latest version in the frontend.`);
+    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('1.6.2')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "1.6.2". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -102,7 +103,12 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       });
       if (this.enableElectrical) this.addElectricalMeasurements(switchDevice);
       if (this.enablePowerSource) this.addPowerSource(switchDevice);
-      if (this.enableModeSelect) this.addModeSelect(switchDevice, 'Switch ' + i);
+      if (this.enableModeSelect) {
+        this.addModeSelect(switchDevice, 'Switch ' + i);
+        switchDevice.addCommandHandler('changeToMode', async ({ request }) => {
+          this.log.info(`Command changeToMode called request: ${request.newMode}`);
+        });
+      }
       if (!this.noDevices) await this.registerDevice(switchDevice);
       this.bridgedDevices.set('Switch' + i, switchDevice);
     }
@@ -119,7 +125,12 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       });
       if (this.enableElectrical) this.addElectricalMeasurements(outletDevice);
       if (this.enablePowerSource) this.addPowerSource(outletDevice);
-      if (this.enableModeSelect) this.addModeSelect(outletDevice, 'Outlet ' + i);
+      if (this.enableModeSelect) {
+        this.addModeSelect(outletDevice, 'Outlet ' + i);
+        outletDevice.addCommandHandler('changeToMode', async ({ request }) => {
+          this.log.info(`Command changeToMode called request: ${request.newMode}`);
+        });
+      }
       if (!this.noDevices) await this.registerDevice(outletDevice);
       this.bridgedDevices.set('Outlet' + i, outletDevice);
     }
@@ -141,24 +152,29 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         this.log.info('Received moveTolevel command request:', data.request.level);
       });
       lightDevice.addCommandHandler('moveToColor', async ({ request: { colorX, colorY } }) => {
-        lightDevice?.log.debug(`Command moveToColor called request: X ${colorX / 65536} Y ${colorY / 65536}`);
+        this.log.info(`Command moveToColor called request: X ${colorX / 65536} Y ${colorY / 65536}`);
       });
       lightDevice.addCommandHandler('moveToHueAndSaturation', async ({ request: { hue, saturation } }) => {
-        lightDevice?.log.debug(`Command moveToHueAndSaturation called request: hue ${hue} saturation ${saturation}`);
+        this.log.info(`Command moveToHueAndSaturation called request: hue ${hue} saturation ${saturation}`);
       });
       lightDevice.addCommandHandler('moveToHue', async ({ request: { hue } }) => {
-        lightDevice?.log.debug(`Command moveToHue called request: ${hue}`);
+        this.log.info(`Command moveToHue called request: ${hue}`);
       });
       lightDevice.addCommandHandler('moveToSaturation', async ({ request: { saturation } }) => {
-        lightDevice?.log.debug(`Command moveToSaturation called request: ${saturation}`);
+        this.log.info(`Command moveToSaturation called request: ${saturation}`);
       });
       lightDevice.addCommandHandler('moveToColorTemperature', async ({ request }) => {
-        lightDevice?.log.debug(`Command moveToColorTemperature called request: ${request.colorTemperatureMireds}`);
+        this.log.info(`Command moveToColorTemperature called request: ${request.colorTemperatureMireds}`);
       });
 
       if (this.enableElectrical) this.addElectricalMeasurements(lightDevice);
       if (this.enablePowerSource) this.addPowerSource(lightDevice);
-      if (this.enableModeSelect) this.addModeSelect(lightDevice, 'Light ' + i);
+      if (this.enableModeSelect) {
+        this.addModeSelect(lightDevice, 'Light ' + i);
+        lightDevice.addCommandHandler('changeToMode', async ({ request }) => {
+          this.log.info(`Command changeToMode called request: ${request.newMode}`);
+        });
+      }
       if (!this.noDevices) await this.registerDevice(lightDevice);
       this.bridgedDevices.set('Light' + i, lightDevice);
     }
@@ -183,6 +199,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   }
 
   addModeSelect(device: MatterbridgeDevice, description: string): void {
+    device.addDeviceType(modeSelect);
     device.addClusterServer(
       device.getDefaultModeSelectClusterServer(
         description,
