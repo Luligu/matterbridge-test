@@ -62,7 +62,7 @@ describe('TestPlatform', () => {
   it('should throw error in load when version is not valid', () => {
     mockMatterbridge.matterbridgeVersion = '1.5.0';
     expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow(
-      'The test plugin requires Matterbridge version >= "1.6.0". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "1.6.2". Please update Matterbridge to the latest version in the frontend.',
     );
     mockMatterbridge.matterbridgeVersion = '1.6.2';
   });
