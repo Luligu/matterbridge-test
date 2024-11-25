@@ -4,9 +4,10 @@ All notable changes to this project will be documented in this file.
 
 If you like this project and find it useful, please consider giving it a star on GitHub at https://github.com/Luligu/matterbridge-example-dynamic-platform and sponsoring it.
 
-## [0.0.19] - 2024-11-25
+## [1.0.0] - 2024-11-25
 
 - [package]: Verified to work with matterbridge edge (matter.js new API).
+- [package]: Require matterbridge 1.6.2
 - [package]: Updated dependencies.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
@@ -16,7 +17,6 @@ If you like this project and find it useful, please consider giving it a star on
 ## [0.0.18] - 2024-11-10
 
 - [package]: Update dependencies
-- [package]: Require matterbridge 1.6.2
 - [package]: Update to matterbridge edge requirements
 
 <a href="https://www.buymeacoffee.com/luligugithub">

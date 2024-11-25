@@ -93,8 +93,21 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     for (let i = 0; i < this.loadSwitches; i++) {
       const switchDevice = await this.createMutableDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i });
-      switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Switch ' + i, 'serial_switch_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
+      switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
+        'Switch ' + i,
+        'serial_switch_' + i,
+        0xfff1,
+        'Matterbridge',
+        'Matterbridge test plugin',
+        parseInt(this.version.replace(/\D/g, '')),
+        this.version,
+        parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        this.matterbridge.matterbridgeVersion,
+      );
       switchDevice.addDeviceTypeWithClusterServer([onOffSwitch], []);
+      switchDevice.addCommandHandler('identify', async (data) => {
+        this.log.info(`Received identify command request: ${data.request.identifyTime}`);
+      });
       switchDevice.addCommandHandler('on', async () => {
         this.log.info('Received on command');
       });
@@ -115,8 +128,21 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     for (let i = 0; i < this.loadOutlets; i++) {
       const outletDevice = await this.createMutableDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i });
-      outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Outlet ' + i, 'serial_outlet_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
+      outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
+        'Outlet ' + i,
+        'serial_outlet_' + i,
+        0xfff1,
+        'Matterbridge',
+        'Matterbridge test plugin',
+        parseInt(this.version.replace(/\D/g, '')),
+        this.version,
+        parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        this.matterbridge.matterbridgeVersion,
+      );
       outletDevice.addDeviceTypeWithClusterServer([onOffOutlet], []);
+      outletDevice.addCommandHandler('identify', async (data) => {
+        this.log.info(`Received identify command request: ${data.request.identifyTime}`);
+      });
       outletDevice.addCommandHandler('on', async () => {
         this.log.info('Received on command');
       });
@@ -137,8 +163,21 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     for (let i = 0; i < this.loadLights; i++) {
       const lightDevice = await this.createMutableDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i });
-      lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer('Light ' + i, 'serial_light_' + i, 0xfff1, 'Test plugin', 'Matterbridge');
+      lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
+        'Light ' + i,
+        'serial_light_' + i,
+        0xfff1,
+        'Matterbridge',
+        'Matterbridge test plugin',
+        parseInt(this.version.replace(/\D/g, '')),
+        this.version,
+        parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        this.matterbridge.matterbridgeVersion,
+      );
       lightDevice.addDeviceTypeWithClusterServer([colorTemperatureLight], []);
+      lightDevice.addCommandHandler('identify', async (data) => {
+        this.log.info(`Received identify command request: ${data.request.identifyTime}`);
+      });
       lightDevice.addCommandHandler('on', async () => {
         this.log.info('Received on command');
       });
@@ -202,7 +241,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     device.addDeviceType(modeSelect);
     device.addClusterServer(
       device.getDefaultModeSelectClusterServer(
-        description,
+        description + ' Led Mode Select',
         [
           { label: 'Led ON', mode: 1, semanticTags: [] },
           { label: 'Led OFF', mode: 2, semanticTags: [] },
