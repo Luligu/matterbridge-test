@@ -64,7 +64,7 @@ describe('TestPlatform', () => {
     expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow(
       'The test plugin requires Matterbridge version >= "1.6.0". Please update Matterbridge to the latest version in the frontend.',
     );
-    mockMatterbridge.matterbridgeVersion = '1.5.10';
+    mockMatterbridge.matterbridgeVersion = '1.6.2';
   });
 
   it('should call onStart with reason', async () => {
