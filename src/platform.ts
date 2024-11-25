@@ -100,7 +100,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         'Matterbridge',
         'Matterbridge test plugin',
         parseInt(this.version.replace(/\D/g, '')),
-        this.version,
+        this.version === '' ? 'Unknown' : this.version,
         parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
@@ -135,7 +135,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         'Matterbridge',
         'Matterbridge test plugin',
         parseInt(this.version.replace(/\D/g, '')),
-        this.version,
+        this.version === '' ? 'Unknown' : this.version,
         parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
@@ -170,7 +170,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         'Matterbridge',
         'Matterbridge test plugin',
         parseInt(this.version.replace(/\D/g, '')),
-        this.version,
+        this.version === '' ? 'Unknown' : this.version,
         parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
