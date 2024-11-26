@@ -1,6 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ClusterServerObj, ColorControlCluster, IdentifyCluster, LevelControlCluster, Matterbridge, ModeSelectCluster, OnOffCluster, PlatformConfig } from 'matterbridge';
+import {
+  AtLeastOne,
+  ClusterServerObj,
+  ColorControlCluster,
+  DeviceTypeDefinition,
+  EndpointOptions,
+  IdentifyCluster,
+  LevelControlCluster,
+  Matterbridge,
+  MatterbridgeDevice,
+  MatterbridgeEndpoint,
+  ModeSelectCluster,
+  OnOffCluster,
+  PlatformConfig,
+} from 'matterbridge';
 import { AnsiLogger, LogLevel, TimestampFormat } from 'matterbridge/logger';
 import { TestPlatform } from './platform';
 import { jest } from '@jest/globals';
@@ -34,7 +48,14 @@ describe('TestPlatform', () => {
 
   beforeAll(() => {
     mockMatterbridge = {
-      addBridgedDevice: jest.fn(),
+      addBridgedDevice: jest.fn(async (pluginName: string, device: MatterbridgeDevice) => {
+        await wait(500);
+        // console.log('addBridgedDevice called');
+      }),
+      addBridgedEndpoint: jest.fn(async (pluginName: string, device: MatterbridgeEndpoint) => {
+        await wait(500);
+        // console.log('addBridgedEndpoint called');
+      }),
       matterbridgeDirectory: '',
       matterbridgePluginDirectory: 'temp',
       systemInformation: { ipv4Address: undefined },
@@ -103,6 +124,19 @@ describe('TestPlatform', () => {
     );
     mockMatterbridge.matterbridgeVersion = '1.6.2';
   });
+
+  it('should call onStart in edge mode', async () => {
+    mockMatterbridge.edge = true;
+    testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, setUpdateInterval: 2 });
+    await testPlatform.onStart('Test reason');
+    expect(mockLog.info).toHaveBeenCalledWith('onStart called with reason:', 'Test reason');
+    await testPlatform.onConfigure();
+    expect(mockLog.info).toHaveBeenCalledWith('onConfigure called');
+    await wait(5000);
+    await testPlatform.onShutdown('Test reason');
+    expect(mockLog.info).toHaveBeenCalledWith('onShutdown called with reason:', 'Test reason');
+    mockMatterbridge.edge = false;
+  }, 30000);
 
   it('should call onStart with reason', async () => {
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, setUpdateInterval: 2 });
