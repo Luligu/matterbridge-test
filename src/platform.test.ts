@@ -16,6 +16,7 @@ describe('TestPlatform', () => {
   log.logLevel = LogLevel.DEBUG;
 
   let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
+  let loggerLogSpy: jest.SpiedFunction<(level: LogLevel, message: string, ...parameters: any[]) => void>;
 
   async function invokeCommands(cluster: ClusterServerObj): Promise<void> {
     const commands = (cluster as any).commands as object;
@@ -61,10 +62,14 @@ describe('TestPlatform', () => {
       'unregisterOnShutdown': true,
     } as PlatformConfig;
 
-    // Spy on and mock console.log
+    // Spy on and mock the AnsiLogger.log method
+    loggerLogSpy = jest.spyOn(AnsiLogger.prototype, 'log').mockImplementation((level: string, message: string, ...parameters: any[]) => {
+      // console.error(`Mocked AnsiLogger.log: ${level} - ${message}`, ...parameters);
+    });
 
+    // Spy on and mock console.log
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((...args: any[]) => {
-      // console.error(args);
+      // console.error('Mocked console.log', args);
     });
   });
 
