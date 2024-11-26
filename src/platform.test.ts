@@ -1,7 +1,8 @@
-import { Matterbridge, PlatformConfig } from 'matterbridge';
-import { AnsiLogger } from 'matterbridge/logger';
+import { ClusterServerObj, ColorControlCluster, IdentifyCluster, LevelControlCluster, Matterbridge, ModeSelectCluster, OnOffCluster, PlatformConfig } from 'matterbridge';
+import { AnsiLogger, LogLevel, TimestampFormat } from 'matterbridge/logger';
 import { TestPlatform } from './platform';
 import { jest } from '@jest/globals';
+import { wait } from 'matterbridge/utils';
 
 describe('TestPlatform', () => {
   let mockMatterbridge: Matterbridge;
@@ -9,9 +10,24 @@ describe('TestPlatform', () => {
   let mockConfig: PlatformConfig;
   let testPlatform: TestPlatform;
 
-  // const log = new AnsiLogger({ logName: 'shellyDeviceTest', logTimestampFormat: TimestampFormat.TIME_MILLIS, logDebug: true });
+  const log = new AnsiLogger({ logName: 'Jest', logTimestampFormat: TimestampFormat.TIME_MILLIS, logLevel: LogLevel.DEBUG });
+  log.logLevel = LogLevel.DEBUG;
 
-  beforeEach(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
+
+  function invokeCommands(cluster: ClusterServerObj): void {
+    // console.log('Cluster commands:', cluster);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const commands = (cluster as any).commands as object;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(commands).forEach(([key, value]) => {
+      // console.log(`Key "${key}": ${value}`, typeof value.handler, value.handler);
+      if (typeof value.handler === 'function') value.handler({});
+    });
+  }
+
+  beforeAll(() => {
     mockMatterbridge = {
       addBridgedDevice: jest.fn(),
       matterbridgeDirectory: '',
@@ -40,23 +56,36 @@ describe('TestPlatform', () => {
       'debug': false,
       'unregisterOnShutdown': true,
     } as PlatformConfig;
-    testPlatform = new TestPlatform(mockMatterbridge, mockLog, mockConfig);
+
+    // Spy on and mock console.log
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((...args: any[]) => {
+      // console.error(args);
+    });
+  });
+
+  beforeEach(() => {
+    // Reset the mock calls before each test
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // Cleanup after each test
+    if (testPlatform) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (testPlatform as any).throwShutdown = false;
+      testPlatform.onShutdown();
+    }
   });
 
   it('should initialize platform with config name', () => {
-    mockConfig.noDevices = true;
-    mockConfig.delayStart = true;
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, mockConfig);
     expect(mockLog.info).toHaveBeenCalledWith('Initializing platform:', mockConfig.name);
-  });
-
-  it('should finish initializing platform with config name', () => {
     expect(mockLog.info).toHaveBeenCalledWith('Finished initializing platform:', mockConfig.name);
   });
 
   it('should throw error in load when throwLoad is true', () => {
-    mockConfig.throwLoad = true;
-    expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow('Throwing error in load');
+    expect(() => new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, throwLoad: true })).toThrow('Throwing error in load');
   });
 
   it('should throw error in load when version is not valid', () => {
@@ -68,9 +97,54 @@ describe('TestPlatform', () => {
   });
 
   it('should call onStart with reason', async () => {
+    testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, setUpdateInterval: 2 });
     await testPlatform.onStart('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onStart called with reason:', 'Test reason');
-  });
+    await testPlatform.onConfigure();
+    expect(mockLog.info).toHaveBeenCalledWith('onConfigure called');
+    await wait(5000);
+    await testPlatform.onShutdown('Test reason');
+    expect(mockLog.info).toHaveBeenCalledWith('onShutdown called with reason:', 'Test reason');
+  }, 30000);
+
+  it('should call onStart and invoke commandHandlers', async () => {
+    testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, setUpdateInterval: 2 });
+    await testPlatform.onStart('Test reason');
+    expect(mockLog.info).toHaveBeenCalledWith('onStart called with reason:', 'Test reason');
+
+    // Invoke command handlers
+    testPlatform.bridgedDevices.forEach((device) => {
+      const identify = device.getClusterServer(IdentifyCluster);
+      expect(identify).toBeDefined();
+      if (identify) invokeCommands(identify as unknown as ClusterServerObj);
+
+      const onOff = device.getClusterServer(OnOffCluster);
+      expect(onOff).toBeDefined();
+      if (onOff) invokeCommands(onOff as unknown as ClusterServerObj);
+
+      if (device.hasClusterServer(ModeSelectCluster)) {
+        const modeSelect = device.getClusterServer(ModeSelectCluster);
+        // eslint-disable-next-line jest/no-conditional-expect
+        expect(modeSelect).toBeDefined();
+        if (modeSelect) invokeCommands(modeSelect as unknown as ClusterServerObj);
+      }
+
+      if (device.hasClusterServer(LevelControlCluster)) {
+        const levelControl = device.getClusterServer(LevelControlCluster);
+        // eslint-disable-next-line jest/no-conditional-expect
+        expect(levelControl).toBeDefined();
+        if (levelControl) invokeCommands(levelControl as unknown as ClusterServerObj);
+      }
+
+      if (device.hasClusterServer(ColorControlCluster)) {
+        const colorControl = device.getClusterServer(ColorControlCluster);
+        // eslint-disable-next-line jest/no-conditional-expect
+        expect(colorControl).toBeDefined();
+        if (colorControl) invokeCommands(colorControl as unknown as ClusterServerObj);
+      }
+    });
+    expect(mockLog.info).toHaveBeenCalledWith('Received on command');
+  }, 30000);
 
   it('should not register in start when noDevices is true', async () => {
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, noDevices: true });

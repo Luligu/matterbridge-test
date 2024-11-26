@@ -40,7 +40,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   private enableModeSelect = false;
   private enablePowerSource = false;
   private interval: NodeJS.Timeout | undefined;
-  private bridgedDevices = new Map<string, MatterbridgeDevice>();
+  bridgedDevices = new Map<string, MatterbridgeDevice>();
 
   async createMutableDevice(definition: DeviceTypeDefinition | AtLeastOne<DeviceTypeDefinition>, options: EndpointOptions = {}, debug = false): Promise<MatterbridgeDevice> {
     let device: MatterbridgeDevice;
@@ -62,6 +62,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
 
     this.log.info('Initializing platform:', this.config.name);
+    this.log.debug('- with matterbridge version ', matterbridge.matterbridgeVersion);
+    this.log.debug('- with config:', this.config);
 
     if (config.noDevices) this.noDevices = config.noDevices as boolean;
     if (config.delayStart) this.delayStart = config.delayStart as boolean;
@@ -76,6 +78,20 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     if (config.throwStart) this.throwStart = config.throwStart as boolean;
     if (config.throwConfigure) this.throwConfigure = config.throwConfigure as boolean;
     if (config.throwShutdown) this.throwShutdown = config.throwShutdown as boolean;
+
+    this.log.debug('- with noDevice:', this.noDevices);
+    this.log.debug('- with delayStart:', this.delayStart);
+    this.log.debug('- with enableElectrical:', this.enableElectrical);
+    this.log.debug('- with enableModeSelect:', this.enableModeSelect);
+    this.log.debug('- with enablePowerSource:', this.enablePowerSource);
+    this.log.debug('- with loadSwitches:', this.loadSwitches);
+    this.log.debug('- with loadOutlets:', this.loadOutlets);
+    this.log.debug('- with loadLights:', this.loadLights);
+    this.log.debug('- with setUpdateInterval:', this.setUpdateInterval);
+    this.log.debug('- with throwLoad:', this.throwLoad);
+    this.log.debug('- with throwStart:', this.throwStart);
+    this.log.debug('- with throwConfigure:', this.throwConfigure);
+    this.log.debug('- with throwShutdown:', this.throwShutdown);
 
     if (this.throwLoad) throw new Error('Throwing error in load');
 
@@ -122,7 +138,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Command changeToMode called request: ${request.newMode}`);
         });
       }
-      if (!this.noDevices) await this.registerDevice(switchDevice);
+      if (this.noDevices === false) await this.registerDevice(switchDevice);
       this.bridgedDevices.set('Switch' + i, switchDevice);
     }
 
@@ -157,7 +173,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Command changeToMode called request: ${request.newMode}`);
         });
       }
-      if (!this.noDevices) await this.registerDevice(outletDevice);
+      if (this.noDevices === false) await this.registerDevice(outletDevice);
       this.bridgedDevices.set('Outlet' + i, outletDevice);
     }
 
@@ -214,7 +230,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Command changeToMode called request: ${request.newMode}`);
         });
       }
-      if (!this.noDevices) await this.registerDevice(lightDevice);
+      if (this.noDevices === false) await this.registerDevice(lightDevice);
       this.bridgedDevices.set('Light' + i, lightDevice);
     }
 
