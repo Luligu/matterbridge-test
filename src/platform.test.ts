@@ -76,6 +76,7 @@ describe('TestPlatform', () => {
       'loadSwitches': 1,
       'loadOutlets': 1,
       'loadLights': 1,
+      'setUpdateInterval': 30,
       'enableElectrical': true,
       'enablePowerSource': true,
       'enableModeSelect': true,
@@ -130,9 +131,11 @@ describe('TestPlatform', () => {
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, setUpdateInterval: 2 });
     await testPlatform.onStart('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onStart called with reason:', 'Test reason');
+    jest.useFakeTimers();
     await testPlatform.onConfigure();
     expect(mockLog.info).toHaveBeenCalledWith('onConfigure called');
-    await wait(5000);
+    jest.advanceTimersByTime(60 * 1000);
+    jest.useRealTimers();
     await testPlatform.onShutdown('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onShutdown called with reason:', 'Test reason');
     mockMatterbridge.edge = false;
@@ -200,8 +203,13 @@ describe('TestPlatform', () => {
   });
 
   it('should call onConfigure', async () => {
+    jest.useFakeTimers();
+
     await testPlatform.onConfigure();
     expect(mockLog.info).toHaveBeenCalledWith('onConfigure called');
+
+    jest.advanceTimersByTime(60 * 1000);
+    jest.useRealTimers();
   });
 
   it('should throw error in configure when throwConfigure is true', async () => {
