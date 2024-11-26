@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ClusterServerObj, ColorControlCluster, IdentifyCluster, LevelControlCluster, Matterbridge, ModeSelectCluster, OnOffCluster, PlatformConfig } from 'matterbridge';
 import { AnsiLogger, LogLevel, TimestampFormat } from 'matterbridge/logger';
 import { TestPlatform } from './platform';
@@ -13,18 +15,20 @@ describe('TestPlatform', () => {
   const log = new AnsiLogger({ logName: 'Jest', logTimestampFormat: TimestampFormat.TIME_MILLIS, logLevel: LogLevel.DEBUG });
   log.logLevel = LogLevel.DEBUG;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
 
-  function invokeCommands(cluster: ClusterServerObj): void {
-    // console.log('Cluster commands:', cluster);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function invokeCommands(cluster: ClusterServerObj): Promise<void> {
     const commands = (cluster as any).commands as object;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Object.entries(commands).forEach(([key, value]) => {
-      // console.log(`Key "${key}": ${value}`, typeof value.handler, value.handler);
-      if (typeof value.handler === 'function') value.handler({});
-    });
+    for (const [key, value] of Object.entries(commands)) {
+      if (typeof value.handler === 'function') await value.handler({});
+    }
+  }
+
+  async function invokeCommand(cluster: ClusterServerObj, command: string, data?: Record<string, boolean | number | bigint | string | object | null | undefined>): Promise<void> {
+    const commands = (cluster as any).commands as object;
+    for (const [key, value] of Object.entries(commands)) {
+      if (key === command && typeof value.handler === 'function') await value.handler(data ?? {});
+    }
   }
 
   beforeAll(() => {
@@ -58,7 +62,7 @@ describe('TestPlatform', () => {
     } as PlatformConfig;
 
     // Spy on and mock console.log
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((...args: any[]) => {
       // console.error(args);
     });
@@ -72,7 +76,6 @@ describe('TestPlatform', () => {
   afterEach(() => {
     // Cleanup after each test
     if (testPlatform) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (testPlatform as any).throwShutdown = false;
       testPlatform.onShutdown();
     }
@@ -113,36 +116,36 @@ describe('TestPlatform', () => {
     expect(mockLog.info).toHaveBeenCalledWith('onStart called with reason:', 'Test reason');
 
     // Invoke command handlers
-    testPlatform.bridgedDevices.forEach((device) => {
+    for (const [key, device] of Array.from(testPlatform.bridgedDevices)) {
       const identify = device.getClusterServer(IdentifyCluster);
       expect(identify).toBeDefined();
-      if (identify) invokeCommands(identify as unknown as ClusterServerObj);
+      if (identify) await invokeCommands(identify as unknown as ClusterServerObj);
 
       const onOff = device.getClusterServer(OnOffCluster);
       expect(onOff).toBeDefined();
-      if (onOff) invokeCommands(onOff as unknown as ClusterServerObj);
+      if (onOff) await invokeCommands(onOff as unknown as ClusterServerObj);
 
       if (device.hasClusterServer(ModeSelectCluster)) {
         const modeSelect = device.getClusterServer(ModeSelectCluster);
         // eslint-disable-next-line jest/no-conditional-expect
         expect(modeSelect).toBeDefined();
-        if (modeSelect) invokeCommands(modeSelect as unknown as ClusterServerObj);
+        if (modeSelect) await invokeCommands(modeSelect as unknown as ClusterServerObj);
       }
 
       if (device.hasClusterServer(LevelControlCluster)) {
         const levelControl = device.getClusterServer(LevelControlCluster);
         // eslint-disable-next-line jest/no-conditional-expect
         expect(levelControl).toBeDefined();
-        if (levelControl) invokeCommands(levelControl as unknown as ClusterServerObj);
+        if (levelControl) await invokeCommands(levelControl as unknown as ClusterServerObj);
       }
 
       if (device.hasClusterServer(ColorControlCluster)) {
         const colorControl = device.getClusterServer(ColorControlCluster);
         // eslint-disable-next-line jest/no-conditional-expect
         expect(colorControl).toBeDefined();
-        if (colorControl) invokeCommands(colorControl as unknown as ClusterServerObj);
+        if (colorControl) await invokeCommands(colorControl as unknown as ClusterServerObj);
       }
-    });
+    }
     expect(mockLog.info).toHaveBeenCalledWith('Received on command');
   }, 30000);
 
