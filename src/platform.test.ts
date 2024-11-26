@@ -49,11 +49,10 @@ describe('TestPlatform', () => {
   beforeAll(() => {
     mockMatterbridge = {
       addBridgedDevice: jest.fn(async (pluginName: string, device: MatterbridgeDevice) => {
-        await wait(500);
         // console.error('addBridgedDevice called');
       }),
       addBridgedEndpoint: jest.fn(async (pluginName: string, device: MatterbridgeEndpoint) => {
-        await wait(500);
+        device.number = 100;
         // console.error('addBridgedEndpoint called');
       }),
       matterbridgeDirectory: '',
