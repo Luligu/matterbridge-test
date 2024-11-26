@@ -14,6 +14,10 @@
 
 ---
 
-This is a bad plugin to test matterbridge.
+This is the test plugin we use for Matterbridge.
 
-Internal use only!
+It is designed to throw exceptions at various points to test Matterbridge's responses.
+
+Additionally, it can generate an unlimited number of devices to test the controller's capabilities, and the update interval is configurable.
+
+For internal use only!
