@@ -18,6 +18,7 @@ import {
   ModeSelectCluster,
   PowerSourceCluster,
   modeSelect,
+  MatterbridgeEndpoint,
 } from 'matterbridge';
 
 import { waiter } from 'matterbridge/utils';
@@ -44,12 +45,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
   async createMutableDevice(definition: DeviceTypeDefinition | AtLeastOne<DeviceTypeDefinition>, options: EndpointOptions = {}, debug = false): Promise<MatterbridgeDevice> {
     let device: MatterbridgeDevice;
-    const matterbridge = await import('matterbridge');
-    if ('edge' in this.matterbridge && this.matterbridge.edge === true && 'MatterbridgeEndpoint' in matterbridge) {
-      // Dynamically resolve the MatterbridgeEndpoint class from the imported module and instantiate it without throwing a TypeScript error for old versions of Matterbridge
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      device = new (matterbridge as any).MatterbridgeEndpoint(definition, options, debug) as MatterbridgeDevice;
-    } else device = new MatterbridgeDevice(definition, options, debug);
+    if (this.matterbridge.edge === true) device = new MatterbridgeEndpoint(definition, options, debug) as unknown as MatterbridgeDevice;
+    else device = new MatterbridgeDevice(definition, options, debug);
     return device;
   }
 
@@ -57,8 +54,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('1.6.5')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "1.6.5". Please update Matterbridge to the latest version in the frontend.`);
+    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('1.6.6')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "1.6.6". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -108,7 +105,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     if (this.config.longDelayStart) await waiter('Delay start', () => false, false, 60000, 1000);
 
     for (let i = 0; i < this.loadSwitches; i++) {
-      const switchDevice = await this.createMutableDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i });
+      const switchDevice = await this.createMutableDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i }, this.config.debug as boolean);
       switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
         'Switch ' + i,
         'serial_switch_' + i,
@@ -116,26 +113,26 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         'Matterbridge',
         'Matterbridge test plugin',
         parseInt(this.version.replace(/\D/g, '')),
-        this.version === '' ? 'Unknown' : this.version,
+        this.version,
         parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
       switchDevice.addDeviceTypeWithClusterServer([onOffSwitch], []);
       switchDevice.addCommandHandler('identify', async (data) => {
-        this.log.info(`Received identify command request: ${data.request.identifyTime}`);
+        this.log.info(`Received identify command request ${data.request.identifyTime} for endpoint ${data.endpoint?.number}`);
       });
-      switchDevice.addCommandHandler('on', async () => {
-        this.log.info('Received on command');
+      switchDevice.addCommandHandler('on', async (data) => {
+        this.log.info(`Received on command for endpoint ${data.endpoint?.number}`);
       });
-      switchDevice.addCommandHandler('off', async () => {
-        this.log.info('Received off command');
+      switchDevice.addCommandHandler('off', async (data) => {
+        this.log.info(`Received off command for endpoint ${data.endpoint?.number}`);
       });
       if (this.enableElectrical) this.addElectricalMeasurements(switchDevice);
       if (this.enablePowerSource) this.addPowerSource(switchDevice);
       if (this.enableModeSelect) {
         this.addModeSelect(switchDevice, 'Switch ' + i);
-        switchDevice.addCommandHandler('changeToMode', async ({ request }) => {
-          this.log.info(`Command changeToMode called request: ${request.newMode}`);
+        switchDevice.addCommandHandler('changeToMode', async (data) => {
+          this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
       if (this.noDevices === false) await this.registerDevice(switchDevice);
@@ -143,7 +140,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
 
     for (let i = 0; i < this.loadOutlets; i++) {
-      const outletDevice = await this.createMutableDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i });
+      const outletDevice = await this.createMutableDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i }, this.config.debug as boolean);
       outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
         'Outlet ' + i,
         'serial_outlet_' + i,
@@ -151,26 +148,26 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         'Matterbridge',
         'Matterbridge test plugin',
         parseInt(this.version.replace(/\D/g, '')),
-        this.version === '' ? 'Unknown' : this.version,
+        this.version,
         parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
       outletDevice.addDeviceTypeWithClusterServer([onOffOutlet], []);
       outletDevice.addCommandHandler('identify', async (data) => {
-        this.log.info(`Received identify command request: ${data.request.identifyTime}`);
+        this.log.info(`Received identify command request ${data.request.identifyTime} for endpoint ${data.endpoint?.number}`);
       });
-      outletDevice.addCommandHandler('on', async () => {
-        this.log.info('Received on command');
+      outletDevice.addCommandHandler('on', async (data) => {
+        this.log.info(`Received on command for endpoint ${data.endpoint?.number}`);
       });
-      outletDevice.addCommandHandler('off', async () => {
-        this.log.info('Received off command');
+      outletDevice.addCommandHandler('off', async (data) => {
+        this.log.info(`Received off command for endpoint ${data.endpoint?.number}`);
       });
       if (this.enableElectrical) this.addElectricalMeasurements(outletDevice);
       if (this.enablePowerSource) this.addPowerSource(outletDevice);
       if (this.enableModeSelect) {
         this.addModeSelect(outletDevice, 'Outlet ' + i);
-        outletDevice.addCommandHandler('changeToMode', async ({ request }) => {
-          this.log.info(`Command changeToMode called request: ${request.newMode}`);
+        outletDevice.addCommandHandler('changeToMode', async (data) => {
+          this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
       if (this.noDevices === false) await this.registerDevice(outletDevice);
@@ -178,7 +175,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
 
     for (let i = 0; i < this.loadLights; i++) {
-      const lightDevice = await this.createMutableDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i });
+      const lightDevice = await this.createMutableDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i }, this.config.debug as boolean);
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
         'Light ' + i,
         'serial_light_' + i,
@@ -186,48 +183,48 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         'Matterbridge',
         'Matterbridge test plugin',
         parseInt(this.version.replace(/\D/g, '')),
-        this.version === '' ? 'Unknown' : this.version,
+        this.version,
         parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
       lightDevice.addDeviceTypeWithClusterServer([colorTemperatureLight], []);
       lightDevice.addCommandHandler('identify', async (data) => {
-        this.log.info(`Received identify command request: ${data.request.identifyTime}`);
+        this.log.info(`Received identify command request ${data.request.identifyTime} for endpoint ${data.endpoint?.number}`);
       });
-      lightDevice.addCommandHandler('on', async () => {
-        this.log.info('Received on command');
+      lightDevice.addCommandHandler('on', async (data) => {
+        this.log.info(`Received on command for endpoint ${data.endpoint?.number}`);
       });
-      lightDevice.addCommandHandler('off', async () => {
-        this.log.info('Received off command');
+      lightDevice.addCommandHandler('off', async (data) => {
+        this.log.info(`Received off command for endpoint ${data.endpoint?.number}`);
       });
       lightDevice.addCommandHandler('moveToLevel', async (data) => {
-        this.log.info('Received moveTolevel command request:', data.request.level);
+        this.log.info(`Received moveTolevel command request ${data.request.level} for endpoint ${data.endpoint?.number}`);
       });
       lightDevice.addCommandHandler('moveToLevelWithOnOff', async (data) => {
-        this.log.info('Received moveTolevel command request:', data.request.level);
+        this.log.info(`Received moveTolevel command request ${data.request.level} for endpoint ${data.endpoint?.number}`);
       });
       lightDevice.addCommandHandler('moveToColor', async ({ request: { colorX, colorY } }) => {
-        this.log.info(`Command moveToColor called request: X ${colorX / 65536} Y ${colorY / 65536}`);
+        this.log.info(`Command moveToColor called request X ${colorX / 65536} Y ${colorY / 65536}`);
       });
       lightDevice.addCommandHandler('moveToHueAndSaturation', async ({ request: { hue, saturation } }) => {
-        this.log.info(`Command moveToHueAndSaturation called request: hue ${hue} saturation ${saturation}`);
+        this.log.info(`Command moveToHueAndSaturation called request hue ${hue} saturation ${saturation}`);
       });
       lightDevice.addCommandHandler('moveToHue', async ({ request: { hue } }) => {
-        this.log.info(`Command moveToHue called request: ${hue}`);
+        this.log.info(`Command moveToHue called request ${hue}`);
       });
       lightDevice.addCommandHandler('moveToSaturation', async ({ request: { saturation } }) => {
-        this.log.info(`Command moveToSaturation called request: ${saturation}`);
+        this.log.info(`Command moveToSaturation called request ${saturation}`);
       });
       lightDevice.addCommandHandler('moveToColorTemperature', async ({ request }) => {
-        this.log.info(`Command moveToColorTemperature called request: ${request.colorTemperatureMireds}`);
+        this.log.info(`Command moveToColorTemperature called request ${request.colorTemperatureMireds}`);
       });
 
       if (this.enableElectrical) this.addElectricalMeasurements(lightDevice);
       if (this.enablePowerSource) this.addPowerSource(lightDevice);
       if (this.enableModeSelect) {
         this.addModeSelect(lightDevice, 'Light ' + i);
-        lightDevice.addCommandHandler('changeToMode', async ({ request }) => {
-          this.log.info(`Command changeToMode called request: ${request.newMode}`);
+        lightDevice.addCommandHandler('changeToMode', async (data) => {
+          this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
       if (this.noDevices === false) await this.registerDevice(lightDevice);

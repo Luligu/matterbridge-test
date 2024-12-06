@@ -32,10 +32,10 @@ describe('TestPlatform', () => {
   let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
   let loggerLogSpy: jest.SpiedFunction<(level: LogLevel, message: string, ...parameters: any[]) => void>;
 
-  async function invokeCommands(cluster: ClusterServerObj): Promise<void> {
+  async function invokeCommands(cluster: ClusterServerObj, data?: Record<string, boolean | number | bigint | string | object | null | undefined>): Promise<void> {
     const commands = (cluster as any).commands as object;
     for (const [key, value] of Object.entries(commands)) {
-      if (typeof value.handler === 'function') await value.handler({});
+      if (typeof value.handler === 'function') await value.handler(data ?? {});
     }
   }
 
@@ -70,7 +70,7 @@ describe('TestPlatform', () => {
       matterbridgeDirectory: '',
       matterbridgePluginDirectory: 'temp',
       systemInformation: { ipv4Address: undefined },
-      matterbridgeVersion: '1.6.5',
+      matterbridgeVersion: '1.6.6',
     } as unknown as Matterbridge;
     mockLog = {
       fatal: jest.fn((message: string, ...parameters: any[]) => {
@@ -150,14 +150,15 @@ describe('TestPlatform', () => {
   it('should throw error in load when version is not valid', () => {
     mockMatterbridge.matterbridgeVersion = '1.5.0';
     expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow(
-      'The test plugin requires Matterbridge version >= "1.6.5". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "1.6.6". Please update Matterbridge to the latest version in the frontend.',
     );
-    mockMatterbridge.matterbridgeVersion = '1.6.5';
+    mockMatterbridge.matterbridgeVersion = '1.6.6';
   });
 
   it('should call onStart in edge mode', async () => {
     mockMatterbridge.edge = true;
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, setUpdateInterval: 2 });
+    testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onStart called with reason:', 'Test reason');
     jest.useFakeTimers();
@@ -172,6 +173,7 @@ describe('TestPlatform', () => {
 
   it('should call onStart with reason', async () => {
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, setUpdateInterval: 2 });
+    testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onStart called with reason:', 'Test reason');
     await testPlatform.onConfigure();
@@ -183,6 +185,7 @@ describe('TestPlatform', () => {
 
   it('should call onStart and invoke commandHandlers', async () => {
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, setUpdateInterval: 2 });
+    testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onStart called with reason:', 'Test reason');
 
@@ -190,44 +193,48 @@ describe('TestPlatform', () => {
     for (const [key, device] of Array.from(testPlatform.bridgedDevices)) {
       const identify = device.getClusterServer(IdentifyCluster);
       expect(identify).toBeDefined();
-      if (identify) await invokeCommands(identify as unknown as ClusterServerObj);
+      if (identify) await invokeCommands(identify as unknown as ClusterServerObj, { endpoint: { number: 100 } });
 
       const onOff = device.getClusterServer(OnOffCluster);
       expect(onOff).toBeDefined();
-      if (onOff) await invokeCommands(onOff as unknown as ClusterServerObj);
+      if (onOff) await invokeCommands(onOff as unknown as ClusterServerObj, { endpoint: { number: 100 } });
 
       if (device.hasClusterServer(ModeSelectCluster)) {
         const modeSelect = device.getClusterServer(ModeSelectCluster);
         // eslint-disable-next-line jest/no-conditional-expect
         expect(modeSelect).toBeDefined();
-        if (modeSelect) await invokeCommands(modeSelect as unknown as ClusterServerObj);
+        if (modeSelect) await invokeCommands(modeSelect as unknown as ClusterServerObj, { endpoint: { number: 100 } });
       }
 
       if (device.hasClusterServer(LevelControlCluster)) {
         const levelControl = device.getClusterServer(LevelControlCluster);
         // eslint-disable-next-line jest/no-conditional-expect
         expect(levelControl).toBeDefined();
-        if (levelControl) await invokeCommands(levelControl as unknown as ClusterServerObj);
+        if (levelControl) await invokeCommands(levelControl as unknown as ClusterServerObj, { endpoint: { number: 100 } });
       }
 
       if (device.hasClusterServer(ColorControlCluster)) {
         const colorControl = device.getClusterServer(ColorControlCluster);
         // eslint-disable-next-line jest/no-conditional-expect
         expect(colorControl).toBeDefined();
-        if (colorControl) await invokeCommands(colorControl as unknown as ClusterServerObj);
+        if (colorControl) await invokeCommands(colorControl as unknown as ClusterServerObj, { endpoint: { number: 100 } });
       }
     }
-    expect(mockLog.info).toHaveBeenCalledWith('Received on command');
+    expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received identify command'));
+    expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received on command'));
+    expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received off command'));
   }, 30000);
 
   it('should not register in start when noDevices is true', async () => {
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, noDevices: true });
+    testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
     expect(mockMatterbridge.addBridgedDevice).not.toHaveBeenCalled();
   });
 
   it('should throw error in start when throwStart is true', async () => {
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, throwStart: true });
+    testPlatform.version = '1.6.6';
     await expect(testPlatform.onStart()).rejects.toThrow('Throwing error in start');
   });
 
@@ -243,6 +250,7 @@ describe('TestPlatform', () => {
 
   it('should throw error in configure when throwConfigure is true', async () => {
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, throwConfigure: true });
+    testPlatform.version = '1.6.6';
     await expect(testPlatform.onConfigure()).rejects.toThrow('Throwing error in configure');
   });
 
