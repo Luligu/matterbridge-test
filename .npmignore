@@ -167,3 +167,4 @@ yellow-button.png
 create-release.js
 CODEOWNERS
 tsconfig.production.json
+jest/

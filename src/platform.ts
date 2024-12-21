@@ -106,6 +106,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     for (let i = 0; i < this.loadSwitches; i++) {
       const switchDevice = await this.createMutableDevice([onOffSwitch, bridgedNode], { uniqueStorageKey: 'Switch' + i }, this.config.debug as boolean);
+      switchDevice.log.logName = 'Switch' + i;
       switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
         'Switch ' + i,
         'serial_switch_' + i,
@@ -141,6 +142,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     for (let i = 0; i < this.loadOutlets; i++) {
       const outletDevice = await this.createMutableDevice([onOffOutlet, bridgedNode], { uniqueStorageKey: 'Outlet' + i }, this.config.debug as boolean);
+      outletDevice.log.logName = 'Outlet' + i;
       outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
         'Outlet ' + i,
         'serial_outlet_' + i,
@@ -176,6 +178,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     for (let i = 0; i < this.loadLights; i++) {
       const lightDevice = await this.createMutableDevice([colorTemperatureLight, bridgedNode], { uniqueStorageKey: 'Light' + i }, this.config.debug as boolean);
+      lightDevice.log.logName = 'Light' + i;
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
         'Light ' + i,
         'serial_light_' + i,
@@ -271,6 +274,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   }
 
   override async onConfigure(): Promise<void> {
+    await super.onConfigure();
     this.log.info('onConfigure called');
     if (this.throwConfigure) throw new Error('Throwing error in configure');
 
@@ -367,6 +371,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   }
 
   override async onShutdown(reason?: string): Promise<void> {
+    await super.onShutdown(reason);
     this.log.info('onShutdown called with reason:', reason ?? 'none');
     if (this.interval) clearInterval(this.interval);
     this.interval = undefined;
