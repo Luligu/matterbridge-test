@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 If you like this project and find it useful, please consider giving it a star on GitHub at https://github.com/Luligu/matterbridge-example-dynamic-platform and sponsoring it.
 
+## [1.0.4] - 2025-01-20
+
+### Changed
+
+- [package]: Updated dependencies.
+- [package]: Updated package for production build.
+
 ## [1.0.3] - 2024-12-21
 
 ### Added

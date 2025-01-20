@@ -16,7 +16,7 @@ describe('initializePlugin', () => {
       matterbridgeDirectory: './jest/matterbridge',
       matterbridgePluginDirectory: './jest/plugins',
       systemInformation: { ipv4Address: undefined },
-      matterbridgeVersion: '1.6.7',
+      matterbridgeVersion: '1.7.3',
       getDevices: jest.fn(() => {
         // console.log('getDevices called');
         return [];
