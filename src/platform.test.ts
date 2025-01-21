@@ -154,31 +154,31 @@ describe('TestPlatform', () => {
 
     // Invoke command handlers
     for (const [key, device] of Array.from(testPlatform.bridgedDevices)) {
-      if (device._hasClusterServer(IdentifyCluster)) {
+      if (device.hasClusterServer(IdentifyCluster)) {
         await device.commandHandler.executeHandler('identify', { request: { identifyTime: 1 } } as any);
         expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received identify command'));
       }
 
-      if (device._hasClusterServer(OnOffCluster)) {
+      if (device.hasClusterServer(OnOffCluster)) {
         await device.commandHandler.executeHandler('on', {} as any);
         await device.commandHandler.executeHandler('off', {} as any);
         expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received on command'));
         expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received off command'));
       }
 
-      if (device._hasClusterServer(ModeSelectCluster)) {
+      if (device.hasClusterServer(ModeSelectCluster)) {
         await device.commandHandler.executeHandler('changeToMode', { request: { newMode: 1 } } as any);
         expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received changeToMode command'));
       }
 
-      if (device._hasClusterServer(LevelControlCluster)) {
+      if (device.hasClusterServer(LevelControlCluster)) {
         await device.commandHandler.executeHandler('moveToLevel', { request: { level: 1 } } as any);
         await device.commandHandler.executeHandler('moveToLevelWithOnOff', { request: { level: 1 } } as any);
         expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received moveToLevel command'));
         expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received moveToLevelWithOnOff command'));
       }
 
-      if (device._hasClusterServer(ColorControlCluster)) {
+      if (device.hasClusterServer(ColorControlCluster)) {
         await device.commandHandler.executeHandler('moveToColor', { request: { colorX: 100, colorY: 100 } } as any);
         await device.commandHandler.executeHandler('moveToHueAndSaturation', { request: { hue: 100, saturation: 100 } } as any);
         await device.commandHandler.executeHandler('moveToHue', { request: { hue: 100 } } as any);
