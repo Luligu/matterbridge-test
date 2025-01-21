@@ -1,128 +1,91 @@
+/* eslint-disable jest/no-conditional-expect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  ClusterServerObj,
-  ColorControlCluster,
-  IdentifyCluster,
-  LevelControlCluster,
-  Matterbridge,
-  MatterbridgeDevice,
-  MatterbridgeEndpoint,
-  ModeSelectCluster,
-  OnOffCluster,
-  PlatformConfig,
-} from 'matterbridge';
+import { jest } from '@jest/globals';
+import { ColorControlCluster, IdentifyCluster, LevelControlCluster, Matterbridge, MatterbridgeEndpoint, ModeSelectCluster, OnOffCluster, PlatformConfig } from 'matterbridge';
 import { AnsiLogger, LogLevel, TimestampFormat } from 'matterbridge/logger';
 import { TestPlatform } from './platform';
-import { jest } from '@jest/globals';
-import { wait } from 'matterbridge/utils';
 
 describe('TestPlatform', () => {
-  let mockMatterbridge: Matterbridge;
-  let mockLog: AnsiLogger;
-  let mockConfig: PlatformConfig;
   let testPlatform: TestPlatform;
 
+  // Spy on and mock AnsiLogger.log
+  const loggerLogSpy = jest.spyOn(AnsiLogger.prototype, 'log').mockImplementation((level: string, message: string, ...parameters: any[]) => {
+    //
+  });
+
+  const mockLog = {
+    fatal: jest.fn((message: string, ...parameters: any[]) => {
+      // console.error('mockLog.fatal', message, parameters);
+    }),
+    error: jest.fn((message: string, ...parameters: any[]) => {
+      // console.error('mockLog.error', message, parameters);
+    }),
+    warn: jest.fn((message: string, ...parameters: any[]) => {
+      // console.error('mockLog.warn', message, parameters);
+    }),
+    notice: jest.fn((message: string, ...parameters: any[]) => {
+      // console.error('mockLog.notice', message, parameters);
+    }),
+    info: jest.fn((message: string, ...parameters: any[]) => {
+      // console.error('mockLog.info', message, parameters);
+    }),
+    debug: jest.fn((message: string, ...parameters: any[]) => {
+      // console.error('mockLog.debug', message, parameters);
+    }),
+  } as unknown as AnsiLogger;
+
+  const mockMatterbridge = {
+    matterbridgeDirectory: './jest/matterbridge',
+    matterbridgePluginDirectory: './jest/plugins',
+    systemInformation: { ipv4Address: undefined, ipv6Address: undefined, osRelease: 'xx.xx.xx.xx.xx.xx', nodeVersion: '22.1.10' },
+    matterbridgeVersion: '2.0.0',
+    edge: true,
+    log: mockLog,
+    getDevices: jest.fn(() => {
+      // console.log('getDevices called');
+      return [];
+    }),
+    getPlugins: jest.fn(() => {
+      // console.log('getDevices called');
+      return [];
+    }),
+    addBridgedEndpoint: jest.fn(async (pluginName: string, device: MatterbridgeEndpoint) => {
+      // console.log('addBridgedEndpoint called');
+    }),
+    removeBridgedEndpoint: jest.fn(async (pluginName: string, device: MatterbridgeEndpoint) => {
+      // console.log('removeBridgedEndpoint called');
+    }),
+    removeAllBridgedEndpoints: jest.fn(async (pluginName: string) => {
+      // console.log('removeAllBridgedEndpoints called');
+    }),
+  } as unknown as Matterbridge;
+
+  const mockConfig = {
+    'name': 'matterbridge-test',
+    'type': 'DynamicPlatform',
+    'delayStart': false,
+    'longDelayStart': false,
+    'noDevices': false,
+    'throwLoad': false,
+    'throwStart': false,
+    'throwConfigure': false,
+    'throwShutdown': false,
+    'loadSwitches': 1,
+    'loadOutlets': 1,
+    'loadLights': 1,
+    'setUpdateInterval': 30,
+    'enableElectrical': true,
+    'enablePowerSource': true,
+    'enableModeSelect': true,
+    'debug': false,
+    'unregisterOnShutdown': true,
+  } as PlatformConfig;
+
   const log = new AnsiLogger({ logName: 'Jest', logTimestampFormat: TimestampFormat.TIME_MILLIS, logLevel: LogLevel.DEBUG });
-  log.logLevel = LogLevel.DEBUG;
-
-  let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
-  let loggerLogSpy: jest.SpiedFunction<(level: LogLevel, message: string, ...parameters: any[]) => void>;
-
-  async function invokeCommands(cluster: ClusterServerObj, data?: Record<string, boolean | number | bigint | string | object | null | undefined>): Promise<void> {
-    const commands = (cluster as any).commands as object;
-    for (const [key, value] of Object.entries(commands)) {
-      if (typeof value.handler === 'function') await value.handler(data ?? {});
-    }
-  }
-
-  async function invokeCommand(cluster: ClusterServerObj, command: string, data?: Record<string, boolean | number | bigint | string | object | null | undefined>): Promise<void> {
-    const commands = (cluster as any).commands as object;
-    for (const [key, value] of Object.entries(commands)) {
-      if (key === command && typeof value.handler === 'function') await value.handler(data ?? {});
-    }
-  }
 
   beforeAll(() => {
-    mockMatterbridge = {
-      matterbridgeDirectory: './jest/matterbridge',
-      matterbridgePluginDirectory: './jest/plugins',
-      systemInformation: { ipv4Address: undefined },
-      matterbridgeVersion: '1.7.3',
-      getDevices: jest.fn(() => {
-        // console.log('getDevices called');
-        return [];
-      }),
-      addBridgedDevice: jest.fn(async (pluginName: string, device: MatterbridgeDevice) => {
-        // console.log('addBridgedDevice called');
-      }),
-      addBridgedEndpoint: jest.fn(async (pluginName: string, device: MatterbridgeEndpoint) => {
-        // console.log('addBridgedEndpoint called');
-        // await aggregator.add(device);
-      }),
-      removeBridgedDevice: jest.fn(async (pluginName: string, device: MatterbridgeDevice) => {
-        // console.log('removeBridgedDevice called');
-      }),
-      removeBridgedEndpoint: jest.fn(async (pluginName: string, device: MatterbridgeEndpoint) => {
-        // console.log('removeBridgedEndpoint called');
-      }),
-      removeAllBridgedDevices: jest.fn(async (pluginName: string) => {
-        // console.log('removeAllBridgedDevices called');
-      }),
-      removeAllBridgedEndpoints: jest.fn(async (pluginName: string) => {
-        // console.log('removeAllBridgedEndpoints called');
-      }),
-    } as unknown as Matterbridge;
-    mockLog = {
-      fatal: jest.fn((message: string, ...parameters: any[]) => {
-        // console.error('mockLog.fatal', message, parameters);
-      }),
-      error: jest.fn((message: string, ...parameters: any[]) => {
-        // console.error('mockLog.error', message, parameters);
-      }),
-      warn: jest.fn((message: string, ...parameters: any[]) => {
-        // console.error('mockLog.warn', message, parameters);
-      }),
-      notice: jest.fn((message: string, ...parameters: any[]) => {
-        // console.error('mockLog.notice', message, parameters);
-      }),
-      info: jest.fn((message: string, ...parameters: any[]) => {
-        // console.error('mockLog.info', message, parameters);
-      }),
-      debug: jest.fn((message: string, ...parameters: any[]) => {
-        // console.error('mockLog.debug', message, parameters);
-      }),
-    } as unknown as AnsiLogger;
-    mockConfig = {
-      'name': 'matterbridge-test',
-      'type': 'DynamicPlatform',
-      'delayStart': false,
-      'longDelayStart': false,
-      'noDevices': false,
-      'throwLoad': false,
-      'throwStart': false,
-      'throwConfigure': false,
-      'throwShutdown': false,
-      'loadSwitches': 1,
-      'loadOutlets': 1,
-      'loadLights': 1,
-      'setUpdateInterval': 30,
-      'enableElectrical': true,
-      'enablePowerSource': true,
-      'enableModeSelect': true,
-      'debug': false,
-      'unregisterOnShutdown': true,
-    } as PlatformConfig;
-
-    // Spy on and mock the AnsiLogger.log method
-    loggerLogSpy = jest.spyOn(AnsiLogger.prototype, 'log').mockImplementation((level: string, message: string, ...parameters: any[]) => {
-      // console.error(`Mocked AnsiLogger.log: ${level} - ${message}`, ...parameters);
-    });
-
-    // Spy on and mock console.log
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((...args: any[]) => {
-      // console.error('Mocked console.log', args);
-    });
+    //
   });
 
   beforeEach(() => {
@@ -151,9 +114,9 @@ describe('TestPlatform', () => {
   it('should throw error in load when version is not valid', () => {
     mockMatterbridge.matterbridgeVersion = '1.5.0';
     expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow(
-      'The test plugin requires Matterbridge version >= "1.7.3". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "2.0.0". Please update Matterbridge to the latest version in the frontend.',
     );
-    mockMatterbridge.matterbridgeVersion = '1.7.3';
+    mockMatterbridge.matterbridgeVersion = '2.0.0';
   });
 
   it('should call onStart in edge mode', async () => {
@@ -169,7 +132,7 @@ describe('TestPlatform', () => {
     jest.useRealTimers();
     await testPlatform.onShutdown('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onShutdown called with reason:', 'Test reason');
-    mockMatterbridge.edge = false;
+    mockMatterbridge.edge = true;
   }, 30000);
 
   it('should call onStart with reason', async () => {
@@ -179,7 +142,6 @@ describe('TestPlatform', () => {
     expect(mockLog.info).toHaveBeenCalledWith('onStart called with reason:', 'Test reason');
     await testPlatform.onConfigure();
     expect(mockLog.info).toHaveBeenCalledWith('onConfigure called');
-    await wait(5000);
     await testPlatform.onShutdown('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onShutdown called with reason:', 'Test reason');
   }, 30000);
@@ -192,38 +154,43 @@ describe('TestPlatform', () => {
 
     // Invoke command handlers
     for (const [key, device] of Array.from(testPlatform.bridgedDevices)) {
-      const identify = device.getClusterServer(IdentifyCluster);
-      expect(identify).toBeDefined();
-      if (identify) await invokeCommands(identify as unknown as ClusterServerObj, { endpoint: { number: 100 } });
-
-      const onOff = device.getClusterServer(OnOffCluster);
-      expect(onOff).toBeDefined();
-      if (onOff) await invokeCommands(onOff as unknown as ClusterServerObj, { endpoint: { number: 100 } });
-
-      if (device.hasClusterServer(ModeSelectCluster)) {
-        const modeSelect = device.getClusterServer(ModeSelectCluster);
-        // eslint-disable-next-line jest/no-conditional-expect
-        expect(modeSelect).toBeDefined();
-        if (modeSelect) await invokeCommands(modeSelect as unknown as ClusterServerObj, { endpoint: { number: 100 } });
+      if (device._hasClusterServer(IdentifyCluster)) {
+        await device.commandHandler.executeHandler('identify', { request: { identifyTime: 1 } } as any);
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received identify command'));
       }
 
-      if (device.hasClusterServer(LevelControlCluster)) {
-        const levelControl = device.getClusterServer(LevelControlCluster);
-        // eslint-disable-next-line jest/no-conditional-expect
-        expect(levelControl).toBeDefined();
-        if (levelControl) await invokeCommands(levelControl as unknown as ClusterServerObj, { endpoint: { number: 100 } });
+      if (device._hasClusterServer(OnOffCluster)) {
+        await device.commandHandler.executeHandler('on', {} as any);
+        await device.commandHandler.executeHandler('off', {} as any);
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received on command'));
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received off command'));
       }
 
-      if (device.hasClusterServer(ColorControlCluster)) {
-        const colorControl = device.getClusterServer(ColorControlCluster);
-        // eslint-disable-next-line jest/no-conditional-expect
-        expect(colorControl).toBeDefined();
-        if (colorControl) await invokeCommands(colorControl as unknown as ClusterServerObj, { endpoint: { number: 100 } });
+      if (device._hasClusterServer(ModeSelectCluster)) {
+        await device.commandHandler.executeHandler('changeToMode', { request: { newMode: 1 } } as any);
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received changeToMode command'));
+      }
+
+      if (device._hasClusterServer(LevelControlCluster)) {
+        await device.commandHandler.executeHandler('moveToLevel', { request: { level: 1 } } as any);
+        await device.commandHandler.executeHandler('moveToLevelWithOnOff', { request: { level: 1 } } as any);
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received moveToLevel command'));
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received moveToLevelWithOnOff command'));
+      }
+
+      if (device._hasClusterServer(ColorControlCluster)) {
+        await device.commandHandler.executeHandler('moveToColor', { request: { colorX: 100, colorY: 100 } } as any);
+        await device.commandHandler.executeHandler('moveToHueAndSaturation', { request: { hue: 100, saturation: 100 } } as any);
+        await device.commandHandler.executeHandler('moveToHue', { request: { hue: 100 } } as any);
+        await device.commandHandler.executeHandler('moveToSaturation', { request: { saturation: 100 } } as any);
+        await device.commandHandler.executeHandler('moveToColorTemperature', { request: { colorTemperatureMireds: 470 } } as any);
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received moveToColor command'));
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received moveToHueAndSaturation command'));
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received moveToHue command'));
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received moveToSaturation command'));
+        expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received moveToColorTemperature command'));
       }
     }
-    // expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received identify command'));
-    // expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received on command'));
-    // expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received off command'));
   }, 30000);
 
   it('should not register in start when noDevices is true', async () => {
@@ -247,6 +214,8 @@ describe('TestPlatform', () => {
 
     jest.advanceTimersByTime(60 * 1000);
     jest.useRealTimers();
+
+    expect(mockLog.info).toHaveBeenCalledWith('Interval called');
   });
 
   it('should throw error in configure when throwConfigure is true', async () => {
