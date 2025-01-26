@@ -1,10 +1,11 @@
 /* eslint-disable jest/no-conditional-expect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { jest } from '@jest/globals';
 import { ColorControlCluster, IdentifyCluster, LevelControlCluster, Matterbridge, MatterbridgeEndpoint, ModeSelectCluster, OnOffCluster, PlatformConfig } from 'matterbridge';
 import { AnsiLogger, LogLevel, TimestampFormat } from 'matterbridge/logger';
 import { TestPlatform } from './platform';
+
+import { jest } from '@jest/globals';
 
 describe('TestPlatform', () => {
   let testPlatform: TestPlatform;
@@ -39,7 +40,7 @@ describe('TestPlatform', () => {
     matterbridgeDirectory: './jest/matterbridge',
     matterbridgePluginDirectory: './jest/plugins',
     systemInformation: { ipv4Address: undefined, ipv6Address: undefined, osRelease: 'xx.xx.xx.xx.xx.xx', nodeVersion: '22.1.10' },
-    matterbridgeVersion: '2.0.0',
+    matterbridgeVersion: '2.1.0',
     edge: true,
     log: mockLog,
     getDevices: jest.fn(() => {
@@ -78,11 +79,9 @@ describe('TestPlatform', () => {
     'enableElectrical': true,
     'enablePowerSource': true,
     'enableModeSelect': true,
-    'debug': false,
+    'debug': true,
     'unregisterOnShutdown': true,
   } as PlatformConfig;
-
-  const log = new AnsiLogger({ logName: 'Jest', logTimestampFormat: TimestampFormat.TIME_MILLIS, logLevel: LogLevel.DEBUG });
 
   beforeAll(() => {
     //
@@ -93,12 +92,17 @@ describe('TestPlatform', () => {
     jest.clearAllMocks();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     // Cleanup after each test
     if (testPlatform) {
       (testPlatform as any).throwShutdown = false;
-      testPlatform.onShutdown();
+      await testPlatform.onShutdown();
     }
+  });
+
+  afterAll(() => {
+    // Restore all mocks
+    jest.restoreAllMocks();
   });
 
   it('should initialize platform with config name', () => {
@@ -114,13 +118,12 @@ describe('TestPlatform', () => {
   it('should throw error in load when version is not valid', () => {
     mockMatterbridge.matterbridgeVersion = '1.5.0';
     expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow(
-      'The test plugin requires Matterbridge version >= "2.0.0". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "2.1.0". Please update Matterbridge to the latest version in the frontend.',
     );
-    mockMatterbridge.matterbridgeVersion = '2.0.0';
+    mockMatterbridge.matterbridgeVersion = '2.1.0';
   });
 
   it('should call onStart in edge mode', async () => {
-    mockMatterbridge.edge = true;
     testPlatform = new TestPlatform(mockMatterbridge, mockLog, { ...mockConfig, setUpdateInterval: 2 });
     testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
@@ -132,7 +135,6 @@ describe('TestPlatform', () => {
     jest.useRealTimers();
     await testPlatform.onShutdown('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onShutdown called with reason:', 'Test reason');
-    mockMatterbridge.edge = true;
   }, 30000);
 
   it('should call onStart with reason', async () => {
@@ -207,15 +209,25 @@ describe('TestPlatform', () => {
   });
 
   it('should call onConfigure', async () => {
+    testPlatform = new TestPlatform(mockMatterbridge, mockLog, mockConfig);
+    testPlatform.version = '1.6.6';
+    await testPlatform.onStart('Test reason');
+    expect(loggerLogSpy).toHaveBeenCalled();
+
     jest.useFakeTimers();
 
     await testPlatform.onConfigure();
     expect(mockLog.info).toHaveBeenCalledWith('onConfigure called');
 
-    jest.advanceTimersByTime(60 * 1000);
+    for (let i = 0; i < 200; i++) {
+      jest.advanceTimersByTime(61 * 1000);
+      await Promise.resolve();
+    }
+
     jest.useRealTimers();
 
     expect(mockLog.info).toHaveBeenCalledWith('Interval called');
+    expect(loggerLogSpy).toHaveBeenCalled();
   });
 
   it('should throw error in configure when throwConfigure is true', async () => {
@@ -225,6 +237,7 @@ describe('TestPlatform', () => {
   });
 
   it('should call onShutdown with reason', async () => {
+    testPlatform = new TestPlatform(mockMatterbridge, mockLog, mockConfig);
     await testPlatform.onShutdown('Test reason');
     expect(mockLog.info).toHaveBeenCalledWith('onShutdown called with reason:', 'Test reason');
   });

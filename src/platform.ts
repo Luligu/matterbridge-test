@@ -44,8 +44,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('2.0.0')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "2.0.0". Please update Matterbridge to the latest version in the frontend.`);
+    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('2.1.0')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "2.1.0". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -135,7 +135,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Received changeToMode command with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
-      switchDevice.addRequiredClusterServers(switchDevice);
+      switchDevice.addRequiredClusterServers();
       if (this.noDevices === false) await this.registerDevice(switchDevice);
       this.bridgedDevices.set('Switch' + i, switchDevice);
     }
@@ -181,7 +181,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
-      outletDevice.addRequiredClusterServers(outletDevice);
+      outletDevice.addRequiredClusterServers();
       if (this.noDevices === false) await this.registerDevice(outletDevice);
       this.bridgedDevices.set('Outlet' + i, outletDevice);
     }
@@ -249,7 +249,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
-      lightDevice.addRequiredClusterServers(lightDevice);
+      lightDevice.addRequiredClusterServers();
       if (this.noDevices === false) await this.registerDevice(lightDevice);
       this.bridgedDevices.set('Light' + i, lightDevice);
     }
@@ -267,27 +267,25 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   }
 
   addElectricalMeasurements(device: MatterbridgeDevice): void {
-    device.addClusterServer(device.getDefaultPowerTopologyClusterServer());
-    device.addClusterServer(device.getDefaultElectricalPowerMeasurementClusterServer(220 * 1000, 2.5 * 1000, 220 * 2.5 * 1000, 50 * 1000));
-    device.addClusterServer(device.getDefaultElectricalEnergyMeasurementClusterServer(1500 * 1000));
+    device.createDefaultPowerTopologyClusterServer();
+    device.createDefaultElectricalPowerMeasurementClusterServer(220 * 1000, 2.5 * 1000, 220 * 2.5 * 1000, 50 * 1000);
+    device.createDefaultElectricalEnergyMeasurementClusterServer(1500 * 1000);
   }
 
   addModeSelect(device: MatterbridgeDevice, description: string): void {
-    device.addClusterServer(
-      device.getDefaultModeSelectClusterServer(
-        description + ' Led Mode Select',
-        [
-          { label: 'Led ON', mode: 1, semanticTags: [] },
-          { label: 'Led OFF', mode: 2, semanticTags: [] },
-        ],
-        1,
-        1,
-      ),
+    device.createDefaultModeSelectClusterServer(
+      description + ' Led Mode Select',
+      [
+        { label: 'Led ON', mode: 1, semanticTags: [] },
+        { label: 'Led OFF', mode: 2, semanticTags: [] },
+      ],
+      1,
+      1,
     );
   }
 
   addPowerSource(device: MatterbridgeDevice): void {
-    device.addClusterServer(device.getDefaultPowerSourceReplaceableBatteryClusterServer(100));
+    device.createDefaultPowerSourceReplaceableBatteryClusterServer(100);
   }
 
   override async onConfigure(): Promise<void> {
