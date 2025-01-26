@@ -1,6 +1,5 @@
 import {
   Matterbridge,
-  MatterbridgeDevice,
   MatterbridgeDynamicPlatform,
   PlatformConfig,
   bridgedNode,
@@ -38,7 +37,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   private enableModeSelect = false;
   private enablePowerSource = false;
   private interval: NodeJS.Timeout | undefined;
-  bridgedDevices = new Map<string, MatterbridgeDevice>();
+  bridgedDevices = new Map<string, MatterbridgeEndpoint>();
 
   constructor(matterbridge: Matterbridge, log: AnsiLogger, config: PlatformConfig) {
     super(matterbridge, log, config);
@@ -266,13 +265,13 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     */
   }
 
-  addElectricalMeasurements(device: MatterbridgeDevice): void {
+  addElectricalMeasurements(device: MatterbridgeEndpoint): void {
     device.createDefaultPowerTopologyClusterServer();
     device.createDefaultElectricalPowerMeasurementClusterServer(220 * 1000, 2.5 * 1000, 220 * 2.5 * 1000, 50 * 1000);
     device.createDefaultElectricalEnergyMeasurementClusterServer(1500 * 1000);
   }
 
-  addModeSelect(device: MatterbridgeDevice, description: string): void {
+  addModeSelect(device: MatterbridgeEndpoint, description: string): void {
     device.createDefaultModeSelectClusterServer(
       description + ' Led Mode Select',
       [
@@ -284,7 +283,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     );
   }
 
-  addPowerSource(device: MatterbridgeDevice): void {
+  addPowerSource(device: MatterbridgeEndpoint): void {
     device.createDefaultPowerSourceReplaceableBatteryClusterServer(100);
   }
 
