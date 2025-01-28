@@ -92,10 +92,11 @@ describe('initializePlugin', () => {
     jest.restoreAllMocks();
   });
 
-  it('should return an instance of TestPlatform', () => {
+  it('should return an instance of TestPlatform', async () => {
     const result = initializePlugin(mockMatterbridge, mockLog, mockConfig);
     expect(result).toBeInstanceOf(TestPlatform);
     expect(mockLog.info).toHaveBeenCalledWith('Initializing platform:', mockConfig.name);
     expect(mockLog.info).toHaveBeenCalledWith('Finished initializing platform:', mockConfig.name);
+    await result.onShutdown();
   });
 });
