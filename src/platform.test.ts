@@ -1,8 +1,10 @@
 /* eslint-disable jest/no-conditional-expect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ColorControlCluster, IdentifyCluster, LevelControlCluster, Matterbridge, MatterbridgeEndpoint, ModeSelectCluster, OnOffCluster, PlatformConfig } from 'matterbridge';
-import { AnsiLogger, LogLevel, TimestampFormat } from 'matterbridge/logger';
+import { Matterbridge, MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
+import { AnsiLogger } from 'matterbridge/logger';
+import { OnOffCluster, ModeSelectCluster, IdentifyCluster, LevelControlCluster, ColorControlCluster } from 'matterbridge/matter/clusters';
+
 import { TestPlatform } from './platform';
 
 import { jest } from '@jest/globals';

@@ -7,19 +7,13 @@ import {
   onOffSwitch,
   onOffOutlet,
   colorTemperatureLight,
-  OnOffCluster,
   powerSource,
-  ElectricalPowerMeasurementCluster,
-  ElectricalEnergyMeasurementCluster,
-  ModeSelectCluster,
-  PowerSourceCluster,
   modeSelect,
   MatterbridgeEndpoint,
 } from 'matterbridge';
-
 import { waiter } from 'matterbridge/utils';
-
 import { AnsiLogger } from 'matterbridge/logger';
+import { OnOffCluster, ElectricalPowerMeasurementCluster, ElectricalEnergyMeasurementCluster, ModeSelectCluster, PowerSourceCluster } from 'matterbridge/matter/clusters';
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
   // Config
