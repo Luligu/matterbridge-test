@@ -8,6 +8,7 @@ If you like this project and find it useful, please consider giving it a star on
 
 ### Changed
 
+- [package]: Updated package.
 - [package]: Updated dependencies.
 - [package]: Require matterbridge 2.1.0.
 
