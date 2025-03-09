@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 If you like this project and find it useful, please consider giving it a star on GitHub at https://github.com/Luligu/matterbridge-example-dynamic-platform and sponsoring it.
 
+## [1.0.10] - 2025-03-09
+
+### Added
+
+- [platform]: Added enableReachable option in the config to change also the reachable attribute of the devices in the update interval.
+
+### Changed
+
+- [package]: Updated dependencies.
+
+<a href="https://www.buymeacoffee.com/luligugithub">
+  <img src="./yellow-button.png" alt="Buy me a coffee" width="120">
+</a>
+
 ## [1.0.9] - 2025-03-05
 
 ### Changed

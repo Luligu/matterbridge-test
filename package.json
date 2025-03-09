@@ -1,6 +1,6 @@
 {
   "name": "matterbridge-test",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Matterbridge test plugin",
   "author": "https://github.com/Luligu",
   "license": "Apache-2.0",
@@ -80,10 +80,10 @@
     "node-persist-manager": "1.0.8"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
+    "@eslint/js": "^9.22.0",
     "@types/jest": "29.5.14",
-    "@types/node": "22.13.9",
-    "eslint-config-prettier": "10.0.2",
+    "@types/node": "22.13.10",
+    "eslint-config-prettier": "10.1.1",
     "eslint-plugin-jest": "28.11.0",
     "eslint-plugin-n": "^17.16.2",
     "eslint-plugin-prettier": "5.2.3",

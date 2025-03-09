@@ -63,6 +63,11 @@
       "type": "boolean",
       "default": false
     },
+    "enableReachable": {
+      "description": "Change reachable (development only)",
+      "type": "boolean",
+      "default": false
+    },
     "throwLoad": {
       "description": "Throw on load (development only)",
       "type": "boolean",

@@ -10,6 +10,7 @@ import {
   powerSource,
   modeSelect,
   MatterbridgeEndpoint,
+  BridgedDeviceBasicInformationCluster,
 } from 'matterbridge';
 import { waiter } from 'matterbridge/utils';
 import { AnsiLogger } from 'matterbridge/logger';
@@ -30,6 +31,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   private enableElectrical = false;
   private enableModeSelect = false;
   private enablePowerSource = false;
+  private enableReachable = false;
   private interval: NodeJS.Timeout | undefined;
   bridgedDevices = new Map<string, MatterbridgeEndpoint>();
 
@@ -50,6 +52,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     if (config.enableElectrical) this.enableElectrical = config.enableElectrical as boolean;
     if (config.enableModeSelect) this.enableModeSelect = config.enableModeSelect as boolean;
     if (config.enablePowerSource) this.enablePowerSource = config.enablePowerSource as boolean;
+    if (config.enableReachable) this.enableReachable = config.enableReachable as boolean;
     if (config.loadSwitches) this.loadSwitches = config.loadSwitches as number;
     if (config.loadOutlets) this.loadOutlets = config.loadOutlets as number;
     if (config.loadLights) this.loadLights = config.loadLights as number;
@@ -298,6 +301,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         const device = this.bridgedDevices.get('Switch' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
+        if (this.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', state, device?.log);
         if (this.enableElectrical) {
           const voltage = getRandomNumberInRange(220, 240);
           const current = getRandomNumberInRange(20, 30);
@@ -325,6 +329,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         const device = this.bridgedDevices.get('Outlet' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
+        if (this.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', state, device?.log);
         if (this.enableElectrical) {
           const voltage = getRandomNumberInRange(220, 240);
           const current = getRandomNumberInRange(20, 30);
@@ -352,6 +357,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         const device = this.bridgedDevices.get('Light' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
+        if (this.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', state, device?.log);
         if (this.enableElectrical) {
           const voltage = getRandomNumberInRange(220, 240);
           const current = getRandomNumberInRange(20, 30);
