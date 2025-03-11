@@ -14,7 +14,7 @@ import {
 } from 'matterbridge';
 import { waiter } from 'matterbridge/utils';
 import { AnsiLogger } from 'matterbridge/logger';
-import { OnOffCluster, ElectricalPowerMeasurementCluster, ElectricalEnergyMeasurementCluster, ModeSelectCluster, PowerSourceCluster } from 'matterbridge/matter/clusters';
+import { OnOffCluster, ElectricalPowerMeasurementCluster, ElectricalEnergyMeasurementCluster, ModeSelectCluster, PowerSource } from 'matterbridge/matter/clusters';
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
   // Config
@@ -39,8 +39,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('2.2.0')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "2.2.0". Please update Matterbridge to the latest version in the frontend.`);
+    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('2.2.4')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "2.2.4". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -88,7 +88,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     if (this.delayStart) await waiter('Delay start', () => false, false, 20000, 1000);
 
-    if (this.config.longDelayStart) await waiter('Delay start', () => false, false, 60000, 1000);
+    if (this.config.longDelayStart) await waiter('Long delay start', () => false, false, 150000, 1000);
 
     for (let i = 0; i < this.loadSwitches; i++) {
       const switchDevice = new MatterbridgeEndpoint(
@@ -124,7 +124,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         this.log.info(`Received off command for endpoint ${data.endpoint?.number}`);
       });
       if (this.enableElectrical) this.addElectricalMeasurements(switchDevice);
-      if (this.enablePowerSource) this.addPowerSource(switchDevice);
+      if (this.enablePowerSource) this.addPowerSource(switchDevice, 'wired');
       if (this.enableModeSelect) {
         this.addModeSelect(switchDevice, 'Switch ' + i);
         switchDevice.addCommandHandler('changeToMode', async (data) => {
@@ -170,7 +170,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         this.log.info(`Received off command for endpoint ${data.endpoint?.number}`);
       });
       if (this.enableElectrical) this.addElectricalMeasurements(outletDevice);
-      if (this.enablePowerSource) this.addPowerSource(outletDevice);
+      if (this.enablePowerSource) this.addPowerSource(outletDevice, 'replaceable');
       if (this.enableModeSelect) {
         this.addModeSelect(outletDevice, 'Outlet ' + i);
         outletDevice.addCommandHandler('changeToMode', async (data) => {
@@ -238,7 +238,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       });
 
       if (this.enableElectrical) this.addElectricalMeasurements(lightDevice);
-      if (this.enablePowerSource) this.addPowerSource(lightDevice);
+      if (this.enablePowerSource) this.addPowerSource(lightDevice, 'rechargeable');
       if (this.enableModeSelect) {
         this.addModeSelect(lightDevice, 'Light ' + i);
         lightDevice.addCommandHandler('changeToMode', async (data) => {
@@ -280,8 +280,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     );
   }
 
-  addPowerSource(device: MatterbridgeEndpoint): void {
-    device.createDefaultPowerSourceReplaceableBatteryClusterServer(100);
+  addPowerSource(device: MatterbridgeEndpoint, type: 'wired' | 'replaceable' | 'rechargeable'): void {
+    if (type === 'wired') device.createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac);
+    else if (type === 'replaceable') device.createDefaultPowerSourceReplaceableBatteryClusterServer(100);
+    else if (type === 'rechargeable') device.createDefaultPowerSourceRechargeableBatteryClusterServer(100);
   }
 
   override async onConfigure(): Promise<void> {
@@ -321,8 +323,15 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           await device?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
         if (this.enablePowerSource) {
-          const battery = device?.getAttribute(PowerSourceCluster.id, 'batPercentRemaining', device?.log);
-          await device?.setAttribute(PowerSourceCluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+          if (device?.hasAttributeServer(PowerSource.Cluster.id, 'wiredCurrentType')) {
+            const type = device?.getAttribute(PowerSource.Cluster.id, 'wiredCurrentType', device?.log);
+            await device?.setAttribute(
+              PowerSource.Cluster.id,
+              'wiredCurrentType',
+              type === PowerSource.WiredCurrentType.Ac ? PowerSource.WiredCurrentType.Dc : PowerSource.WiredCurrentType.Ac,
+            );
+            await device?.setAttribute(PowerSource.Cluster.id, 'description', type === PowerSource.WiredCurrentType.Ac ? 'AC Power' : 'DC Power');
+          }
         }
       }
       for (let i = 0; i < this.loadOutlets; i++) {
@@ -349,8 +358,16 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           await device?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
         if (this.enablePowerSource) {
-          const battery = device?.getAttribute(PowerSourceCluster.id, 'batPercentRemaining', device?.log);
-          await device?.setAttribute(PowerSourceCluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+          if (device?.hasAttributeServer(PowerSource.Cluster.id, 'batPercentRemaining')) {
+            const battery = device?.getAttribute(PowerSource.Cluster.id, 'batPercentRemaining', device?.log);
+            await device?.setAttribute(PowerSource.Cluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+            await device?.setAttribute(
+              PowerSource.Cluster.id,
+              'batChargeLevel',
+              battery + 20 > 200 ? PowerSource.BatChargeLevel.Critical : PowerSource.BatChargeLevel.Ok,
+              device?.log,
+            );
+          }
         }
       }
       for (let i = 0; i < this.loadLights; i++) {
@@ -377,8 +394,16 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           await device?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
         if (this.enablePowerSource) {
-          const battery = device?.getAttribute(PowerSourceCluster.id, 'batPercentRemaining', device?.log);
-          await device?.setAttribute(PowerSourceCluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+          if (device?.hasAttributeServer(PowerSource.Cluster.id, 'batPercentRemaining')) {
+            const battery = device?.getAttribute(PowerSource.Cluster.id, 'batPercentRemaining', device?.log);
+            await device?.setAttribute(PowerSource.Cluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+            await device?.setAttribute(
+              PowerSource.Cluster.id,
+              'batChargeLevel',
+              battery + 20 > 200 ? PowerSource.BatChargeLevel.Critical : PowerSource.BatChargeLevel.Ok,
+              device?.log,
+            );
+          }
         }
       }
     }, this.setUpdateInterval * 1000);
