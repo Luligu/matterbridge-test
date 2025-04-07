@@ -12,8 +12,8 @@ import {
   MatterbridgeEndpoint,
   BridgedDeviceBasicInformationCluster,
 } from 'matterbridge';
-import { waiter } from 'matterbridge/utils';
-import { AnsiLogger } from 'matterbridge/logger';
+import { isValidString, waiter } from 'matterbridge/utils';
+import { AnsiLogger, CYAN, er, LogLevel, nf } from 'matterbridge/logger';
 import { OnOffCluster, ElectricalPowerMeasurementCluster, ElectricalEnergyMeasurementCluster, ModeSelectCluster, PowerSource } from 'matterbridge/matter/clusters';
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
@@ -39,8 +39,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('2.2.4')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "2.2.4". Please update Matterbridge to the latest version in the frontend.`);
+    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('2.2.7')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "2.2.7". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -81,6 +81,13 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     this.log.info('Finished initializing platform:', this.config.name);
   }
 
+  /**
+   * This method must be overridden in the extended class.
+   * It is called when the platform is started.
+   * Use this method to create the MatterbridgeDevice and call this.registerDevice().
+   * @param {string} [reason] - The reason for starting.
+   * @throws {Error} - Throws an error if the method is not overridden.
+   */
   override async onStart(reason?: string): Promise<void> {
     this.log.info('onStart called with reason:', reason ?? 'none');
 
@@ -133,7 +140,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       switchDevice.addRequiredClusterServers();
       if (this.noDevices === false) await this.registerDevice(switchDevice);
-      this.bridgedDevices.set('Switch' + i, switchDevice);
+      this.bridgedDevices.set('Switch ' + i, switchDevice);
     }
 
     for (let i = 0; i < this.loadOutlets; i++) {
@@ -179,7 +186,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       outletDevice.addRequiredClusterServers();
       if (this.noDevices === false) await this.registerDevice(outletDevice);
-      this.bridgedDevices.set('Outlet' + i, outletDevice);
+      this.bridgedDevices.set('Outlet ' + i, outletDevice);
     }
 
     for (let i = 0; i < this.loadLights; i++) {
@@ -247,7 +254,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       lightDevice.addRequiredClusterServers();
       if (this.noDevices === false) await this.registerDevice(lightDevice);
-      this.bridgedDevices.set('Light' + i, lightDevice);
+      this.bridgedDevices.set('Light ' + i, lightDevice);
     }
 
     /*
@@ -260,6 +267,11 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     });
     if (!this.noDevices) await this.registerDevice(energy);
     */
+
+    this.log.info(`Finished starting platform ${this.config.name} with ${this.bridgedDevices.size} devices:`);
+    for (const device of this.bridgedDevices.values()) {
+      this.log.info(`- device ${device.deviceName} with serial ${device.serialNumber}`);
+    }
   }
 
   addElectricalMeasurements(device: MatterbridgeEndpoint): void {
@@ -286,6 +298,11 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     else if (type === 'rechargeable') device.createDefaultPowerSourceRechargeableBatteryClusterServer(100);
   }
 
+  /**
+   * This method can be overridden in the extended class. Call super.onConfigure() to run checkEndpointNumbers().
+   * It is called after the platform has started.
+   * Use this method to perform any configuration of your devices.
+   */
   override async onConfigure(): Promise<void> {
     await super.onConfigure();
     this.log.info('onConfigure called');
@@ -300,7 +317,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     this.interval = setInterval(async () => {
       this.log.info('Interval called');
       for (let i = 0; i < this.loadSwitches; i++) {
-        const device = this.bridgedDevices.get('Switch' + i);
+        const device = this.bridgedDevices.get('Switch ' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
         if (this.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', state, device?.log);
@@ -335,7 +352,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         }
       }
       for (let i = 0; i < this.loadOutlets; i++) {
-        const device = this.bridgedDevices.get('Outlet' + i);
+        const device = this.bridgedDevices.get('Outlet ' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
         if (this.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', state, device?.log);
@@ -371,7 +388,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         }
       }
       for (let i = 0; i < this.loadLights; i++) {
-        const device = this.bridgedDevices.get('Light' + i);
+        const device = this.bridgedDevices.get('Light ' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
         if (this.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', state, device?.log);
@@ -409,11 +426,101 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }, this.setUpdateInterval * 1000);
   }
 
+  /**
+   * This method can be overridden in the extended class. In this case always call super.onShutdown() to save the selects, run checkEndpointNumbers() and cleanup memory.
+   * It is called when the platform is shutting down.
+   * Use this method to clean up any resources.
+   * @param {string} [reason] - The reason for shutting down.
+   */
   override async onShutdown(reason?: string): Promise<void> {
     await super.onShutdown(reason);
     this.log.info('onShutdown called with reason:', reason ?? 'none');
     if (this.interval) clearInterval(this.interval);
     this.interval = undefined;
     if (this.throwShutdown) throw new Error('Throwing error in shutdown');
+  }
+
+  /**
+   * Sets the logger level and logs a debug message indicating that the plugin doesn't override this method.
+   * @param {LogLevel} logLevel The new logger level.
+   */
+  override async onChangeLoggerLevel(logLevel: LogLevel) {
+    this.log.info(`Logger level set to: ${logLevel}`);
+    for (const device of this.bridgedDevices.values()) {
+      device.log.logLevel = logLevel;
+    }
+  }
+
+  /**
+   * Called when a plugin config includes an action button or an action button with text field.
+   * @param {string} action The action triggered by the button in plugin config.
+   * @param {string} value The value of the field of the action button.
+   * @param {string} id The id of the schema associated with the action.
+   *
+   * @remarks
+   * This method can be overridden in the extended class.
+   *
+   * Use this method to handle the action defined in the plugin schema:
+   *  "addDevice": {
+   *      "description": "Manually add a device that has not been discovered with mdns:",
+   *      "type": "boolean",
+   *      "buttonText": "ADD",      // The text on the button.
+   *      "buttonField": "ADD",     // The text on the button. This is used when the action includes a text field.
+   *      "buttonClose": false,     // optional, default is false. When true, the dialog will close after the action is sent.
+   *      "buttonSave": false,      // optional, default is false. When true, the dialog will close and trigger the restart required after the action is sent.
+   *      "textPlaceholder": "Enter the device IP address",   // optional: the placeholder text for the text field.
+   *      "default": false
+   *  },
+   */
+  override async onAction(action: string, value?: string, id?: string) {
+    this.log.info(`Received action ${CYAN}${action}${nf}${value ? ' with ' + CYAN + value + nf : ''} ${id ? 'for schema ' + CYAN + id + nf : ''}`);
+    if (action === 'turnOn') {
+      this.log.info('Turning on all the devices');
+      for (const device of this.bridgedDevices.values()) {
+        await device.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', true, device.log);
+        await device.setAttribute(OnOffCluster.id, 'onOff', true, device.log);
+      }
+    }
+    if (action === 'turnOff') {
+      this.log.info('Turning off all the devices');
+      for (const device of this.bridgedDevices.values()) {
+        await device.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', true, device.log);
+        await device.setAttribute(OnOffCluster.id, 'onOff', false, device.log);
+      }
+    }
+    if (action === 'turnOnDevice' && isValidString(value, 5)) {
+      this.log.info(`Turning on the device ${CYAN}${value}${nf}`);
+      const device = this.bridgedDevices.get(value);
+      if (device) {
+        await device.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', true, device.log);
+        await device.setAttribute(OnOffCluster.id, 'onOff', true, device.log);
+      } else {
+        this.log.error(`Device ${CYAN}${value}${er} not found:`);
+        for (const device of this.bridgedDevices.keys()) {
+          this.log.info(`- device ${device}`);
+        }
+      }
+    }
+    if (action === 'turnOffDevice' && isValidString(value, 5)) {
+      this.log.info(`Turning off the device ${CYAN}${value}${nf}`);
+      const device = this.bridgedDevices.get(value);
+      if (device) {
+        await device.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', true, device.log);
+        await device.setAttribute(OnOffCluster.id, 'onOff', false, device.log);
+      } else {
+        this.log.error(`Device ${CYAN}${value}${er} not found:`);
+        for (const device of this.bridgedDevices.keys()) {
+          this.log.info(`- device ${device}`);
+        }
+      }
+    }
+  }
+
+  /**
+   * Called when the plugin config has been updated.
+   * @param {PlatformConfig} config The new plugin config.
+   */
+  override async onConfigChanged(config: PlatformConfig) {
+    this.log.info(`The config for plugin ${CYAN}${config.name}${nf} has been updated.`);
   }
 }

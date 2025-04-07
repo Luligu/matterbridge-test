@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 If you like this project and find it useful, please consider giving it a star on GitHub at https://github.com/Luligu/matterbridge-example-dynamic-platform and sponsoring it.
 
+## [1.0.12] - 2025-05-07
+
+### Added
+
+- [config]: Added actions to the config to test the frontend.
+- [config]: Added option to change the reachable state in the update interval to test the frontend.
+
+### Changed
+
+- [package]: Require matterbridge 2.2.7.
+- [package]: Updated package.
+- [package]: Updated dependencies.
+
+<a href="https://www.buymeacoffee.com/luligugithub">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
+</a>
+
 ## [1.0.11] - 2025-03-11
 
 ### Added
@@ -18,7 +35,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated dependencies.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [1.0.10] - 2025-03-09
@@ -32,7 +49,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated dependencies.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [1.0.9] - 2025-03-05
@@ -44,7 +61,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated dependencies.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [1.0.8] - 2025-02-02
@@ -56,7 +73,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated dependencies.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [1.0.6] - 2025-01-21
@@ -67,7 +84,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Require matterbridge 2.0.0.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [1.0.5] - 2025-01-21
@@ -78,7 +95,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Require matterbridge 2.0.0.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [1.0.4] - 2025-01-20
@@ -89,7 +106,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated package for production build.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [1.0.3] - 2024-12-21
@@ -104,7 +121,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated package.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [1.0.2] - 2024-12-12
@@ -114,7 +131,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated dependencies.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [1.0.0] - 2024-11-25
@@ -124,7 +141,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated dependencies.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [0.0.18] - 2024-11-10
@@ -133,7 +150,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Update to matterbridge edge requirements
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [0.0.17] - 2024-10-15
@@ -141,7 +158,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Update to new package
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [0.0.16] - 2024-09-30
@@ -149,7 +166,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Update to new workflows
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [0.0.14] - 2024-09-06
@@ -159,7 +176,7 @@ If you like this project and find it useful, please consider giving it a star on
 - Fixed unit of measurements for ElectricalPowerMeasurementCluster and ElectricalEnergyMeasurementCluster.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [0.0.13] - 2024-09-05
@@ -169,7 +186,7 @@ If you like this project and find it useful, please consider giving it a star on
 - Update to Matter 1.3
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [0.0.12] - 2024-09-04
@@ -179,7 +196,7 @@ If you like this project and find it useful, please consider giving it a star on
 - Update to Matter 1.3
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 ## [0.0.11] - 2024-09-04
@@ -189,7 +206,7 @@ If you like this project and find it useful, please consider giving it a star on
 - Update to Matter 1.3
 
 <a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="yellow-button.png" alt="Buy me a coffee" width="120">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
 <!-- Commented out section

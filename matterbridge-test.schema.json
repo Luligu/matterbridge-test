@@ -6,95 +6,123 @@
     "name": {
       "description": "Plugin name",
       "type": "string",
-      "readOnly": true
+      "readOnly": true,
+      "ui:widget": "hidden"
     },
     "type": {
       "description": "Plugin type",
       "type": "string",
-      "readOnly": true
+      "readOnly": true,
+      "ui:widget": "hidden"
+    },
+    "turnOn": {
+      "description": "Turn on all devices",
+      "type": "boolean",
+      "buttonText": "Turn On",
+      "default": false
+    },
+    "turnOff": {
+      "description": "Turn off all devices",
+      "type": "boolean",
+      "buttonText": "Turn Off",
+      "default": false
+    },
+    "turnOnDevice": {
+      "description": "Turn on the device:",
+      "type": "boolean",
+      "buttonField": "Turn On",
+      "textPlaceholder": "Enter the device name",
+      "default": false
+    },
+    "turnOffDevice": {
+      "description": "Turn off the device:",
+      "type": "boolean",
+      "buttonField": "Turn Off",
+      "textPlaceholder": "Enter the device name",
+      "default": false
     },
     "noDevices": {
-      "description": "Do not registers any devices (development only)",
+      "description": "Do not registers any devices",
       "type": "boolean",
       "default": false
     },
     "delayStart": {
-      "description": "Delay start by 20 seconds (development only)",
+      "description": "Delay start by 20 seconds",
       "type": "boolean",
       "default": false
     },
     "longDelayStart": {
-      "description": "Delay start by 60 seconds (development only)",
+      "description": "Delay start by 60 seconds",
       "type": "boolean",
       "default": false
     },
     "loadSwitches": {
-      "description": "Load a defined number of switches (development only)",
+      "description": "Load a defined number of switches",
       "type": "number",
       "default": 1
     },
     "loadOutlets": {
-      "description": "Load a defined number of outlets (development only)",
+      "description": "Load a defined number of outlets",
       "type": "number",
       "default": 1
     },
     "loadLights": {
-      "description": "Load a defined number of lights (development only)",
+      "description": "Load a defined number of lights",
       "type": "number",
       "default": 1
     },
     "setUpdateInterval": {
-      "description": "Set an update interval in seconds (development only)",
+      "description": "Set an update interval in seconds",
       "type": "number",
       "default": 0
     },
     "enableElectrical": {
-      "description": "Add electrical measurements to the devices (development only)",
+      "description": "Add electrical measurements to the devices",
       "type": "boolean",
       "default": false
     },
     "enablePowerSource": {
-      "description": "Add power source to the devices (development only)",
+      "description": "Add power source to the devices",
       "type": "boolean",
       "default": false
     },
     "enableModeSelect": {
-      "description": "Add mode select to the devices (development only)",
+      "description": "Add mode select to the devices",
       "type": "boolean",
       "default": false
     },
     "enableReachable": {
-      "description": "Change reachable (development only)",
+      "description": "Change reachable",
       "type": "boolean",
       "default": false
     },
     "throwLoad": {
-      "description": "Throw on load (development only)",
+      "description": "Throw on load",
       "type": "boolean",
       "default": false
     },
     "throwStart": {
-      "description": "Throw on start (development only)",
+      "description": "Throw on start",
       "type": "boolean",
       "default": false
     },
     "throwConfigure": {
-      "description": "Throw on configure (development only)",
+      "description": "Throw on configure",
       "type": "boolean",
       "default": false
     },
     "throwShutdown": {
-      "description": "Throw on shutdown (development only)",
+      "description": "Throw on shutdown",
       "type": "boolean",
       "default": false
     },
     "debug": {
-      "description": "Enable the debug for the plugin (development only)",
+      "description": "Enable the debug for the plugin",
       "type": "boolean",
       "default": false
     },
     "unregisterOnShutdown": {
-      "description": "Unregister all devices on shutdown (development only)",
+      "description": "Unregister all devices on shutdown",
       "type": "boolean",
       "default": false
     }

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Matterbridge, MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
-import { AnsiLogger } from 'matterbridge/logger';
+import { AnsiLogger, LogLevel } from 'matterbridge/logger';
 import { OnOffCluster, ModeSelectCluster, IdentifyCluster, LevelControlCluster, ColorControlCluster } from 'matterbridge/matter/clusters';
 
 import { TestPlatform } from './platform';
@@ -42,7 +42,7 @@ describe('TestPlatform', () => {
     matterbridgeDirectory: './jest/matterbridge',
     matterbridgePluginDirectory: './jest/plugins',
     systemInformation: { ipv4Address: undefined, ipv6Address: undefined, osRelease: 'xx.xx.xx.xx.xx.xx', nodeVersion: '22.1.10' },
-    matterbridgeVersion: '2.2.4',
+    matterbridgeVersion: '2.2.7',
     edge: true,
     log: mockLog,
     getDevices: jest.fn(() => {
@@ -120,9 +120,9 @@ describe('TestPlatform', () => {
   it('should throw error in load when version is not valid', () => {
     mockMatterbridge.matterbridgeVersion = '1.5.0';
     expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow(
-      'The test plugin requires Matterbridge version >= "2.2.4". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "2.2.7". Please update Matterbridge to the latest version in the frontend.',
     );
-    mockMatterbridge.matterbridgeVersion = '2.2.4';
+    mockMatterbridge.matterbridgeVersion = '2.2.7';
   });
 
   it('should call onStart in edge mode', async () => {
@@ -230,6 +230,39 @@ describe('TestPlatform', () => {
 
     expect(mockLog.info).toHaveBeenCalledWith('Interval called');
     expect(loggerLogSpy).toHaveBeenCalled();
+  });
+
+  it('should call onAction', async () => {
+    testPlatform = new TestPlatform(mockMatterbridge, mockLog, mockConfig);
+    testPlatform.version = '1.6.6';
+    await testPlatform.onStart('Test reason');
+    expect(loggerLogSpy).toHaveBeenCalled();
+    testPlatform.onAction('Test action');
+    expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Received action'));
+    testPlatform.onAction('turnOn');
+    testPlatform.onAction('turnOff');
+    testPlatform.onAction('turnOnDevice', 'Switch 0');
+    testPlatform.onAction('turnOffDevice', 'Switch 0');
+    testPlatform.onAction('turnOnDevice', 'Switch');
+    testPlatform.onAction('turnOffDevice', 'Switch');
+  });
+
+  it('should call onChangeLoggerLevel', async () => {
+    testPlatform = new TestPlatform(mockMatterbridge, mockLog, mockConfig);
+    testPlatform.version = '1.6.6';
+    await testPlatform.onStart('Test reason');
+    expect(loggerLogSpy).toHaveBeenCalled();
+    testPlatform.onChangeLoggerLevel(LogLevel.DEBUG);
+    expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('Logger level set to: debug'));
+  });
+
+  it('should call onConfigChanged', async () => {
+    testPlatform = new TestPlatform(mockMatterbridge, mockLog, mockConfig);
+    testPlatform.version = '1.6.6';
+    await testPlatform.onStart('Test reason');
+    expect(loggerLogSpy).toHaveBeenCalled();
+    testPlatform.onConfigChanged({});
+    expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('has been updated'));
   });
 
   it('should throw error in configure when throwConfigure is true', async () => {
