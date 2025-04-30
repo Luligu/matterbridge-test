@@ -42,7 +42,7 @@ describe('TestPlatform', () => {
     matterbridgeDirectory: './jest/matterbridge',
     matterbridgePluginDirectory: './jest/plugins',
     systemInformation: { ipv4Address: undefined, ipv6Address: undefined, osRelease: 'xx.xx.xx.xx.xx.xx', nodeVersion: '22.1.10' },
-    matterbridgeVersion: '2.2.7',
+    matterbridgeVersion: '3.0.0',
     edge: true,
     log: mockLog,
     getDevices: jest.fn(() => {
@@ -120,9 +120,9 @@ describe('TestPlatform', () => {
   it('should throw error in load when version is not valid', () => {
     mockMatterbridge.matterbridgeVersion = '1.5.0';
     expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow(
-      'The test plugin requires Matterbridge version >= "2.2.7". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "3.0.0". Please update Matterbridge to the latest version in the frontend.',
     );
-    mockMatterbridge.matterbridgeVersion = '2.2.7';
+    mockMatterbridge.matterbridgeVersion = '3.0.0';
   });
 
   it('should call onStart in edge mode', async () => {
