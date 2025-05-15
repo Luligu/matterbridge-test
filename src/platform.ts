@@ -10,11 +10,17 @@ import {
   powerSource,
   modeSelect,
   MatterbridgeEndpoint,
-  BridgedDeviceBasicInformationCluster,
 } from 'matterbridge';
 import { isValidString, waiter } from 'matterbridge/utils';
 import { AnsiLogger, CYAN, er, LogLevel, nf } from 'matterbridge/logger';
-import { OnOffCluster, ElectricalPowerMeasurementCluster, ElectricalEnergyMeasurementCluster, ModeSelectCluster, PowerSource } from 'matterbridge/matter/clusters';
+import {
+  OnOffCluster,
+  ElectricalPowerMeasurementCluster,
+  ElectricalEnergyMeasurementCluster,
+  ModeSelectCluster,
+  PowerSource,
+  BridgedDeviceBasicInformationCluster,
+} from 'matterbridge/matter/clusters';
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
   // Config
