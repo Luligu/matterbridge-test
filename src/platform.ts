@@ -1,3 +1,26 @@
+/**
+ * This file contains the class TestPlatform.
+ *
+ * @file platform.ts
+ * @author Luca Liguori
+ * @version 1.2.0
+ * @license Apache-2.0
+ *
+ * Copyright 2023, 2024, 2025, 2026 Luca Liguori.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
   Matterbridge,
   MatterbridgeDynamicPlatform,
@@ -91,6 +114,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    * This method must be overridden in the extended class.
    * It is called when the platform is started.
    * Use this method to create the MatterbridgeDevice and call this.registerDevice().
+   *
    * @param {string} [reason] - The reason for starting.
    * @throws {Error} - Throws an error if the method is not overridden.
    */
@@ -436,6 +460,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    * This method can be overridden in the extended class. In this case always call super.onShutdown() to save the selects, run checkEndpointNumbers() and cleanup memory.
    * It is called when the platform is shutting down.
    * Use this method to clean up any resources.
+   *
    * @param {string} [reason] - The reason for shutting down.
    */
   override async onShutdown(reason?: string): Promise<void> {
@@ -448,6 +473,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
   /**
    * Sets the logger level and logs a debug message indicating that the plugin doesn't override this method.
+   *
    * @param {LogLevel} logLevel The new logger level.
    */
   override async onChangeLoggerLevel(logLevel: LogLevel) {
@@ -459,6 +485,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
   /**
    * Called when a plugin config includes an action button or an action button with text field.
+   *
    * @param {string} action The action triggered by the button in plugin config.
    * @param {string} value The value of the field of the action button.
    * @param {string} id The id of the schema associated with the action.
@@ -524,6 +551,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
   /**
    * Called when the plugin config has been updated.
+   *
    * @param {PlatformConfig} config The new plugin config.
    */
   override async onConfigChanged(config: PlatformConfig) {
