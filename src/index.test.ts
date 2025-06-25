@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { jest } from '@jest/globals';
 import { Matterbridge, MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
 import { AnsiLogger } from 'matterbridge/logger';
+import path from 'node:path';
+
 import { TestPlatform } from './platform.js';
 import initializePlugin from './index';
-import { jest } from '@jest/globals';
 
 describe('initializePlugin', () => {
   const mockLog = {
@@ -49,8 +51,9 @@ describe('initializePlugin', () => {
   } as PlatformConfig;
 
   const mockMatterbridge = {
-    matterbridgeDirectory: './jest/matterbridge',
-    matterbridgePluginDirectory: './jest/plugins',
+    homeDirectory: path.join('jest'),
+    matterbridgeDirectory: path.join('jest', 'matterbridge'),
+    matterbridgePluginDirectory: path.join('jest', 'plugins'),
     systemInformation: { ipv4Address: undefined, ipv6Address: undefined, osRelease: 'xx.xx.xx.xx.xx.xx', nodeVersion: '22.1.10' },
     matterbridgeVersion: '3.0.0',
     edge: true,
