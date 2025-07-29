@@ -27,7 +27,6 @@ If you like this project and find it useful, please consider giving it a star on
 
 ### Added
 
-- [server]: Added 'server' mode when running in 'bridge' mode.
 - [config]: Added default config file.
 
 ### Changed
