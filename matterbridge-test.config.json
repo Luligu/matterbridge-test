@@ -1,0 +1,21 @@
+{
+  "name": "matterbridge-test",
+  "type": "DynamicPlatform",
+  "noDevices": false,
+  "delayStart": false,
+  "longDelayStart": false,
+  "loadSwitches": 1,
+  "loadOutlets": 1,
+  "loadLights": 1,
+  "setUpdateInterval": 60,
+  "enableElectrical": true,
+  "enablePowerSource": true,
+  "enableModeSelect": true,
+  "enableReachable": true,
+  "throwLoad": false,
+  "throwStart": false,
+  "throwConfigure": false,
+  "throwShutdown": false,
+  "debug": false,
+  "unregisterOnShutdown": false
+}

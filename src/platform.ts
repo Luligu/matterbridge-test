@@ -3,7 +3,7 @@
  *
  * @file platform.ts
  * @author Luca Liguori
- * @version 1.2.0
+ * @version 1.2.1
  * @license Apache-2.0
  *
  * Copyright 2023, 2024, 2025, 2026 Luca Liguori.
@@ -286,17 +286,6 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       if (this.noDevices === false) await this.registerDevice(lightDevice);
       this.bridgedDevices.set('Light ' + i, lightDevice);
     }
-
-    /*
-    const energy = new MatterbridgeDevice([deviceEnergyManagement, bridgedNode], undefined, this.config.debug as boolean);
-    energy.createDefaultBridgedDeviceBasicInformationClusterServer('Device Energy Management', 'serial_98745631227', 0xfff1, 'Test plugin', 'deviceEnergyManagement', 2, '2.1.1');
-    energy.addDeviceTypeWithClusterServer([deviceEnergyManagement], [DeviceEnergyManagement.Cluster.id, DeviceEnergyManagementMode.Cluster.id]);
-    energy.addCommandHandler('changeToMode', async ({ request: { newMode }, attributes: { currentMode } }) => {
-      this.log.info('Received changeToMode command with mode:', newMode, 'current mode:', currentMode.getLocal());
-      energy.setAttribute(DeviceEnergyManagementModeCluster.id, 'currentMode', newMode, energy.log);
-    });
-    if (!this.noDevices) await this.registerDevice(energy);
-    */
 
     this.log.info(`Finished starting platform ${this.config.name} with ${this.bridgedDevices.size} devices:`);
     for (const device of this.bridgedDevices.values()) {

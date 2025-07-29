@@ -74,27 +74,27 @@
     "setUpdateInterval": {
       "description": "Set an update interval in seconds",
       "type": "number",
-      "default": 0
+      "default": 60
     },
     "enableElectrical": {
       "description": "Add electrical measurements to the devices",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "enablePowerSource": {
       "description": "Add power source to the devices",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "enableModeSelect": {
       "description": "Add mode select to the devices",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "enableReachable": {
       "description": "Change reachable",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "throwLoad": {
       "description": "Throw on load",

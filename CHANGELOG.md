@@ -23,6 +23,22 @@ If you like this project and find it useful, please consider giving it a star on
   <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
+## [1.2.1] - 2025-07-29
+
+### Added
+
+- [server]: Added 'server' mode when running in 'bridge' mode.
+- [config]: Added default config file.
+
+### Changed
+
+- [package]: Updated package to Automator v. 2.0.3.
+- [package]: Updated dependencies.
+
+<a href="https://www.buymeacoffee.com/luligugithub">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="80">
+</a>
+
 ## [1.2.0] - 2025-06-25
 
 ### Added
