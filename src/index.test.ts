@@ -21,7 +21,7 @@ describe('initializePlugin', () => {
     debug: jest.fn((message: string, ...parameters: any[]) => {}),
   } as unknown as AnsiLogger;
 
-  const mockConfig = {
+  const mockConfig: TestPlatformConfig = {
     name: 'matterbridge-test',
     type: 'DynamicPlatform',
     version: '1.0.0',
@@ -44,7 +44,7 @@ describe('initializePlugin', () => {
     enableReachable: false,
     debug: false,
     unregisterOnShutdown: false,
-  } as TestPlatformConfig;
+  };
 
   const mockMatterbridge = {
     homeDirectory: path.join('jest', 'index'),

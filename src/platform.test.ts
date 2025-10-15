@@ -52,7 +52,7 @@ describe('TestPlatform', () => {
     }),
   } as unknown as Matterbridge;
 
-  const mockConfig = {
+  const mockConfig: TestPlatformConfig = {
     name: 'matterbridge-test',
     type: 'DynamicPlatform',
     version: '1.0.0',
@@ -75,7 +75,7 @@ describe('TestPlatform', () => {
     enableReachable: true,
     debug: true,
     unregisterOnShutdown: true,
-  } as TestPlatformConfig;
+  };
 
   beforeAll(() => {
     //
