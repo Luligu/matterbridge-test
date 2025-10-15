@@ -23,6 +23,21 @@ If you like this project and find it useful, please consider giving it a star on
   <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
 </a>
 
+## [1.3.0] - 2025-10-15
+
+### Changed
+
+- [package]: Require matterbridge 3.3.0.
+- [index]: Updated to new signature PlatformMatterbridge.
+- [platform]: Updated to new signature PlatformMatterbridge.
+- [platform]: Added whiteList and blackList.
+- [package]: Updated dependencies.
+- [package]: Updated package to Automator v. 2.0.5.
+
+<a href="https://www.buymeacoffee.com/luligugithub">
+  <img src="bmc-button.svg" alt="Buy me a coffee" width="80">
+</a>
+
 ## [1.2.2] - 2025-09-02
 
 ### Changed

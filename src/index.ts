@@ -21,7 +21,7 @@
  * limitations under the License.
  */
 
-import { Matterbridge, PlatformConfig } from 'matterbridge';
+import { PlatformConfig, PlatformMatterbridge } from 'matterbridge';
 import { AnsiLogger } from 'matterbridge/logger';
 
 import { TestPlatform } from './platform.js';
@@ -35,6 +35,6 @@ import { TestPlatform } from './platform.js';
  * @param {PlatformConfig} config - The platform configuration.
  * @returns {TestPlatform} - An instance of the SomfyTahomaPlatform. This is the main interface for interacting with the Somfy Tahoma system.
  */
-export default function initializePlugin(matterbridge: Matterbridge, log: AnsiLogger, config: PlatformConfig): TestPlatform {
+export default function initializePlugin(matterbridge: PlatformMatterbridge, log: AnsiLogger, config: PlatformConfig): TestPlatform {
   return new TestPlatform(matterbridge, log, config);
 }

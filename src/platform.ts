@@ -22,7 +22,6 @@
  */
 
 import {
-  Matterbridge,
   MatterbridgeDynamicPlatform,
   PlatformConfig,
   bridgedNode,
@@ -33,6 +32,7 @@ import {
   powerSource,
   modeSelect,
   MatterbridgeEndpoint,
+  PlatformMatterbridge,
 } from 'matterbridge';
 import { isValidString, waiter } from 'matterbridge/utils';
 import { AnsiLogger, CYAN, er, LogLevel, nf } from 'matterbridge/logger';
@@ -64,7 +64,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   private interval: NodeJS.Timeout | undefined;
   bridgedDevices = new Map<string, MatterbridgeEndpoint>();
 
-  constructor(matterbridge: Matterbridge, log: AnsiLogger, config: PlatformConfig) {
+  constructor(matterbridge: PlatformMatterbridge, log: AnsiLogger, config: PlatformConfig) {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
@@ -127,7 +127,13 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     if (this.config.longDelayStart) await waiter('Long delay start', () => false, false, 150000, 1000);
 
+    // Clear the select
+    await this.ready;
+    await this.clearSelect();
+
     for (let i = 0; i < this.loadSwitches; i++) {
+      this.setSelectDevice('serial_switch_' + i, 'Switch ' + i);
+      if (!this.validateDevice('Switch ' + i)) continue;
       const switchDevice = new MatterbridgeEndpoint(
         [
           onOffSwitch,
@@ -174,6 +180,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
 
     for (let i = 0; i < this.loadOutlets; i++) {
+      this.setSelectDevice('serial_outlet_' + i, 'Outlet ' + i);
+      if (!this.validateDevice('Outlet ' + i)) continue;
       const outletDevice = new MatterbridgeEndpoint(
         [
           onOffOutlet,
@@ -220,6 +228,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
 
     for (let i = 0; i < this.loadLights; i++) {
+      this.setSelectDevice('serial_light_' + i, 'Light ' + i);
+      if (!this.validateDevice('Light ' + i)) continue;
       const lightDevice = new MatterbridgeEndpoint(
         [
           colorTemperatureLight,
