@@ -1,45 +1,17 @@
 /* eslint-disable jest/no-conditional-expect */
 
 import path from 'node:path';
-import { rmSync } from 'node:fs';
 
 import { jest } from '@jest/globals';
 import { Matterbridge, MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
 import { AnsiLogger, LogLevel } from 'matterbridge/logger';
 import { OnOffCluster, ModeSelectCluster, IdentifyCluster, LevelControlCluster, ColorControlCluster } from 'matterbridge/matter/clusters';
 
-import { TestPlatform } from './platform.ts';
+import { TestPlatform, TestPlatformConfig } from './platform.ts';
+import { loggerLogSpy, setupTest } from './jestHelpers.ts';
 
-let loggerLogSpy: jest.SpiedFunction<typeof AnsiLogger.prototype.log>;
-let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
-let consoleDebugSpy: jest.SpiedFunction<typeof console.log>;
-let consoleInfoSpy: jest.SpiedFunction<typeof console.log>;
-let consoleWarnSpy: jest.SpiedFunction<typeof console.log>;
-let consoleErrorSpy: jest.SpiedFunction<typeof console.log>;
-const debug = false; // Set to true to enable debug logs
-
-if (!debug) {
-  loggerLogSpy = jest.spyOn(AnsiLogger.prototype, 'log').mockImplementation((level: string, message: string, ...parameters: any[]) => {});
-  consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((...args: any[]) => {});
-  consoleDebugSpy = jest.spyOn(console, 'debug').mockImplementation((...args: any[]) => {});
-  consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation((...args: any[]) => {});
-  consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation((...args: any[]) => {});
-  consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation((...args: any[]) => {});
-} else {
-  loggerLogSpy = jest.spyOn(AnsiLogger.prototype, 'log');
-  consoleLogSpy = jest.spyOn(console, 'log');
-  consoleDebugSpy = jest.spyOn(console, 'debug');
-  consoleInfoSpy = jest.spyOn(console, 'info');
-  consoleWarnSpy = jest.spyOn(console, 'warn');
-  consoleErrorSpy = jest.spyOn(console, 'error');
-}
-
-// Cleanup the matter environment
-try {
-  rmSync(path.join('jest', 'platform'), { recursive: true, force: true });
-} catch (error) {
-  //
-}
+// Setup the test environment
+setupTest('Platform', false);
 
 describe('TestPlatform', () => {
   let testPlatform: TestPlatform;
@@ -58,7 +30,7 @@ describe('TestPlatform', () => {
     matterbridgeDirectory: path.join('jest', 'platform', '.matterbridge'),
     matterbridgePluginDirectory: path.join('jest', 'platform', 'Matterbridge'),
     systemInformation: { ipv4Address: undefined, ipv6Address: undefined, osRelease: 'xx.xx.xx.xx.xx.xx', nodeVersion: '22.1.10' },
-    matterbridgeVersion: '3.0.0',
+    matterbridgeVersion: '3.3.0',
     edge: true,
     log: mockLog,
     getDevices: jest.fn(() => {
@@ -83,6 +55,7 @@ describe('TestPlatform', () => {
   const mockConfig = {
     name: 'matterbridge-test',
     type: 'DynamicPlatform',
+    version: '1.0.0',
     delayStart: false,
     longDelayStart: false,
     noDevices: false,
@@ -93,13 +66,16 @@ describe('TestPlatform', () => {
     loadSwitches: 1,
     loadOutlets: 1,
     loadLights: 1,
+    whiteList: [],
+    blackList: [],
     setUpdateInterval: 30,
     enableElectrical: true,
     enablePowerSource: true,
     enableModeSelect: true,
+    enableReachable: true,
     debug: true,
     unregisterOnShutdown: true,
-  } as PlatformConfig;
+  } as TestPlatformConfig;
 
   beforeAll(() => {
     //
@@ -113,7 +89,7 @@ describe('TestPlatform', () => {
   afterEach(async () => {
     // Cleanup after each test
     if (testPlatform) {
-      (testPlatform as any).throwShutdown = false;
+      testPlatform.config.throwShutdown = false;
       await testPlatform.onShutdown();
     }
   });
@@ -136,9 +112,9 @@ describe('TestPlatform', () => {
   it('should throw error in load when version is not valid', () => {
     mockMatterbridge.matterbridgeVersion = '1.5.0';
     expect(() => new TestPlatform(mockMatterbridge, mockLog, mockConfig)).toThrow(
-      'The test plugin requires Matterbridge version >= "3.0.0". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "3.3.0". Please update Matterbridge to the latest version in the frontend.',
     );
-    mockMatterbridge.matterbridgeVersion = '3.0.0';
+    mockMatterbridge.matterbridgeVersion = '3.3.0';
   });
 
   it('should call onStart in edge mode', async () => {
@@ -277,7 +253,7 @@ describe('TestPlatform', () => {
     testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalled();
-    testPlatform.onConfigChanged({});
+    testPlatform.onConfigChanged({} as PlatformConfig);
     expect(mockLog.info).toHaveBeenCalledWith(expect.stringContaining('has been updated'));
   });
 

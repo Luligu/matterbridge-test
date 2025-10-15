@@ -24,7 +24,7 @@
 import { PlatformConfig, PlatformMatterbridge } from 'matterbridge';
 import { AnsiLogger } from 'matterbridge/logger';
 
-import { TestPlatform } from './platform.js';
+import { TestPlatform, TestPlatformConfig } from './platform.js';
 
 /**
  * This is the standard interface for Matterbridge plugins.
@@ -36,5 +36,5 @@ import { TestPlatform } from './platform.js';
  * @returns {TestPlatform} - An instance of the SomfyTahomaPlatform. This is the main interface for interacting with the Somfy Tahoma system.
  */
 export default function initializePlugin(matterbridge: PlatformMatterbridge, log: AnsiLogger, config: PlatformConfig): TestPlatform {
-  return new TestPlatform(matterbridge, log, config);
+  return new TestPlatform(matterbridge, log, config as TestPlatformConfig);
 }

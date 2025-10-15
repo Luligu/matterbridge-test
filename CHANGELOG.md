@@ -31,8 +31,16 @@ If you like this project and find it useful, please consider giving it a star on
 - [index]: Updated to new signature PlatformMatterbridge.
 - [platform]: Updated to new signature PlatformMatterbridge.
 - [platform]: Added whiteList and blackList.
+- [platform]: Typed TestPlatformConfig.
 - [package]: Updated dependencies.
-- [package]: Updated package to Automator v. 2.0.5.
+- [package]: Bumped package to automator version 2.0.7
+- [workflows]: Ignore any .md in build.yaml.
+- [workflows]: Ignore any .md in codeql.yaml.
+- [workflows]: Ignore any .md in codecov.yaml.
+- [jest]: Updated jestHelpers to v. 1.0.6.
+- [workflows]: Improved speed on Node CI.
+- [devcontainer]: Added the plugin name to the container.
+- [devcontainer]: Improved performance of first build with shallow clone.
 
 <a href="https://www.buymeacoffee.com/luligugithub">
   <img src="bmc-button.svg" alt="Buy me a coffee" width="80">
