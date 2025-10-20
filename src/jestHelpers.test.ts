@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { Matterbridge, MatterbridgeEndpoint, onOffOutlet } from 'matterbridge';
-import { Endpoint, ServerNode } from 'matterbridge/matter';
+import { Endpoint, Environment, ServerNode } from 'matterbridge/matter';
 import { AggregatorEndpoint } from 'matterbridge/matter/endpoints';
 
 import {
@@ -24,7 +24,8 @@ import {
 } from './jestHelpers.js';
 
 process.argv.push('--debug');
-setupTest('Template', false);
+
+setupTest('JestHelpers', false);
 
 describe('Matterbridge instance', () => {
   let matterbridge: Matterbridge;
@@ -88,6 +89,7 @@ describe('Matterbridge instance', () => {
 });
 
 describe('Matter.js instance', () => {
+  let environment: Environment;
   let server: ServerNode<ServerNode.RootEndpoint>;
   let aggregator: Endpoint<AggregatorEndpoint>;
   let device: MatterbridgeEndpoint;
@@ -118,12 +120,12 @@ describe('Matter.js instance', () => {
   });
 
   test('should create a matter.js environment', async () => {
-    const environment = createTestEnvironment('JestHelpers');
+    environment = createTestEnvironment('JestHelpers');
     expect(environment).toBeDefined();
   });
 
   test('should start a matter.js server node', async () => {
-    [server, aggregator] = await startServerNode('JestHelpers', 6000);
+    [server, aggregator] = await startServerNode('JestHelpers', 6000, environment);
     expect(server).toBeDefined();
     expect(aggregator).toBeDefined();
   });

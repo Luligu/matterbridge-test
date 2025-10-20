@@ -3,7 +3,7 @@
  * @file src/helpers.test.ts
  * @author Luca Liguori
  * @created 2025-09-03
- * @version 1.0.8
+ * @version 1.0.9
  * @license Apache-2.0
  *
  * Copyright 2025, 2026, 2027 Luca Liguori.
@@ -126,32 +126,6 @@ export function setDebug(debug: boolean): void {
     consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
   }
-}
-
-/**
- * Create a matter Environment for testing:
- * - it will remove any existing home directory
- * - setup the matter environment with name, debug logging and ANSI format
- *
- * @param {string} name - Name for the environment (jest/name).
- * @returns {Environment} - The default matter environment.
- */
-export function createTestEnvironment(name: string): Environment {
-  expect(name).toBeDefined();
-  expect(typeof name).toBe('string');
-  expect(name.length).toBeGreaterThanOrEqual(4); // avoid accidental deletion of short paths like "/" or "C:\"
-
-  // Cleanup any existing home directory
-  rmSync(path.join('jest', name), { recursive: true, force: true });
-
-  // Setup the matter environment
-  const environment = Environment.default;
-  environment.vars.set('log.level', MatterLogLevel.DEBUG);
-  environment.vars.set('log.format', MatterLogFormat.ANSI);
-  environment.vars.set('path.root', path.join('jest', name, '.matterbridge', MATTER_STORAGE_NAME));
-  environment.vars.set('runtime.signals', false);
-  environment.vars.set('runtime.exitcode', false);
-  return environment;
 }
 
 /**
@@ -290,6 +264,36 @@ export async function destroyMatterbridgeEnvironment(matterbridge: Matterbridge)
 }
 
 /**
+ * Create a matter Environment for testing:
+ * - it will remove any existing home directory
+ * - setup the matter environment with name, debug logging and ANSI format
+ *
+ * @param {string} name - Name for the environment (jest/name).
+ * @returns {Environment} - The default matter environment.
+ */
+export function createTestEnvironment(name: string): Environment {
+  expect(name).toBeDefined();
+  expect(typeof name).toBe('string');
+  expect(name.length).toBeGreaterThanOrEqual(4); // avoid accidental deletion of short paths like "/" or "C:\"
+
+  // Cleanup any existing home directory
+  rmSync(path.join('jest', name), { recursive: true, force: true });
+
+  // Setup the matter environment
+  const environment = Environment.default;
+  environment.vars.set('log.level', MatterLogLevel.DEBUG);
+  environment.vars.set('log.format', MatterLogFormat.ANSI);
+  environment.vars.set('path.root', path.join('jest', name, '.matterbridge', MATTER_STORAGE_NAME));
+  environment.vars.set('runtime.signals', false);
+  environment.vars.set('runtime.exitcode', false);
+
+  // Setup the mDNS service
+  new MdnsService(environment);
+
+  return environment;
+}
+
+/**
  * Advance the Node.js event loop deterministically to allow chained asynchronous work (Promises scheduled in
  * microtasks and follow‑up macrotasks) to complete inside tests without adding arbitrary long timeouts.
  *
@@ -380,12 +384,19 @@ export async function assertAllEndpointNumbersPersisted(targetServer: ServerNode
  *
  * @param {string} name Name of the server (used for logging and product description).
  * @param {number} port TCP port to listen on.
+ * @param {Environment | undefined} environment The optional matter environment to use.
  * @returns {Promise<[ServerNode<ServerNode.RootEndpoint>, Endpoint<AggregatorEndpoint>]>} Resolves to an array containing the created ServerNode and its AggregatorNode.
  */
-export async function startServerNode(name: string, port: number): Promise<[ServerNode<ServerNode.RootEndpoint>, Endpoint<AggregatorEndpoint>]> {
+export async function startServerNode(
+  name: string,
+  port: number,
+  environment: Environment | undefined,
+): Promise<[ServerNode<ServerNode.RootEndpoint>, Endpoint<AggregatorEndpoint>]> {
   // Create the server node
   const server = await ServerNode.create({
     id: name + 'ServerNode',
+
+    environment: environment,
 
     productDescription: {
       name: name + 'ServerNode',

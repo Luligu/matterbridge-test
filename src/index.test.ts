@@ -54,14 +54,6 @@ describe('initializePlugin', () => {
     matterbridgeVersion: '3.3.0',
     edge: true,
     log: mockLog,
-    getDevices: jest.fn(() => {
-      // console.log('getDevices called');
-      return [];
-    }),
-    getPlugins: jest.fn(() => {
-      // console.log('getDevices called');
-      return [];
-    }),
     addBridgedEndpoint: jest.fn(async (pluginName: string, device: MatterbridgeEndpoint) => {
       // console.log('addBridgedEndpoint called');
     }),
