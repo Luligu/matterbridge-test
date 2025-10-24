@@ -224,17 +224,18 @@ describe('TestPlatform', () => {
 
   it('should call onAction', async () => {
     testPlatform = new TestPlatform(matterbridge, log, config);
+    testPlatform['name'] = 'matterbridge-jest';
     testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalled();
-    testPlatform.onAction('Test action');
+    await testPlatform.onAction('Test action');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received action'));
-    testPlatform.onAction('turnOn');
-    testPlatform.onAction('turnOff');
-    testPlatform.onAction('turnOnDevice', 'Switch 0');
-    testPlatform.onAction('turnOffDevice', 'Switch 0');
-    testPlatform.onAction('turnOnDevice', 'Switch');
-    testPlatform.onAction('turnOffDevice', 'Switch');
+    await testPlatform.onAction('turnOn');
+    await testPlatform.onAction('turnOff');
+    await testPlatform.onAction('turnOnDevice', 'Switch 0');
+    await testPlatform.onAction('turnOffDevice', 'Switch 0');
+    await testPlatform.onAction('turnOnDevice', 'Switch');
+    await testPlatform.onAction('turnOffDevice', 'Switch');
   });
 
   it('should call onChangeLoggerLevel', async () => {
