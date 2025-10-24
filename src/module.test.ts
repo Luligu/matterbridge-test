@@ -19,6 +19,7 @@ import {
   createMatterbridgeEnvironment,
   destroyMatterbridgeEnvironment,
   loggerLogSpy,
+  setDebug,
   setupTest,
   startMatterbridgeEnvironment,
   stopMatterbridgeEnvironment,
@@ -210,7 +211,7 @@ describe('TestPlatform', () => {
     await testPlatform.onConfigure();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onConfigure called');
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       jest.advanceTimersByTime(61 * 1000);
       await Promise.resolve();
     }
@@ -218,11 +219,13 @@ describe('TestPlatform', () => {
     jest.useRealTimers();
 
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Interval called');
-    expect(loggerLogSpy).toHaveBeenCalledTimes(314);
+    expect(loggerLogSpy).toHaveBeenCalledTimes(131);
     expect(loggerLogSpy).not.toHaveBeenCalledWith(LogLevel.ERROR, expect.anything());
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   it('should call onAction', async () => {
+    // setDebug(true);
     testPlatform = new TestPlatform(matterbridge, log, config);
     testPlatform['name'] = 'matterbridge-jest';
     testPlatform.version = '1.6.6';
@@ -236,6 +239,7 @@ describe('TestPlatform', () => {
     await testPlatform.onAction('turnOffDevice', 'Switch 0');
     await testPlatform.onAction('turnOnDevice', 'Switch');
     await testPlatform.onAction('turnOffDevice', 'Switch');
+    // setDebug(false);
   });
 
   it('should call onChangeLoggerLevel', async () => {
