@@ -1,9 +1,9 @@
 /**
  * This file contains the class TestPlatform.
  *
- * @file platform.ts
+ * @file module.ts
  * @author Luca Liguori
- * @version 1.2.1
+ * @version 2.0.0
  * @license Apache-2.0
  *
  * Copyright 2023, 2024, 2025, 2026 Luca Liguori.
@@ -64,6 +64,19 @@ export type TestPlatformConfig = PlatformConfig & {
   throwConfigure: boolean;
   throwShutdown: boolean;
 };
+
+/**
+ * This is the standard interface for Matterbridge plugins.
+ * Each plugin should export a default function that follows this signature.
+ *
+ * @param {PlatformMatterbridge} matterbridge - An instance of MatterBridge. This is the main interface for interacting with the MatterBridge system.
+ * @param {AnsiLogger} log - An instance of AnsiLogger. This is used for logging messages in a format that can be displayed with ANSI color codes.
+ * @param {PlatformConfig} config - The platform configuration.
+ * @returns {TestPlatform} - An instance of the SomfyTahomaPlatform. This is the main interface for interacting with the Somfy Tahoma system.
+ */
+export default function initializePlugin(matterbridge: PlatformMatterbridge, log: AnsiLogger, config: PlatformConfig): TestPlatform {
+  return new TestPlatform(matterbridge, log, config as TestPlatformConfig);
+}
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
   private interval: NodeJS.Timeout | undefined;
@@ -296,6 +309,12 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
   }
 
+  addPowerSource(device: MatterbridgeEndpoint, type: 'wired' | 'replaceable' | 'rechargeable'): void {
+    if (type === 'wired') device.createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac);
+    else if (type === 'replaceable') device.createDefaultPowerSourceReplaceableBatteryClusterServer(100);
+    else if (type === 'rechargeable') device.createDefaultPowerSourceRechargeableBatteryClusterServer(100);
+  }
+
   addElectricalMeasurements(device: MatterbridgeEndpoint): void {
     device.createDefaultPowerTopologyClusterServer();
     device.createDefaultElectricalPowerMeasurementClusterServer(220 * 1000, 2.5 * 1000, 220 * 2.5 * 1000, 50 * 1000);
@@ -312,12 +331,6 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       1,
       1,
     );
-  }
-
-  addPowerSource(device: MatterbridgeEndpoint, type: 'wired' | 'replaceable' | 'rechargeable'): void {
-    if (type === 'wired') device.createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac);
-    else if (type === 'replaceable') device.createDefaultPowerSourceReplaceableBatteryClusterServer(100);
-    else if (type === 'rechargeable') device.createDefaultPowerSourceRechargeableBatteryClusterServer(100);
   }
 
   /**
