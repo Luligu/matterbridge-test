@@ -21,7 +21,7 @@ import {
   setupTest,
   startMatterbridgeEnvironment,
   stopMatterbridgeEnvironment,
-} from './utils/jestHelpers.ts';
+} from './utils/jestHelpers.js';
 
 // Setup the test environment
 setupTest('NAME', false);
