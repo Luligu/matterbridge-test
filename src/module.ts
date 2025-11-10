@@ -148,7 +148,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           ...(this.config.enablePowerSource ? [powerSource] : []),
           ...(this.config.enableModeSelect ? [modeSelect] : []),
         ],
-        { uniqueStorageKey: 'Switch' + i },
+        { id: 'Switch' + i },
         this.config.debug as boolean,
       );
       switchDevice.log.logName = 'Switch' + i;
@@ -196,7 +196,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           ...(this.config.enablePowerSource ? [powerSource] : []),
           ...(this.config.enableModeSelect ? [modeSelect] : []),
         ],
-        { uniqueStorageKey: 'Outlet' + i },
+        { id: 'Outlet' + i },
         this.config.debug as boolean,
       );
       outletDevice.log.logName = 'Outlet' + i;
@@ -244,7 +244,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           ...(this.config.enablePowerSource ? [powerSource] : []),
           ...(this.config.enableModeSelect ? [modeSelect] : []),
         ],
-        { uniqueStorageKey: 'Light' + i },
+        { id: 'Light' + i },
         this.config.debug as boolean,
       );
       lightDevice.log.logName = 'Light' + i;
