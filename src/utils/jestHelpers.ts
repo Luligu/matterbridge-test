@@ -58,9 +58,11 @@ export let consoleInfoSpy: jest.SpiedFunction<typeof console.log>;
 export let consoleWarnSpy: jest.SpiedFunction<typeof console.log>;
 export let consoleErrorSpy: jest.SpiedFunction<typeof console.log>;
 
-export const addBridgedEndpointSpy = jest.spyOn(Matterbridge.prototype, 'addBridgedEndpoint');
-export const removeBridgedEndpointSpy = jest.spyOn(Matterbridge.prototype, 'removeBridgedEndpoint');
-export const removeAllBridgedEndpointsSpy = jest.spyOn(Matterbridge.prototype, 'removeAllBridgedEndpoints');
+export const addBridgedEndpointSpy = jest.spyOn(Matterbridge.prototype, 'addBridgedEndpoint') as jest.SpiedFunction<typeof Matterbridge.prototype.addBridgedEndpoint>;
+export const removeBridgedEndpointSpy = jest.spyOn(Matterbridge.prototype, 'removeBridgedEndpoint') as jest.SpiedFunction<typeof Matterbridge.prototype.removeBridgedEndpoint>;
+export const removeAllBridgedEndpointsSpy = jest.spyOn(Matterbridge.prototype, 'removeAllBridgedEndpoints') as jest.SpiedFunction<
+  typeof Matterbridge.prototype.removeAllBridgedEndpoints
+>;
 
 export let matterbridge: Matterbridge;
 export let environment: Environment;
