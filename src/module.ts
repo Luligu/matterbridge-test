@@ -149,7 +149,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           ...(this.config.enableModeSelect ? [modeSelect] : []),
         ],
         { id: 'Switch' + i },
-        this.config.debug as boolean,
+        this.config.debug,
       );
       switchDevice.log.logName = 'Switch' + i;
       switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
@@ -197,7 +197,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           ...(this.config.enableModeSelect ? [modeSelect] : []),
         ],
         { id: 'Outlet' + i },
-        this.config.debug as boolean,
+        this.config.debug,
       );
       outletDevice.log.logName = 'Outlet' + i;
       outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
@@ -245,7 +245,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           ...(this.config.enableModeSelect ? [modeSelect] : []),
         ],
         { id: 'Light' + i },
-        this.config.debug as boolean,
+        this.config.debug,
       );
       lightDevice.log.logName = 'Light' + i;
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
