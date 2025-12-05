@@ -19,9 +19,17 @@ All notable changes to this project will be documented in this file.
 
 If you like this project and find it useful, please consider giving it a star on GitHub at https://github.com/Luligu/matterbridge-test and sponsoring it.
 
-<a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="bmc-button.svg" alt="Buy me a coffee" width="120">
-</a>
+<a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/bmc-button.svg" alt="Buy me a coffee" width="120"></a>
+
+## [2.0.2] - 2025-12-05
+
+- [package]: Updated dependencies.
+- [package]: Updated to the current Matterbridge signatures.
+- [package]: Requires Matterbridge v.3.4.0.
+- [package]: Updated tests to use the Matterbridge Jest module.
+- [package]: Bumped package to automator v.2.1.0.
+
+<a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
 
 ## [2.0.1] - 2025-11-13
 
@@ -32,9 +40,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [jest]: Updated jestHelpers to v.1.0.12.
 - [workflows]: Use shallow clones and --no-fund --no-audit for faster builds.
 
-<a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="bmc-button.svg" alt="Buy me a coffee" width="80">
-</a>
+<a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
 
 ## [2.0.0] - 2025-10-24
 
@@ -45,9 +51,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Bumped package to automator v. 2.0.9.
 - [jest]: Updated jestHelpers to v. 1.0.9.
 
-<a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="bmc-button.svg" alt="Buy me a coffee" width="80">
-</a>
+<a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
 
 ## [1.3.0] - 2025-10-15
 
@@ -68,9 +72,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [devcontainer]: Added the plugin name to the container.
 - [devcontainer]: Improved performance of first build with shallow clone.
 
-<a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="bmc-button.svg" alt="Buy me a coffee" width="80">
-</a>
+<a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
 
 ## [1.2.2] - 2025-09-02
 
@@ -79,9 +81,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated dependencies.
 - [package]: Updated package to Automator v. 2.0.5.
 
-<a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="bmc-button.svg" alt="Buy me a coffee" width="80">
-</a>
+<a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
 
 ## [1.2.1] - 2025-07-29
 
@@ -94,9 +94,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Updated package to Automator v. 2.0.3.
 - [package]: Updated dependencies.
 
-<a href="https://www.buymeacoffee.com/luligugithub">
-  <img src="bmc-button.svg" alt="Buy me a coffee" width="80">
-</a>
+<a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
 
 ## [1.2.0] - 2025-06-25
 

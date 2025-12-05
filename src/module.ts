@@ -90,8 +90,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('3.3.0')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "3.3.0". Please update Matterbridge to the latest version in the frontend.`);
+    if (this.verifyMatterbridgeVersion === undefined || typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('3.4.0')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "3.4.0". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -111,7 +111,12 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     this.log.debug('- with throwConfigure:', this.config.throwConfigure);
     this.log.debug('- with throwShutdown:', this.config.throwShutdown);
 
-    if (this.config.throwLoad) throw new Error('Throwing error in load');
+    if (this.config.throwLoad) {
+      setImmediate(async () => {
+        await this.onShutdown('Throwing error in load');
+      });
+      throw new Error('Throwing error in load');
+    }
 
     this.log.info('Finished initializing platform:', this.config.name);
   }
@@ -127,7 +132,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   override async onStart(reason?: string): Promise<void> {
     this.log.info('onStart called with reason:', reason ?? 'none');
 
-    if (this.config.throwStart) throw new Error('Throwing error in start');
+    if (this.config.throwStart) {
+      await this.onShutdown('Throwing error in start');
+      throw new Error('Throwing error in start');
+    }
 
     if (this.config.delayStart) await waiter('Delay start', () => false, false, 20000, 1000);
 
@@ -341,7 +349,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   override async onConfigure(): Promise<void> {
     await super.onConfigure();
     this.log.info('onConfigure called');
-    if (this.config.throwConfigure) throw new Error('Throwing error in configure');
+    if (this.config.throwConfigure) {
+      await this.onShutdown('Throwing error in configure');
+      throw new Error('Throwing error in configure');
+    }
 
     if (this.config.setUpdateInterval === 0) return;
 

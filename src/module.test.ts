@@ -10,21 +10,23 @@ import { jest } from '@jest/globals';
 import { PlatformConfig } from 'matterbridge';
 import { AnsiLogger, LogLevel, TimestampFormat } from 'matterbridge/logger';
 import { OnOffCluster, ModeSelectCluster, IdentifyCluster, LevelControlCluster, ColorControlCluster } from 'matterbridge/matter/clusters';
-
-import initializePlugin, { TestPlatform, TestPlatformConfig } from './module.ts';
 import {
   addBridgedEndpointSpy,
+  addMatterbridgePlatform,
   createMatterbridgeEnvironment,
   destroyMatterbridgeEnvironment,
   loggerLogSpy,
   matterbridge,
+  removeAllBridgedEndpointsSpy,
   setupTest,
   startMatterbridgeEnvironment,
   stopMatterbridgeEnvironment,
-} from './utils/jestHelpers.js';
+} from 'matterbridge/jestutils';
+
+import initializePlugin, { TestPlatform, TestPlatformConfig } from './module.ts';
 
 // Setup the test environment
-setupTest('NAME', false);
+await setupTest('NAME', false);
 
 describe('TestPlatform', () => {
   let testPlatform: TestPlatform;
@@ -81,18 +83,21 @@ describe('TestPlatform', () => {
   });
 
   it('should return an instance of TestPlatform', async () => {
-    const result = initializePlugin(matterbridge, log, config);
-    expect(result).toBeInstanceOf(TestPlatform);
+    const platform = initializePlugin(matterbridge, log, config);
+    expect(platform).toBeInstanceOf(TestPlatform);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Initializing platform:', config.name);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Finished initializing platform:', config.name);
-    await result.onShutdown();
+    await platform.onShutdown();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'none');
   });
 
-  it('should initialize platform with config name', () => {
+  it('should initialize platform with config name', async () => {
     testPlatform = new TestPlatform(matterbridge, log, config);
+    addMatterbridgePlatform(testPlatform);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Initializing platform:', config.name);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Finished initializing platform:', config.name);
+    await testPlatform.onShutdown('Closing test');
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'Closing test');
   });
 
   it('should throw error in load when throwLoad is true', () => {
@@ -102,28 +107,28 @@ describe('TestPlatform', () => {
   it('should throw error in load when version is not valid', () => {
     matterbridge.matterbridgeVersion = '1.5.0';
     expect(() => new TestPlatform(matterbridge, log, config)).toThrow(
-      'The test plugin requires Matterbridge version >= "3.3.0". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "3.4.0". Please update Matterbridge to the latest version in the frontend.',
     );
-    matterbridge.matterbridgeVersion = '3.3.0';
+    matterbridge.matterbridgeVersion = '3.4.0';
   });
 
   it('should call onStart', async () => {
     testPlatform = new TestPlatform(matterbridge, log, { ...config, setUpdateInterval: 2 });
-    testPlatform.version = '1.6.6';
-    await testPlatform.onStart('Test reason');
-    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onStart called with reason:', 'Test reason');
+    addMatterbridgePlatform(testPlatform);
+    await testPlatform.onStart();
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onStart called with reason:', 'none');
     jest.useFakeTimers();
     await testPlatform.onConfigure();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onConfigure called');
     jest.advanceTimersByTime(60 * 1000);
     jest.useRealTimers();
-    await testPlatform.onShutdown('Test reason');
-    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'Test reason');
+    await testPlatform.onShutdown();
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'none');
   }, 30000);
 
   it('should call onStart with reason', async () => {
     testPlatform = new TestPlatform(matterbridge, log, { ...config, setUpdateInterval: 2 });
-    testPlatform.version = '1.6.6';
+    addMatterbridgePlatform(testPlatform);
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onStart called with reason:', 'Test reason');
     await testPlatform.onConfigure();
@@ -134,7 +139,7 @@ describe('TestPlatform', () => {
 
   it('should call onStart and invoke commandHandlers', async () => {
     testPlatform = new TestPlatform(matterbridge, log, { ...config, setUpdateInterval: 2 });
-    testPlatform.version = '1.6.6';
+    addMatterbridgePlatform(testPlatform);
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onStart called with reason:', 'Test reason');
 
@@ -181,9 +186,13 @@ describe('TestPlatform', () => {
 
   it('should not register in start when noDevices is true', async () => {
     testPlatform = new TestPlatform(matterbridge, log, { ...config, noDevices: true });
-    testPlatform.version = '1.6.6';
+    addMatterbridgePlatform(testPlatform);
     await testPlatform.onStart('Test reason');
     expect(addBridgedEndpointSpy).not.toHaveBeenCalled();
+    await testPlatform.unregisterAllDevices();
+    await testPlatform.onShutdown('Test reason');
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'Test reason');
+    expect(removeAllBridgedEndpointsSpy).toHaveBeenCalled();
   });
 
   it('should throw error in start when throwStart is true', async () => {
@@ -193,11 +202,8 @@ describe('TestPlatform', () => {
   });
 
   it('should call onConfigure', async () => {
-    // @ts-expect-error accessing private member for testing
-    matterbridge.plugins._plugins.set('matterbridge-jest', {});
     testPlatform = new TestPlatform(matterbridge, log, config);
-    testPlatform['name'] = 'matterbridge-jest';
-    testPlatform.version = '1.6.6';
+    addMatterbridgePlatform(testPlatform);
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalled();
 
