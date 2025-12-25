@@ -126,8 +126,8 @@ describe('TestPlatform', () => {
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'none');
   }, 30000);
 
-  it('should call onStart with reason', async () => {
-    testPlatform = new TestPlatform(matterbridge, log, { ...config, setUpdateInterval: 2 });
+  it('should call onStart with reason and no devices with no update interval', async () => {
+    testPlatform = new TestPlatform(matterbridge, log, { ...config, setUpdateInterval: 0, whiteList: ['No devices'] });
     addMatterbridgePlatform(testPlatform);
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onStart called with reason:', 'Test reason');

@@ -137,8 +137,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       throw new Error('Throwing error in start');
     }
 
+    // istanbul ignore if
     if (this.config.delayStart) await waiter('Delay start', () => false, false, 20000, 1000);
 
+    // istanbul ignore if
     if (this.config.longDelayStart) await waiter('Long delay start', () => false, false, 150000, 1000);
 
     // Clear the select
