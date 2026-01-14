@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dt/matterbridge-test.svg)](https://www.npmjs.com/package/matterbridge-test)
 [![Docker Version](https://img.shields.io/docker/v/luligu/matterbridge?label=docker%20version&sort=semver)](https://hub.docker.com/r/luligu/matterbridge)
 [![Docker Pulls](https://img.shields.io/docker/pulls/luligu/matterbridge.svg)](https://hub.docker.com/r/luligu/matterbridge)
-![Node.js CI](https://github.com/Luligu/matterbridge-test/actions/workflows/build-matterbridge-plugin.yml/badge.svg)
+![Node.js CI](https://github.com/Luligu/matterbridge-test/actions/workflows/build.yml/badge.svg)
 ![CodeQL](https://github.com/Luligu/matterbridge-test/actions/workflows/codeql.yml/badge.svg)
 [![codecov](https://codecov.io/gh/Luligu/matterbridge-test/branch/main/graph/badge.svg)](https://codecov.io/gh/Luligu/matterbridge-test)
 
