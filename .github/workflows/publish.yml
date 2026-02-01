@@ -111,13 +111,13 @@ jobs:
             } catch (e) {
               if (e.status === 404) {
                 core.setOutput('ref', fallbackBranch);
-                core.warning(`Branch '${devBranch}' not found; falling back to '${fallbackBranch}'`);
+                core.info(`Branch '${devBranch}' not found; falling back to '${fallbackBranch}'`);
               } else {
                 throw e;
               }
             }
 
-      - name: Checkout selected branch
+      - name: Checkout selected branch ${{ steps.select_ref.outputs.ref }}
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.select_ref.outputs.ref }}
@@ -178,13 +178,11 @@ jobs:
           echo "DEV_TAG=$DEV_TAG" >> $GITHUB_ENV
           echo "ORIG_SHA=$SHA"    >> $GITHUB_ENV
 
-      - name: Bump to date-commit-stamped version --no-git-tag-version tag ${{ env.DEV_TAG }} sha ${{ env.ORIG_SHA }}
+      - name: Bump to date-commit-stamped version --no-git-tag-version tag ${{ env.DEV_TAG }}
         run: npm version "${{ env.DEV_TAG }}" --no-git-tag-version --ignore-scripts
 
       - name: Check if a new dev-publish is needed
         id: check_new
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           # ensure npm can read the private or public registry
           npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN
