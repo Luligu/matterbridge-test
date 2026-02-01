@@ -92,10 +92,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout dev
+      - name: Select branch dev if exists, else default branch
+        id: select_ref
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const devBranch = 'dev';
+
+            const { data: repoInfo } = await github.rest.repos.get({ owner, repo });
+            const fallbackBranch = repoInfo.default_branch;
+
+            try {
+              await github.rest.repos.getBranch({ owner, repo, branch: devBranch });
+              core.setOutput('ref', devBranch);
+              core.info(`Using branch: ${devBranch}`);
+            } catch (e) {
+              if (e.status === 404) {
+                core.setOutput('ref', fallbackBranch);
+                core.warning(`Branch '${devBranch}' not found; falling back to '${fallbackBranch}'`);
+              } else {
+                throw e;
+              }
+            }
+
+      - name: Checkout selected branch
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: ${{ steps.select_ref.outputs.ref }}
 
       - name: Setup Node.js 24.x
         uses: actions/setup-node@v4
@@ -104,8 +129,17 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: npm
 
-      - name: Clone matterbridge repo branch dev
-        run: git clone --depth 1 --single-branch --no-tags -b dev https://github.com/Luligu/matterbridge.git ../matterbridge
+      - name: Clone matterbridge repo (dev if exists, else main)
+        run: |
+          set -euo pipefail
+          REPO_URL="https://github.com/Luligu/matterbridge.git"
+          if git ls-remote --exit-code --heads "$REPO_URL" dev >/dev/null 2>&1; then
+            BRANCH="dev"
+          else
+            BRANCH="main"
+          fi
+          echo "Cloning matterbridge branch: $BRANCH"
+          git clone --depth 1 --single-branch --no-tags -b "$BRANCH" "$REPO_URL" ../matterbridge
 
       - name: Install matterbridge dependencies
         working-directory: ../matterbridge
