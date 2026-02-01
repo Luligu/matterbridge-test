@@ -41,8 +41,8 @@ jobs:
       - name: Verify Npm version
         run: npm -v
 
-      - name: Clone matterbridge repo
-        run: git clone --depth 1 --single-branch --no-tags https://github.com/Luligu/matterbridge.git ../matterbridge
+      - name: Clone matterbridge repo branch main
+        run: git clone --depth 1 --single-branch --no-tags -b main https://github.com/Luligu/matterbridge.git ../matterbridge
 
       - name: Install matterbridge dependencies
         working-directory: ../matterbridge
@@ -129,17 +129,14 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: npm
 
-      - name: Clone matterbridge repo (dev if exists, else main)
-        run: |
-          set -euo pipefail
-          REPO_URL="https://github.com/Luligu/matterbridge.git"
-          if git ls-remote --exit-code --heads "$REPO_URL" dev >/dev/null 2>&1; then
-            BRANCH="dev"
-          else
-            BRANCH="main"
-          fi
-          echo "Cloning matterbridge branch: $BRANCH"
-          git clone --depth 1 --single-branch --no-tags -b "$BRANCH" "$REPO_URL" ../matterbridge
+      - name: Verify Node.js version
+        run: node -v
+
+      - name: Verify Npm version
+        run: npm -v
+
+      - name: Clone matterbridge repo branch dev
+        run: git clone --depth 1 --single-branch --no-tags -b dev https://github.com/Luligu/matterbridge.git ../matterbridge
 
       - name: Install matterbridge dependencies
         working-directory: ../matterbridge
