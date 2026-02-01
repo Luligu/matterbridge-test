@@ -42,36 +42,43 @@
       "default": false
     },
     "noDevices": {
-      "description": "Do not registers any devices",
+      "title": "No devices",
+      "description": "Do not register any devices on startup",
       "type": "boolean",
       "default": false
     },
     "delayStart": {
-      "description": "Delay start by 20 seconds",
+      "title": "Delay start",
+      "description": "Delay start by 20 seconds to simulate a slow startup",
       "type": "boolean",
       "default": false
     },
     "longDelayStart": {
-      "description": "Delay start by 60 seconds",
+      "title": "Long delay start",
+      "description": "Delay start by 60 seconds to simulate a very slow startup",
       "type": "boolean",
       "default": false
     },
     "loadSwitches": {
+      "title": "Load switches",
       "description": "Load a defined number of switches",
       "type": "number",
       "default": 1
     },
     "loadOutlets": {
+      "title": "Load outlets",
       "description": "Load a defined number of outlets",
       "type": "number",
       "default": 1
     },
     "loadLights": {
+      "title": "Load lights",
       "description": "Load a defined number of lights",
       "type": "number",
       "default": 1
     },
     "whiteList": {
+      "title": "White list",
       "description": "Only the devices in the list will be exposed. If the list is empty, all the devices will be exposed.",
       "type": "array",
       "items": {
@@ -81,6 +88,7 @@
       "selectFrom": "name"
     },
     "blackList": {
+      "title": "Black list",
       "description": "The devices in the list will not be exposed. If the list is empty, no devices will be excluded.",
       "type": "array",
       "items": {
@@ -90,56 +98,67 @@
       "selectFrom": "name"
     },
     "setUpdateInterval": {
-      "description": "Set an update interval in seconds",
+      "title": "Update interval",
+      "description": "Set an update interval in seconds to update the device states periodically",
       "type": "number",
       "default": 60
     },
     "enableElectrical": {
-      "description": "Add electrical measurements to the devices",
+      "title": "Add electrical measurements",
+      "description": "Add electrical measurements cluster to the devices",
       "type": "boolean",
       "default": true
     },
     "enablePowerSource": {
-      "description": "Add power source to the devices",
+      "title": "Add power source",
+      "description": "Add power source cluster to the devices",
       "type": "boolean",
       "default": true
     },
     "enableModeSelect": {
-      "description": "Add mode select to the devices",
+      "title": "Add mode select",
+      "description": "Add mode select cluster to the devices",
       "type": "boolean",
       "default": true
     },
     "enableReachable": {
-      "description": "Change reachable",
+      "title": "Enable reachable",
+      "description": "Change reachable attribute of the devices during the interval updates",
       "type": "boolean",
       "default": true
     },
     "throwLoad": {
-      "description": "Throw on load",
+      "title": "Throw on load",
+      "description": "Throw on load to test Matterbridge handling",
       "type": "boolean",
       "default": false
     },
     "throwStart": {
-      "description": "Throw on start",
+      "title": "Throw on start",
+      "description": "Throw on start to test Matterbridge handling",
       "type": "boolean",
       "default": false
     },
     "throwConfigure": {
-      "description": "Throw on configure",
+      "title": "Throw on configure",
+      "description": "Throw on configure to test Matterbridge handling",
       "type": "boolean",
       "default": false
     },
     "throwShutdown": {
-      "description": "Throw on shutdown",
+      "title": "Throw on shutdown",
+      "description": "Throw on shutdown to test Matterbridge handling",
       "type": "boolean",
       "default": false
     },
     "debug": {
+      "title": "Enable debug",
       "description": "Enable the debug for the plugin",
       "type": "boolean",
       "default": false
     },
     "unregisterOnShutdown": {
+      "title": "Unregister on shutdown",
       "description": "Unregister all devices on shutdown",
       "type": "boolean",
       "default": false
