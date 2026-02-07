@@ -13,7 +13,7 @@
       "import": "./dist/module.js",
       "types": "./dist/module.d.ts"
     }
-  },  
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Luligu/matterbridge-test.git"
