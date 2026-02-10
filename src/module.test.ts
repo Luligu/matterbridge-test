@@ -8,13 +8,14 @@ import path from 'node:path';
 
 import { jest } from '@jest/globals';
 import { PlatformConfig } from 'matterbridge';
-import { AnsiLogger, LogLevel, TimestampFormat } from 'matterbridge/logger';
+import { LogLevel } from 'matterbridge/logger';
 import { OnOffCluster, ModeSelectCluster, IdentifyCluster, LevelControlCluster, ColorControlCluster } from 'matterbridge/matter/clusters';
 import {
   addBridgedEndpointSpy,
   addMatterbridgePlatform,
   createMatterbridgeEnvironment,
   destroyMatterbridgeEnvironment,
+  log,
   loggerLogSpy,
   matterbridge,
   removeAllBridgedEndpointsSpy,
@@ -30,7 +31,6 @@ await setupTest('NAME', false);
 
 describe('TestPlatform', () => {
   let testPlatform: TestPlatform;
-  const log = new AnsiLogger({ logName: NAME, logTimestampFormat: TimestampFormat.TIME_MILLIS, logLevel: LogLevel.DEBUG });
 
   const config: TestPlatformConfig = {
     name: 'matterbridge-test',
@@ -225,7 +225,6 @@ describe('TestPlatform', () => {
   });
 
   it('should call onAction', async () => {
-    // setDebug(true);
     testPlatform = new TestPlatform(matterbridge, log, config);
     testPlatform['name'] = 'matterbridge-jest';
     testPlatform.version = '1.6.6';
@@ -239,7 +238,6 @@ describe('TestPlatform', () => {
     await testPlatform.onAction('turnOffDevice', 'Switch 0');
     await testPlatform.onAction('turnOnDevice', 'Switch');
     await testPlatform.onAction('turnOffDevice', 'Switch');
-    // setDebug(false);
   });
 
   it('should call onChangeLoggerLevel', async () => {
@@ -247,7 +245,7 @@ describe('TestPlatform', () => {
     testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalled();
-    testPlatform.onChangeLoggerLevel(LogLevel.DEBUG);
+    await testPlatform.onChangeLoggerLevel(LogLevel.DEBUG);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Logger level set to: debug'));
   });
 
@@ -256,7 +254,7 @@ describe('TestPlatform', () => {
     testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalled();
-    testPlatform.onConfigChanged({} as PlatformConfig);
+    await testPlatform.onConfigChanged({} as PlatformConfig);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('has been updated'));
   });
 
