@@ -26,6 +26,18 @@ If you like this project and find it useful, please consider giving it a star on
 
 <a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/assets/bmc-button.svg" alt="Buy me a coffee" width="120"></a>
 
+## [2.0.10] - 2026-02-15
+
+### Changed
+
+- [package]: Updated dependencies.
+- [package]: Updated dependencies.
+- [package]: Bumped package to automator v.3.0.8.
+- [package]: Bumped `node-persist-manager` to v.2.0.1.
+- [package]: Bumped `eslint` to v.10.0.0.
+
+<a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/assets/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
+
 ## [2.0.9] - 2026-02-10
 
 ### Changed
