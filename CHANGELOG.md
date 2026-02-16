@@ -31,7 +31,7 @@ If you like this project and find it useful, please consider giving it a star on
 ### Changed
 
 - [package]: Updated dependencies.
-- [package]: Bumped package to automator v.3.0.8.
+- [package]: Bumped package to `automator` v.3.0.8.
 - [package]: Bumped `node-persist-manager` to v.2.0.1.
 - [package]: Bumped `eslint` to v.10.0.0.
 
