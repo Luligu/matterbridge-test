@@ -1,6 +1,6 @@
 {
   "name": "matterbridge-test",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "Matterbridge test plugin",
   "author": "https://github.com/Luligu",
   "license": "Apache-2.0",
@@ -152,7 +152,7 @@
     "shx": "0.4.0",
     "ts-jest": "29.4.6",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.55.0",
+    "typescript-eslint": "8.56.0",
     "vitest": "4.0.18"
   },
   "overrides": {
