@@ -22,28 +22,28 @@
  */
 
 import {
-  MatterbridgeDynamicPlatform,
-  PlatformConfig,
   bridgedNode,
-  electricalSensor,
-  onOffSwitch,
-  onOffOutlet,
   colorTemperatureLight,
-  powerSource,
-  modeSelect,
+  electricalSensor,
+  MatterbridgeDynamicPlatform,
   MatterbridgeEndpoint,
+  modeSelect,
+  onOffOutlet,
+  onOffSwitch,
+  PlatformConfig,
   PlatformMatterbridge,
+  powerSource,
 } from 'matterbridge';
-import { isValidString, waiter } from 'matterbridge/utils';
 import { AnsiLogger, CYAN, er, LogLevel, nf } from 'matterbridge/logger';
 import {
-  OnOffCluster,
-  ElectricalPowerMeasurementCluster,
-  ElectricalEnergyMeasurementCluster,
-  ModeSelectCluster,
-  PowerSource,
   BridgedDeviceBasicInformationCluster,
+  ElectricalEnergyMeasurementCluster,
+  ElectricalPowerMeasurementCluster,
+  ModeSelectCluster,
+  OnOffCluster,
+  PowerSource,
 } from 'matterbridge/matter/clusters';
+import { isValidString, waiter } from 'matterbridge/utils';
 
 export type TestPlatformConfig = PlatformConfig & {
   noDevices: boolean;
@@ -156,7 +156,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           bridgedNode,
           ...(this.config.enableElectrical ? [electricalSensor] : []),
           ...(this.config.enablePowerSource ? [powerSource] : []),
-          ...(this.config.enableModeSelect ? [modeSelect] : []),
+          // ...(this.config.enableModeSelect ? [modeSelect] : []),
         ],
         { id: 'Switch' + i },
         this.config.debug,
@@ -185,8 +185,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       if (this.config.enableElectrical) this.addElectricalMeasurements(switchDevice);
       if (this.config.enablePowerSource) this.addPowerSource(switchDevice, 'wired');
       if (this.config.enableModeSelect) {
-        this.addModeSelect(switchDevice, 'Switch ' + i);
-        switchDevice.addCommandHandler('changeToMode', async (data) => {
+        const composed = await this.addModeSelect(switchDevice, 'Switch ' + i);
+        composed.addCommandHandler('changeToMode', async (data) => {
           this.log.info(`Received changeToMode command with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
@@ -204,7 +204,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           bridgedNode,
           ...(this.config.enableElectrical ? [electricalSensor] : []),
           ...(this.config.enablePowerSource ? [powerSource] : []),
-          ...(this.config.enableModeSelect ? [modeSelect] : []),
+          // ...(this.config.enableModeSelect ? [modeSelect] : []),
         ],
         { id: 'Outlet' + i },
         this.config.debug,
@@ -233,8 +233,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       if (this.config.enableElectrical) this.addElectricalMeasurements(outletDevice);
       if (this.config.enablePowerSource) this.addPowerSource(outletDevice, 'replaceable');
       if (this.config.enableModeSelect) {
-        this.addModeSelect(outletDevice, 'Outlet ' + i);
-        outletDevice.addCommandHandler('changeToMode', async (data) => {
+        const composed = await this.addModeSelect(outletDevice, 'Outlet ' + i);
+        composed.addCommandHandler('changeToMode', async (data) => {
           this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
@@ -252,7 +252,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           bridgedNode,
           ...(this.config.enableElectrical ? [electricalSensor] : []),
           ...(this.config.enablePowerSource ? [powerSource] : []),
-          ...(this.config.enableModeSelect ? [modeSelect] : []),
+          // ...(this.config.enableModeSelect ? [modeSelect] : []),
         ],
         { id: 'Light' + i },
         this.config.debug,
@@ -303,8 +303,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       if (this.config.enableElectrical) this.addElectricalMeasurements(lightDevice);
       if (this.config.enablePowerSource) this.addPowerSource(lightDevice, 'rechargeable');
       if (this.config.enableModeSelect) {
-        this.addModeSelect(lightDevice, 'Light ' + i);
-        lightDevice.addCommandHandler('changeToMode', async (data) => {
+        const composed = await this.addModeSelect(lightDevice, 'Light ' + i);
+        composed.addCommandHandler('changeToMode', async (data) => {
           this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
@@ -331,8 +331,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     device.createDefaultElectricalEnergyMeasurementClusterServer(1500 * 1000);
   }
 
-  addModeSelect(device: MatterbridgeEndpoint, description: string): void {
-    device.createDefaultModeSelectClusterServer(
+  async addModeSelect(device: MatterbridgeEndpoint, description: string): Promise<MatterbridgeEndpoint> {
+    const composed = new MatterbridgeEndpoint(modeSelect, { id: device.id + '_modeSelect' }, this.config.debug);
+    composed.createDefaultModeSelectClusterServer(
       description + ' Led Mode Select',
       [
         { label: 'Led ON', mode: 1, semanticTags: [] },
@@ -341,6 +342,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       1,
       1,
     );
+    device.parts.add(composed);
+    return composed;
   }
 
   /**
@@ -384,8 +387,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           );
         }
         if (this.config.enableModeSelect) {
-          const currentMode = device?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
-          await device?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+          const composed = device?.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined;
+          const currentMode = composed?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
+          await composed?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
         if (this.config.enablePowerSource) {
           if (device?.hasAttributeServer(PowerSource.Cluster.id, 'wiredCurrentType')) {
@@ -419,8 +423,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           );
         }
         if (this.config.enableModeSelect) {
-          const currentMode = device?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
-          await device?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+          const composed = device?.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined;
+          const currentMode = composed?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
+          await composed?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
         if (this.config.enablePowerSource) {
           if (device?.hasAttributeServer(PowerSource.Cluster.id, 'batPercentRemaining')) {
@@ -455,8 +460,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           );
         }
         if (this.config.enableModeSelect) {
-          const currentMode = device?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
-          await device?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+          const composed = device?.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined;
+          const currentMode = composed?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
+          await composed?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
         if (this.config.enablePowerSource) {
           if (device?.hasAttributeServer(PowerSource.Cluster.id, 'batPercentRemaining')) {

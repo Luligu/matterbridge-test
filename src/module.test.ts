@@ -7,9 +7,7 @@ const HOMEDIR = path.join('jest', NAME);
 import path from 'node:path';
 
 import { jest } from '@jest/globals';
-import { PlatformConfig } from 'matterbridge';
-import { LogLevel } from 'matterbridge/logger';
-import { OnOffCluster, ModeSelectCluster, IdentifyCluster, LevelControlCluster, ColorControlCluster } from 'matterbridge/matter/clusters';
+import { MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
 import {
   addBridgedEndpointSpy,
   addMatterbridgePlatform,
@@ -23,6 +21,8 @@ import {
   startMatterbridgeEnvironment,
   stopMatterbridgeEnvironment,
 } from 'matterbridge/jestutils';
+import { LogLevel } from 'matterbridge/logger';
+import { ColorControlCluster, IdentifyCluster, LevelControlCluster, ModeSelectCluster, OnOffCluster } from 'matterbridge/matter/clusters';
 
 import initializePlugin, { TestPlatform, TestPlatformConfig } from './module.ts';
 
@@ -157,8 +157,8 @@ describe('TestPlatform', () => {
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received off command'));
       }
 
-      if (device.hasClusterServer(ModeSelectCluster)) {
-        await device.commandHandler.executeHandler('changeToMode', { request: { newMode: 1 } } as any);
+      if ((device.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined)?.hasClusterServer(ModeSelectCluster)) {
+        await (device.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined)?.commandHandler.executeHandler('changeToMode', { request: { newMode: 1 } } as any);
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received changeToMode command'));
       }
 
