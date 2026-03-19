@@ -24,7 +24,7 @@ import {
 import { LogLevel } from 'matterbridge/logger';
 import { ColorControlCluster, IdentifyCluster, LevelControlCluster, ModeSelectCluster, OnOffCluster } from 'matterbridge/matter/clusters';
 
-import initializePlugin, { TestPlatform, TestPlatformConfig } from './module.ts';
+import initializePlugin, { TestPlatform, TestPlatformConfig } from './module.js';
 
 // Setup the test environment
 await setupTest('NAME', false);
