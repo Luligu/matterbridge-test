@@ -36,9 +36,13 @@ import {
 } from 'matterbridge';
 import { AnsiLogger, CYAN, er, LogLevel, nf } from 'matterbridge/logger';
 import {
+  BridgedDeviceBasicInformation,
   BridgedDeviceBasicInformationCluster,
+  ElectricalEnergyMeasurement,
   ElectricalEnergyMeasurementCluster,
+  ElectricalPowerMeasurement,
   ElectricalPowerMeasurementCluster,
+  ModeSelect,
   ModeSelectCluster,
   OnOffCluster,
   PowerSource,
@@ -375,12 +379,12 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         if (this.config.enableElectrical) {
           const voltage = getRandomNumberInRange(220, 240);
           const current = getRandomNumberInRange(20, 30);
-          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'voltage', voltage * 1000, device.log);
-          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'activeCurrent', current * 1000, device.log);
-          await device?.setAttribute(ElectricalPowerMeasurementCluster.id, 'activePower', voltage * current * 1000, device.log);
-          const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurementCluster.id, 'cumulativeEnergyImported', device.log);
+          await device?.setAttribute(ElectricalPowerMeasurement.Complete, 'voltage', voltage * 1000, device.log);
+          await device?.setAttribute(ElectricalPowerMeasurement.Complete, 'activeCurrent', current * 1000, device.log);
+          await device?.setAttribute(ElectricalPowerMeasurement.Complete, 'activePower', voltage * current * 1000, device.log);
+          const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement.Complete.id, 'cumulativeEnergyImported', device.log);
           await device?.setAttribute(
-            ElectricalEnergyMeasurementCluster.id,
+            ElectricalEnergyMeasurement.Complete,
             'cumulativeEnergyImported',
             { energy: cumulativeEnergy ? cumulativeEnergy.energy + 1000 : 1500 * 1000 },
             device.log,
@@ -388,18 +392,18 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         }
         if (this.config.enableModeSelect) {
           const composed = device?.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined;
-          const currentMode = composed?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
-          await composed?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+          const currentMode = composed?.getAttribute(ModeSelect.Cluster, 'currentMode', device?.log);
+          await composed?.setAttribute(ModeSelect.Cluster, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
         if (this.config.enablePowerSource) {
-          if (device?.hasAttributeServer(PowerSource.Cluster.id, 'wiredCurrentType')) {
-            const type = device?.getAttribute(PowerSource.Cluster.id, 'wiredCurrentType', device?.log);
+          if (device?.hasAttributeServer(PowerSource.Complete, 'wiredCurrentType')) {
+            const type = device?.getAttribute(PowerSource.Complete, 'wiredCurrentType', device?.log);
             await device?.setAttribute(
-              PowerSource.Cluster.id,
+              PowerSource.Complete,
               'wiredCurrentType',
               type === PowerSource.WiredCurrentType.Ac ? PowerSource.WiredCurrentType.Dc : PowerSource.WiredCurrentType.Ac,
             );
-            await device?.setAttribute(PowerSource.Cluster.id, 'description', type === PowerSource.WiredCurrentType.Ac ? 'AC Power' : 'DC Power');
+            await device?.setAttribute(PowerSource.Complete, 'description', type === PowerSource.WiredCurrentType.Ac ? 'AC Power' : 'DC Power');
           }
         }
       }
@@ -407,7 +411,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         const device = this.bridgedDevices.get('Outlet ' + i);
         const state = device?.getAttribute(OnOffCluster.id, 'onOff');
         await device?.setAttribute(OnOffCluster.id, 'onOff', !state, device?.log);
-        if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformationCluster.id, 'reachable', state, device?.log);
+        if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation.Cluster, 'reachable', state, device?.log);
         if (this.config.enableElectrical) {
           const voltage = getRandomNumberInRange(220, 240);
           const current = getRandomNumberInRange(20, 30);
