@@ -10,14 +10,14 @@ import path from 'node:path';
 import { jest } from '@jest/globals';
 import { MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
 import {
-  addBridgedEndpointSpy,
+  addBridgedEndpointMatterbridgeSpy,
   addMatterbridgePlatform,
   createMatterbridgeEnvironment,
   destroyMatterbridgeEnvironment,
   log,
   loggerLogSpy,
   matterbridge,
-  removeAllBridgedEndpointsSpy,
+  removeAllBridgedEndpointsMatterbridgeSpy,
   setupTest,
   startMatterbridgeEnvironment,
   stopMatterbridgeEnvironment,
@@ -189,11 +189,11 @@ describe('TestPlatform', () => {
     testPlatform = new TestPlatform(matterbridge, log, { ...config, noDevices: true });
     addMatterbridgePlatform(testPlatform);
     await testPlatform.onStart('Test reason');
-    expect(addBridgedEndpointSpy).not.toHaveBeenCalled();
+    expect(addBridgedEndpointMatterbridgeSpy).not.toHaveBeenCalled();
     await testPlatform.unregisterAllDevices();
     await testPlatform.onShutdown('Test reason');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'Test reason');
-    expect(removeAllBridgedEndpointsSpy).toHaveBeenCalled();
+    expect(removeAllBridgedEndpointsMatterbridgeSpy).toHaveBeenCalled();
   });
 
   it('should throw error in start when throwStart is true', async () => {
