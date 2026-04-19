@@ -25,7 +25,7 @@ import { ColorControlCluster, IdentifyCluster, LevelControlCluster, ModeSelectCl
 import initializePlugin, { TestPlatform, TestPlatformConfig } from './module.js';
 
 // Setup the test environment
-await setupTest('NAME', false);
+await setupTest(NAME, false);
 
 describe('TestPlatform', () => {
   let testPlatform: TestPlatform;
@@ -56,6 +56,7 @@ describe('TestPlatform', () => {
   };
 
   beforeAll(async () => {
+    // Create Matterbridge environment
     await createMatterbridgeEnvironment();
     await startMatterbridgeEnvironment(MATTER_PORT, CREATE_ONLY);
   });
@@ -74,6 +75,7 @@ describe('TestPlatform', () => {
   });
 
   afterAll(async () => {
+    // Destroy Matterbridge environment
     await stopMatterbridgeEnvironment(CREATE_ONLY);
     await destroyMatterbridgeEnvironment(undefined, undefined, !CREATE_ONLY);
     // Restore all mocks
