@@ -1,11 +1,8 @@
 /* eslint-disable jest/no-conditional-expect */
 
+const NAME = 'TestPlatform';
 const MATTER_PORT = 6000;
-const NAME = 'Platform';
-const HOMEDIR = path.join('jest', NAME);
 const CREATE_ONLY = true;
-
-import path from 'node:path';
 
 import { jest } from '@jest/globals';
 import { MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
@@ -59,7 +56,7 @@ describe('TestPlatform', () => {
   };
 
   beforeAll(async () => {
-    await createMatterbridgeEnvironment(NAME, CREATE_ONLY);
+    await createMatterbridgeEnvironment();
     await startMatterbridgeEnvironment(MATTER_PORT, CREATE_ONLY);
   });
 
@@ -78,7 +75,7 @@ describe('TestPlatform', () => {
 
   afterAll(async () => {
     await stopMatterbridgeEnvironment(CREATE_ONLY);
-    await destroyMatterbridgeEnvironment(undefined, undefined, CREATE_ONLY);
+    await destroyMatterbridgeEnvironment(undefined, undefined, !CREATE_ONLY);
     // Restore all mocks
     jest.restoreAllMocks();
   });
