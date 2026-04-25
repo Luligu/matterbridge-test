@@ -15,12 +15,13 @@ import {
   loggerLogSpy,
   matterbridge,
   removeAllBridgedEndpointsMatterbridgeSpy,
+  setDebug,
   setupTest,
   startMatterbridgeEnvironment,
   stopMatterbridgeEnvironment,
 } from 'matterbridge/jestutils';
 import { LogLevel } from 'matterbridge/logger';
-import { ColorControlCluster, IdentifyCluster, LevelControlCluster, ModeSelectCluster, OnOffCluster } from 'matterbridge/matter/clusters';
+import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
 
 import initializePlugin, { TestPlatform, TestPlatformConfig } from './module.js';
 
@@ -72,12 +73,14 @@ describe('TestPlatform', () => {
       testPlatform.config.throwShutdown = false;
       await testPlatform.onShutdown();
     }
+    // Clear debug
+    await setDebug(false);
   });
 
   afterAll(async () => {
     // Destroy Matterbridge environment
     await stopMatterbridgeEnvironment(CREATE_ONLY);
-    await destroyMatterbridgeEnvironment(undefined, undefined, !CREATE_ONLY);
+    await destroyMatterbridgeEnvironment();
     // Restore all mocks
     jest.restoreAllMocks();
   });
@@ -118,6 +121,7 @@ describe('TestPlatform', () => {
     addMatterbridgePlatform(testPlatform);
     await testPlatform.onStart();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onStart called with reason:', 'none');
+    expect(testPlatform.getDevices()).toHaveLength(config.loadSwitches + config.loadOutlets + config.loadLights);
     jest.useFakeTimers();
     await testPlatform.onConfigure();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onConfigure called');
@@ -132,6 +136,7 @@ describe('TestPlatform', () => {
     addMatterbridgePlatform(testPlatform);
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onStart called with reason:', 'Test reason');
+    expect(testPlatform.getDevices()).toHaveLength(0);
     await testPlatform.onConfigure();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onConfigure called');
     await testPlatform.onShutdown('Test reason');
@@ -146,31 +151,31 @@ describe('TestPlatform', () => {
 
     // Invoke command handlers
     for (const [key, device] of Array.from(testPlatform.bridgedDevices)) {
-      if (device.hasClusterServer(IdentifyCluster)) {
+      if (device.hasClusterServer(Identify.Cluster)) {
         await device.commandHandler.executeHandler('identify', { request: { identifyTime: 1 } } as any);
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received identify command'));
       }
 
-      if (device.hasClusterServer(OnOffCluster)) {
+      if (device.hasClusterServer(OnOff.Cluster)) {
         await device.commandHandler.executeHandler('on', {} as any);
         await device.commandHandler.executeHandler('off', {} as any);
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received on command'));
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received off command'));
       }
 
-      if ((device.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined)?.hasClusterServer(ModeSelectCluster)) {
+      if ((device.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined)?.hasClusterServer(ModeSelect.Cluster)) {
         await (device.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined)?.commandHandler.executeHandler('changeToMode', { request: { newMode: 1 } } as any);
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received changeToMode command'));
       }
 
-      if (device.hasClusterServer(LevelControlCluster)) {
+      if (device.hasClusterServer(LevelControl.Cluster)) {
         await device.commandHandler.executeHandler('moveToLevel', { request: { level: 1 } } as any);
         await device.commandHandler.executeHandler('moveToLevelWithOnOff', { request: { level: 1 } } as any);
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received moveToLevel command'));
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received moveToLevelWithOnOff command'));
       }
 
-      if (device.hasClusterServer(ColorControlCluster)) {
+      if (device.hasClusterServer(ColorControl.Cluster)) {
         await device.commandHandler.executeHandler('moveToColor', { request: { colorX: 100, colorY: 100 } } as any);
         await device.commandHandler.executeHandler('moveToHueAndSaturation', { request: { hue: 100, saturation: 100 } } as any);
         await device.commandHandler.executeHandler('moveToHue', { request: { hue: 100 } } as any);

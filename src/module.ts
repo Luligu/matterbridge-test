@@ -155,13 +155,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       this.setSelectDevice('serial_switch_' + i, 'Switch ' + i);
       if (!this.validateDevice('Switch ' + i)) continue;
       const switchDevice = new MatterbridgeEndpoint(
-        [
-          onOffSwitch,
-          bridgedNode,
-          ...(this.config.enableElectrical ? [electricalSensor] : []),
-          ...(this.config.enablePowerSource ? [powerSource] : []),
-          // ...(this.config.enableModeSelect ? [modeSelect] : []),
-        ],
+        [onOffSwitch, bridgedNode, ...(this.config.enableElectrical ? [electricalSensor] : []), ...(this.config.enablePowerSource ? [powerSource] : [])],
         { id: 'Switch' + i },
         this.config.debug,
       );
@@ -203,13 +197,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       this.setSelectDevice('serial_outlet_' + i, 'Outlet ' + i);
       if (!this.validateDevice('Outlet ' + i)) continue;
       const outletDevice = new MatterbridgeEndpoint(
-        [
-          onOffOutlet,
-          bridgedNode,
-          ...(this.config.enableElectrical ? [electricalSensor] : []),
-          ...(this.config.enablePowerSource ? [powerSource] : []),
-          // ...(this.config.enableModeSelect ? [modeSelect] : []),
-        ],
+        [onOffOutlet, bridgedNode, ...(this.config.enableElectrical ? [electricalSensor] : []), ...(this.config.enablePowerSource ? [powerSource] : [])],
         { id: 'Outlet' + i },
         this.config.debug,
       );
@@ -251,13 +239,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       this.setSelectDevice('serial_light_' + i, 'Light ' + i);
       if (!this.validateDevice('Light ' + i)) continue;
       const lightDevice = new MatterbridgeEndpoint(
-        [
-          colorTemperatureLight,
-          bridgedNode,
-          ...(this.config.enableElectrical ? [electricalSensor] : []),
-          ...(this.config.enablePowerSource ? [powerSource] : []),
-          // ...(this.config.enableModeSelect ? [modeSelect] : []),
-        ],
+        [colorTemperatureLight, bridgedNode, ...(this.config.enableElectrical ? [electricalSensor] : []), ...(this.config.enablePowerSource ? [powerSource] : [])],
         { id: 'Light' + i },
         this.config.debug,
       );
