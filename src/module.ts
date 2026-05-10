@@ -78,8 +78,8 @@ export type TestPlatformConfig = PlatformConfig & {
  * @param {PlatformConfig} config - The platform configuration.
  * @returns {TestPlatform} - An instance of the SomfyTahomaPlatform. This is the main interface for interacting with the Somfy Tahoma system.
  */
-export default function initializePlugin(matterbridge: PlatformMatterbridge, log: AnsiLogger, config: PlatformConfig): TestPlatform {
-  return new TestPlatform(matterbridge, log, config as TestPlatformConfig);
+export default function initializePlugin(matterbridge: PlatformMatterbridge, log: AnsiLogger, config: TestPlatformConfig): TestPlatform {
+  return new TestPlatform(matterbridge, log, config);
 }
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
@@ -189,7 +189,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         });
       }
       switchDevice.addRequiredClusterServers();
-      if (this.config.noDevices === false) await this.registerDevice(switchDevice);
+      if (!this.config.noDevices) await this.registerDevice(switchDevice);
       this.bridgedDevices.set('Switch ' + i, switchDevice);
     }
 
@@ -231,7 +231,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         });
       }
       outletDevice.addRequiredClusterServers();
-      if (this.config.noDevices === false) await this.registerDevice(outletDevice);
+      if (!this.config.noDevices) await this.registerDevice(outletDevice);
       this.bridgedDevices.set('Outlet ' + i, outletDevice);
     }
 
@@ -295,7 +295,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         });
       }
       lightDevice.addRequiredClusterServers();
-      if (this.config.noDevices === false) await this.registerDevice(lightDevice);
+      if (!this.config.noDevices) await this.registerDevice(lightDevice);
       this.bridgedDevices.set('Light ' + i, lightDevice);
     }
 
@@ -373,7 +373,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           );
         }
         if (this.config.enableModeSelect) {
-          const composed = device?.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined;
+          const composed = device?.getChildEndpointById(device.id + '_modeSelect');
           const currentMode = composed?.getAttribute(ModeSelect.Cluster, 'currentMode', device?.log);
           await composed?.setAttribute(ModeSelect.Cluster, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
@@ -409,7 +409,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           );
         }
         if (this.config.enableModeSelect) {
-          const composed = device?.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined;
+          const composed = device?.getChildEndpointById(device.id + '_modeSelect');
           const currentMode = composed?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
           await composed?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
@@ -446,7 +446,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           );
         }
         if (this.config.enableModeSelect) {
-          const composed = device?.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined;
+          const composed = device?.getChildEndpointById(device.id + '_modeSelect');
           const currentMode = composed?.getAttribute(ModeSelectCluster.id, 'currentMode', device?.log);
           await composed?.setAttribute(ModeSelectCluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
         }
