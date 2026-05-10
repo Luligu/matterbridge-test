@@ -36,6 +36,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Bump package to `automator` v.3.1.8.
 - [package]: Add package script `typecheck`.
 - [package]: Add Node.js 26 to package `engines` field.
+- [workflows]: Add Node.js 26 to `build.yml` Node matrix and remove Node.js 20.
 - [jest]: Bump `jest` to v.30.4.2.
 - [jest]: Add `jest` v.2.0.1 config.
 - [eslint]: Add `eslint` v.2.0.2 config.
