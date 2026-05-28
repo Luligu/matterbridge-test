@@ -1,4 +1,4 @@
-// vite.config.ts 2.0.4
+// vite.config.ts 2.0.5
 
 // This Vitest configuration is designed for a TypeScript project.
 
@@ -23,8 +23,8 @@ export default defineConfig({
       '**/vendor/',
     ],
     globals: true,
-    clearMocks: true,
-    restoreMocks: true,
+    clearMocks: false,
+    restoreMocks: false,
     environment: 'node',
     maxWorkers: '100%',
     coverage: {

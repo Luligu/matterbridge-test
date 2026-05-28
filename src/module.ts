@@ -30,11 +30,11 @@ import {
   modeSelect,
   onOffOutlet,
   onOffSwitch,
-  PlatformConfig,
-  PlatformMatterbridge,
+  type PlatformConfig,
+  type PlatformMatterbridge,
   powerSource,
 } from 'matterbridge';
-import { AnsiLogger, CYAN, er, LogLevel, nf } from 'matterbridge/logger';
+import { type AnsiLogger, CYAN, er, type LogLevel, nf } from 'matterbridge/logger';
 import {
   BridgedDeviceBasicInformation,
   BridgedDeviceBasicInformationCluster,
@@ -47,7 +47,7 @@ import {
   OnOffCluster,
   PowerSource,
 } from 'matterbridge/matter/clusters';
-import { isValidString, waiter } from 'matterbridge/utils';
+import { fireAndForget, isValidString, waiter } from 'matterbridge/utils';
 
 export type TestPlatformConfig = PlatformConfig & {
   noDevices: boolean;
@@ -116,8 +116,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     this.log.debug('- with throwShutdown:', this.config.throwShutdown);
 
     if (this.config.throwLoad) {
-      setImmediate(async () => {
-        await this.onShutdown('Throwing error in load');
+      setImmediate(() => {
+        fireAndForget(this.onShutdown('Throwing error in load'), this.log, 'Throwing error in load');
       });
       throw new Error('Throwing error in load');
     }

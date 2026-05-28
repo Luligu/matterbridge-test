@@ -1,6 +1,7 @@
 const NAME = 'VitestMatter';
 const MATTER_PORT = 8000;
 
+import { LogLevel } from 'matterbridge/logger';
 import {
   createServerNode,
   createTestEnvironment,
@@ -12,12 +13,9 @@ import {
   setupTest,
   startServerNode,
   stopServerNode,
-} from '@matterbridge/vitest-utils';
-import { MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
-import { LogLevel } from 'matterbridge/logger';
-import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
+} from 'matterbridge/vitest-utils';
 
-import initializePlugin, { TestPlatform, TestPlatformConfig } from '../src/module.js';
+import { TestPlatform, type TestPlatformConfig } from '../src/module.js';
 
 // Setup the test environment
 await setupTest(NAME, false);
@@ -63,7 +61,6 @@ describe('TestPlatform', () => {
   });
 
   afterEach(async () => {
-    // Cleanup after each test
     // Clear debug
     await setDebug(false);
   });
@@ -76,8 +73,14 @@ describe('TestPlatform', () => {
     vi.restoreAllMocks();
   });
 
-  it('should initialize the platform successfully', async () => {
+  it('should initialize platform with config name', async () => {
     const matterbridge = await getPlatformMatterbridge();
-    expect(matterbridge).toBeDefined();
+    testPlatform = new TestPlatform(matterbridge, log, config);
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Initializing platform:', config.name);
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Finished initializing platform:', config.name);
+    await testPlatform.onStart('Starting test');
+    await testPlatform.onConfigure();
+    await testPlatform.onShutdown('Closing test');
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'Closing test');
   });
 });

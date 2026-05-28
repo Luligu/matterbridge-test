@@ -5,7 +5,7 @@ const MATTER_PORT = 6000;
 const CREATE_ONLY = true;
 
 import { jest } from '@jest/globals';
-import { MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
+import type { MatterbridgeEndpoint, PlatformConfig } from 'matterbridge';
 import {
   addBridgedEndpointMatterbridgeSpy,
   addMatterbridgePlatform,
@@ -23,7 +23,7 @@ import {
 import { LogLevel } from 'matterbridge/logger';
 import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
 
-import initializePlugin, { TestPlatform, TestPlatformConfig } from '../src/module.js';
+import initializePlugin, { TestPlatform, type TestPlatformConfig } from '../src/module.js';
 
 // Setup the test environment
 await setupTest(NAME, false);
