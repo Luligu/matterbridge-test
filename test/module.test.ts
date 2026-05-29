@@ -260,7 +260,7 @@ describe('TestPlatform', () => {
     testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
     expect(loggerLogSpy).toHaveBeenCalled();
-    await testPlatform.onConfigChanged({} as PlatformConfig);
+    await testPlatform.onConfigChanged(config);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('has been updated'));
   });
 

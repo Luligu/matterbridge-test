@@ -17,8 +17,7 @@
     "**/scripts/**",
     "**/screenshots/**",
     "vendor/**",
-    "**/package-lock.json",
-    "**/eslint.config.js"
+    "**/package-lock.json"
   ],
   "env": {
     "builtin": true,
@@ -85,6 +84,9 @@
     "typescript/no-floating-promises": "error",
     "typescript/no-misused-promises": "error",
     "typescript/no-explicit-any": "warn",
+    "typescript/no-non-null-assertion": "warn",
+    "typescript/require-await": "warn",
+    "typescript/promise-function-async": "warn",
     "typescript/consistent-type-imports": ["error", { "prefer": "type-imports", "fixStyle": "inline-type-imports" }],
     "typescript/only-throw-error": "error",
     "typescript/ban-ts-comment": "error",
