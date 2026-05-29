@@ -28,7 +28,7 @@ export default defineConfig({
     environment: 'node',
     maxWorkers: '100%',
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reportsDirectory: 'coverage/vitest',
       reporter: ['lcov', 'text', 'json'],
       include: ['**/src/**/*.{ts,mts,cts}'],
