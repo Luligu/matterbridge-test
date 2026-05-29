@@ -65,7 +65,7 @@ export type TestPlatformConfig = PlatformConfig & {
  * @param {PlatformMatterbridge} matterbridge - An instance of MatterBridge. This is the main interface for interacting with the MatterBridge system.
  * @param {AnsiLogger} log - An instance of AnsiLogger. This is used for logging messages in a format that can be displayed with ANSI color codes.
  * @param {PlatformConfig} config - The platform configuration.
- * @returns {TestPlatform} - An instance of the SomfyTahomaPlatform. This is the main interface for interacting with the Somfy Tahoma system.
+ * @returns {TestPlatform} - An instance of the TestPlatform. This is the main interface for interacting with the test platform.
  */
 export default function initializePlugin(matterbridge: PlatformMatterbridge, log: AnsiLogger, config: TestPlatformConfig): TestPlatform {
   return new TestPlatform(matterbridge, log, config);
@@ -75,11 +75,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   private interval: NodeJS.Timeout | undefined;
   bridgedDevices = new Map<string, MatterbridgeEndpoint>();
 
-  constructor(
-    matterbridge: PlatformMatterbridge,
-    log: AnsiLogger,
-    override config: TestPlatformConfig,
-  ) {
+  // prettier-ignore
+  constructor(matterbridge: PlatformMatterbridge, log: AnsiLogger, override config: TestPlatformConfig) {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
