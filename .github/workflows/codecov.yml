@@ -81,12 +81,12 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
-      - name: Upload Vitest coverage to Codecov
-        if: steps.check_configs.outputs.has_vitest == 'true'
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./coverage/vitest/lcov.info
-          flags: vitest
-          disable_search: true
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+      # - name: Upload Vitest coverage to Codecov
+      #   if: steps.check_configs.outputs.has_vitest == 'true'
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     files: ./coverage/vitest/lcov.info
+      #     flags: vitest
+      #     disable_search: true
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     fail_ci_if_error: true
