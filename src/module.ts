@@ -34,7 +34,7 @@ import {
   type PlatformMatterbridge,
   powerSource,
 } from 'matterbridge';
-import { type AnsiLogger, CYAN, er, type LogLevel, nf } from 'matterbridge/logger';
+import { type AnsiLogger, CYAN, db, er, type LogLevel, nf } from 'matterbridge/logger';
 import { BridgedDeviceBasicInformation, ElectricalEnergyMeasurement, ElectricalPowerMeasurement, ModeSelect, OnOff, PowerSource } from 'matterbridge/matter/clusters';
 import { fireAndForget, isValidString, waiter } from 'matterbridge/utils';
 
@@ -547,6 +547,19 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         }
       }
     }
+  }
+
+  /**
+   * Called by the frontend to get a plugin variable.
+   *
+   * @param {string} variable The variable name requested by the frontend.
+   * @returns {Promise<unknown>} The variable value, or undefined if not found.
+   */
+  // eslint-disable-next-line @typescript-eslint/require-await
+  override async onGet(variable: string): Promise<unknown> {
+    this.log.debug(`The plugin ${CYAN}${this.name}${db} received onGet for variable ${CYAN}${variable}${db}`);
+    if (variable === 'valid') return { status: 'ok', plugin: this.name };
+    return undefined;
   }
 
   /**

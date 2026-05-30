@@ -25,6 +25,8 @@ import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterb
 
 import initializePlugin, { TestPlatform, type TestPlatformConfig } from '../src/module.js';
 
+// Warning: the tests in this unit are supposed to run sequentially.
+
 // Setup the test environment
 await setupTest(NAME, false);
 
@@ -262,6 +264,19 @@ describe('TestPlatform', () => {
     expect(loggerLogSpy).toHaveBeenCalled();
     await testPlatform.onConfigChanged(config);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('has been updated'));
+  });
+
+  it('should call onGet and return value for valid and undefined for unknown', async () => {
+    testPlatform = new TestPlatform(matterbridge, log, config);
+    testPlatform.version = '1.6.6';
+    await testPlatform.onStart('Test reason');
+
+    const valid = await testPlatform.onGet('valid');
+    expect(valid).toEqual({ status: 'ok', plugin: testPlatform.name });
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.DEBUG, expect.stringContaining('received onGet for variable'));
+
+    const unknown = await testPlatform.onGet('invalid');
+    expect(unknown).toBeUndefined();
   });
 
   it('should throw error in configure when throwConfigure is true', async () => {

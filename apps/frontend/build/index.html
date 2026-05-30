@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>matterbridge-test</title>
+  <link rel="icon" type="image/png" href="matterbridge.png" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -48,6 +49,20 @@
         <div>
           <div class="status-label">Build</div>
           <div class="status-value">Static</div>
+        </div>
+      </div>
+      <div class="status-card">
+        <span class="status-dot" id="dot-valid"></span>
+        <div>
+          <div class="status-label">API</div>
+          <div class="status-value" id="value-valid">—</div>
+        </div>
+      </div>
+      <div class="status-card">
+        <span class="status-dot" id="dot-invalid"></span>
+        <div>
+          <div class="status-label">Fallback</div>
+          <div class="status-value" id="value-invalid">—</div>
         </div>
       </div>
     </section>

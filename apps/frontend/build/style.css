@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -25,9 +27,6 @@ html, body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
-
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
 main {
   min-height: 100vh;
@@ -124,6 +123,12 @@ header {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  min-width: 0;
+}
+
+.status-card > div {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .status-dot {
@@ -153,6 +158,9 @@ header {
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Footer */

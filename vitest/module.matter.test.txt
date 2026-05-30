@@ -17,6 +17,8 @@ import {
 
 import { TestPlatform, type TestPlatformConfig } from '../src/module.js';
 
+// Warning: the tests in this unit are supposed to run sequentially.
+
 // Setup the test environment
 await setupTest(NAME, false);
 
