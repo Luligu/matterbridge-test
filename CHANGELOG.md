@@ -30,22 +30,39 @@ If you like this project and find it useful, please consider giving it a star on
 
 ## [2.0.18] - Dev branch
 
+### Breaking changes
+
+- [platform]: Require matterbridge 3.8.0.
+
 ### Changed
 
 - [package]: Update dependencies.
 - [package]: Bump package to `automator` v.3.1.10.
-- [package]: Bump `eslint` to v.10.4.0.
+
+- [package]: Bump `eslint` to v.10.4.1.
 - [package]: Bump `@types/node` to v.25.9.1.
 - [package]: Bump `ts-jest` to v.29.4.11.
 - [package]: Bump `typescript-eslint` to v.8.59.4.
 - [package]: Bump `vitest` to v.4.1.7.
-- [package]: Bump `@vitest/coverage-v8` to v.4.1.7.
+- [package]: Bump `@vitest/coverage-istanbul` to v.4.1.7.
 - [package]: Bump `eslint-plugin-jsdoc` to v.63.0.0.
 - [package]: Bump `@eslint/markdown` to v.8.0.2.
-- [package]: Bump `npm-check-updates` to v.22.2.0.
-- [package]: Update `.devcontainer/devcontainer.json`.
-- [package]: Update `.vscode/settings.json`.
-- [package]: Add `.vscode/extensions.json`.
+- [package]: Bump `npm-check-updates` to v.22.2.1.
+
+- [oxlint]: Bump `oxlint` config to v.1.0.2.
+- [oxfmt]: Bump `oxfmt` config to v.1.0.2.
+- [jest]: Bump `jest` config to v.2.0.2.
+- [vitest]: Bump `vitest` config to v.2.0.5.
+- [eslint]: Bump `eslint` config to v.2.0.5.
+- [prettier]: Bump `.prettierignore` config to v.1.0.1.
+- [package]: Bump `.devcontainer/devcontainer.json` config to v.1.0.1.
+- [package]: Bump `.vscode/settings.json` config to v.1.0.1.
+- [package]: Bump `.vscode/extensions.json` config to v.1.0.1.
+
+- [workflow]: Bump `.github\workflows\build.yml` config to v.2.0.3.
+- [workflow]: Bump `.github\workflows\codecov.yml` config to v.2.0.3.
+- [workflow]: Bump `.github\workflows\publish.yml` config to v.2.0.3.
+
 - [package]: Update `scripts`.
 - [eslint]: Add `eslint` v.2.0.4 config.
 

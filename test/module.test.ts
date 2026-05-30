@@ -113,7 +113,7 @@ describe('TestPlatform', () => {
     const savedVersion = matterbridge.matterbridgeVersion;
     matterbridge.matterbridgeVersion = '1.5.0';
     expect(() => new TestPlatform(matterbridge, log, config)).toThrow(
-      'The test plugin requires Matterbridge version >= "3.4.0". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "3.8.0". Please update Matterbridge to the latest version in the frontend.',
     );
     matterbridge.matterbridgeVersion = savedVersion;
   });
@@ -266,17 +266,32 @@ describe('TestPlatform', () => {
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('has been updated'));
   });
 
-  it('should call onGet and return value for valid and undefined for unknown', async () => {
+  it('should call onFetch and return value for valid GET and undefined for unknown path or method', async () => {
     testPlatform = new TestPlatform(matterbridge, log, config);
     testPlatform.version = '1.6.6';
     await testPlatform.onStart('Test reason');
 
-    const valid = await testPlatform.onGet('valid');
+    const valid = await testPlatform.onFetch('GET', 'valid');
     expect(valid).toEqual({ status: 'ok', plugin: testPlatform.name });
-    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.DEBUG, expect.stringContaining('received onGet for variable'));
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.DEBUG, expect.stringContaining('received onFetch'));
 
-    const unknown = await testPlatform.onGet('invalid');
-    expect(unknown).toBeUndefined();
+    const post = await testPlatform.onFetch('POST', 'resource', {}, { action: 'create' });
+    expect(post).toEqual({ status: 'created', plugin: testPlatform.name });
+
+    const put = await testPlatform.onFetch('PUT', 'resource', {}, { action: 'replace' });
+    expect(put).toEqual({ status: 'updated', plugin: testPlatform.name });
+
+    const patch = await testPlatform.onFetch('PATCH', 'resource', {}, { action: 'update' });
+    expect(patch).toEqual({ status: 'patched', plugin: testPlatform.name });
+
+    const del = await testPlatform.onFetch('DELETE', 'resource');
+    expect(del).toEqual({});
+
+    const unknownPath = await testPlatform.onFetch('GET', 'invalid');
+    expect(unknownPath).toBeUndefined();
+
+    const unknownMethod = await testPlatform.onFetch('POST', 'valid', {}, { data: 'test' });
+    expect(unknownMethod).toBeUndefined();
   });
 
   it('should throw error in configure when throwConfigure is true', async () => {

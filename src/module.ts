@@ -80,8 +80,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('3.4.0')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "3.4.0". Please update Matterbridge to the latest version in the frontend.`);
+    if (typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('3.8.0')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "3.8.0". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -550,15 +550,24 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   }
 
   /**
-   * Called by the frontend to get a plugin variable.
+   * Called by the Matterbridge frontend for plugin API requests.
    *
-   * @param {string} variable The variable name requested by the frontend.
-   * @returns {Promise<unknown>} The variable value, or undefined if not found.
+   * @param {string} method - HTTP method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+   * @param {string} [path] - Optional resource identifier.
+   * @param {Record<string, unknown>} [query] - Optional query string parameters.
+   * @param {unknown} [body] - Optional request body (for POST, PUT, PATCH).
+   * @returns {Promise<unknown>} - A JSON-serializable value, or undefined to respond with 404.
    */
   // eslint-disable-next-line @typescript-eslint/require-await
-  override async onGet(variable: string): Promise<unknown> {
-    this.log.debug(`The plugin ${CYAN}${this.name}${db} received onGet for variable ${CYAN}${variable}${db}`);
-    if (variable === 'valid') return { status: 'ok', plugin: this.name };
+  override async onFetch(method: string, path?: string, query?: Record<string, unknown>, body?: unknown): Promise<unknown> {
+    this.log.debug(
+      `The plugin ${CYAN}${this.name}${db} received onFetch ${method} for path ${CYAN}${path ?? 'none'} query ${CYAN}${JSON.stringify(query) ?? 'none'} body ${CYAN}${JSON.stringify(body) ?? 'none'}${db}`,
+    );
+    if (method === 'GET' && path === 'valid') return { status: 'ok', plugin: this.name };
+    if (method === 'POST' && path === 'resource') return { status: 'created', plugin: this.name };
+    if (method === 'PUT' && path === 'resource') return { status: 'updated', plugin: this.name };
+    if (method === 'PATCH' && path === 'resource') return { status: 'patched', plugin: this.name };
+    if (method === 'DELETE' && path === 'resource') return {};
     return undefined;
   }
 
