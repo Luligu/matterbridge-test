@@ -34,6 +34,10 @@ If you like this project and find it useful, please consider giving it a star on
 
 - [platform]: Require matterbridge 3.8.0.
 
+### Added
+
+- [codecov]: Add merge of Jest and Vitest coverage reports. This allows to run both Jest and Vitest tests in the same package and have a unified coverage report in Codecov.
+
 ### Changed
 
 - [package]: Update dependencies.
