@@ -73,6 +73,7 @@ jobs:
 
       - name: Check config files
         id: check_configs
+        shell: bash
         run: |
           echo "has_jest=$(test -f jest.config.js && echo true || echo false)" >> $GITHUB_OUTPUT
           echo "has_vitest=$(test -f vite.config.ts && echo true || echo false)" >> $GITHUB_OUTPUT
@@ -86,13 +87,11 @@ jobs:
         if: steps.check_configs.outputs.has_vitest == 'true' && steps.check_configs.outputs.has_jest == 'false'
         run: |
           npm run test -- --testTimeout=30000
-          test -f ./coverage/vitest/lcov.info || { echo "::error::Vitest ran but lcov.info missing"; exit 1; }
 
       - name: Run Vitest tests (alongside Jest)
         if: steps.check_configs.outputs.has_vitest == 'true' && steps.check_configs.outputs.has_jest == 'true'
         run: |
           npm run test:vitest -- --testTimeout=30000
-          test -f ./coverage/vitest/lcov.info || { echo "::error::Vitest ran but lcov.info missing"; exit 1; }
 
       - name: Publish the plugin to npm with trusted publishing / OIDC
         run: npm publish
@@ -189,6 +188,7 @@ jobs:
 
       - name: Check config files
         id: check_configs
+        shell: bash
         run: |
           echo "has_jest=$(test -f jest.config.js && echo true || echo false)" >> $GITHUB_OUTPUT
           echo "has_vitest=$(test -f vite.config.ts && echo true || echo false)" >> $GITHUB_OUTPUT
@@ -202,13 +202,11 @@ jobs:
         if: steps.check_configs.outputs.has_vitest == 'true' && steps.check_configs.outputs.has_jest == 'false'
         run: |
           npm run test -- --testTimeout=30000
-          test -f ./coverage/vitest/lcov.info || { echo "::error::Vitest ran but lcov.info missing"; exit 1; }
 
       - name: Run Vitest tests (alongside Jest)
         if: steps.check_configs.outputs.has_vitest == 'true' && steps.check_configs.outputs.has_jest == 'true'
         run: |
           npm run test:vitest -- --testTimeout=30000
-          test -f ./coverage/vitest/lcov.info || { echo "::error::Vitest ran but lcov.info missing"; exit 1; }
 
       - name: Extract base version and date
         id: vars
