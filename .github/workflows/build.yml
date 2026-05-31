@@ -96,4 +96,6 @@ jobs:
         shell: bash
         run: |
           npm run test:vitest -- --testTimeout=30000
+          ls -la coverage/ 2>/dev/null || echo "(still no coverage dir)"
+          ls -la coverage/vitest/ 2>/dev/null || echo "(no vitest dir)"
           test -f ./coverage/vitest/lcov.info || { echo "::error::Vitest ran but lcov.info missing"; exit 1; }
