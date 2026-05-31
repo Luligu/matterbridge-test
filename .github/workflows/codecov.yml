@@ -82,11 +82,7 @@ jobs:
           test -f ./coverage/vitest/lcov.info || { echo "::error::Vitest ran but lcov.info missing"; exit 1; }
 
       - name: Upload coverage to Codecov
-        if: steps.check_configs.outputs.has_jest == 'true'
         uses: codecov/codecov-action@v5
         with:
-          # files: ./coverage/jest/lcov.info
-          # flags: jest
-          # disable_search: true
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
