@@ -94,6 +94,7 @@ jobs:
       - name: Run Vitest tests (alongside Jest)
         shell: bash
         if: steps.check_configs.outputs.has_vitest == 'true' && steps.check_configs.outputs.has_jest == 'true'
+        shell: bash
         run: |
           npm run test:vitest -- --testTimeout=30000
           test -f ./coverage/vitest/lcov.info || { echo "::error::Vitest ran but lcov.info missing"; exit 1; }
