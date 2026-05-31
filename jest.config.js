@@ -43,7 +43,6 @@ const jestConfig = {
     '/vendor/',
     '/vitest/',
   ],
-  collectCoverage: true,
   collectCoverageFrom: ['**/src/**/*.{ts,mts,cts}'],
   coverageDirectory: 'coverage/jest',
   coverageReporters: ['lcov', 'text', 'json'],
