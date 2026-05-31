@@ -79,19 +79,16 @@ jobs:
           echo "has_vitest=$(test -f vite.config.ts && echo true || echo false)" >> $GITHUB_OUTPUT
 
       - name: Run Jest tests
-        shell: bash
         if: steps.check_configs.outputs.has_jest == 'true'
         run: |
           npm run test -- --testTimeout=30000
 
       - name: Run Vitest tests (if no Jest)
-        shell: bash
         if: steps.check_configs.outputs.has_vitest == 'true' && steps.check_configs.outputs.has_jest == 'false'
         run: |
           npm run test -- --testTimeout=30000
 
       - name: Run Vitest tests (alongside Jest)
         if: steps.check_configs.outputs.has_vitest == 'true' && steps.check_configs.outputs.has_jest == 'true'
-        shell: bash
         run: |
           npm run test:vitest -- --testTimeout=30000
