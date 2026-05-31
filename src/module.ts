@@ -157,6 +157,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
+      // Extraneous server cluster for Apple Home app to recognize the device as a switch and not a plug.
+      // The on/off cluster server will be removed from required clusters of onOffSwitch in a future release.
+      switchDevice.createDefaultOnOffClusterServer();
       switchDevice.addCommandHandler('identify', (data) => {
         this.log.info(`Received identify command request ${data.request.identifyTime} for endpoint ${data.endpoint?.number}`);
       });
@@ -558,8 +561,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    * @param {unknown} [body] - Optional request body (for POST, PUT, PATCH).
    * @returns {Promise<unknown>} - A JSON-serializable value, or undefined to respond with 404.
    */
+  // @ts-expect-error - onFetch is only in Matterbridge 3.8.0.
   // eslint-disable-next-line @typescript-eslint/require-await
-  override async onFetch(method: string, path?: string, query?: Record<string, unknown>, body?: unknown): Promise<unknown> {
+  async onFetch(method: string, path?: string, query?: Record<string, unknown>, body?: unknown): Promise<unknown> {
     this.log.debug(
       `The plugin ${CYAN}${this.name}${db} received onFetch ${method} for path ${CYAN}${path ?? 'none'} query ${CYAN}${JSON.stringify(query) ?? 'none'} body ${CYAN}${JSON.stringify(body) ?? 'none'}${db}`,
     );
