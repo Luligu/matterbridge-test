@@ -41,6 +41,7 @@
   },
   "git.autofetch": true,
   "git.autoRepositoryDetection": false,
+  // VS Code's Copilot Chat extension settings
   "chat.useCustomizationsInParentRepositories": false,
   "chat.useClaudeMdFile": true,
   "chat.instructionsFilesLocations": {
