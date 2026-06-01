@@ -134,7 +134,7 @@
     "@jest/globals": "30.4.1",
     "@types/jest": "30.0.0",
     "@types/node": "25.9.1",
-    "@vitest/coverage-istanbul": "4.1.7",
+    "@vitest/coverage-istanbul": "4.1.8",
     "@vitest/eslint-plugin": "1.6.19",
     "cross-env": "10.1.0",
     "eslint": "10.4.1",
@@ -151,6 +151,6 @@
     "ts-jest": "29.4.11",
     "typescript": "6.0.3",
     "typescript-eslint": "8.60.0",
-    "vitest": "4.1.7"
+    "vitest": "4.1.8"
   }
 }
