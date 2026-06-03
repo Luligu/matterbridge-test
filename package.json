@@ -150,7 +150,7 @@
     "shx": "0.4.0",
     "ts-jest": "29.4.11",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.60.0",
+    "typescript-eslint": "8.60.1",
     "vitest": "4.1.8"
   }
 }

@@ -177,7 +177,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Received changeToMode command with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
-      switchDevice.addRequiredClusterServers();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
+      if (this.verifyMatterbridgeVersion('3.8.0')) switchDevice.addRequiredClusters();
+      else switchDevice.addRequiredClusterServers();
       if (!this.config.noDevices) await this.registerDevice(switchDevice);
       this.bridgedDevices.set('Switch ' + i, switchDevice);
     }
@@ -219,7 +222,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
-      outletDevice.addRequiredClusterServers();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
+      if (this.verifyMatterbridgeVersion('3.8.0')) outletDevice.addRequiredClusters();
+      else outletDevice.addRequiredClusterServers();
       if (!this.config.noDevices) await this.registerDevice(outletDevice);
       this.bridgedDevices.set('Outlet ' + i, outletDevice);
     }
@@ -283,7 +289,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
-      lightDevice.addRequiredClusterServers();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
+      if (this.verifyMatterbridgeVersion('3.8.0')) lightDevice.addRequiredClusters();
+      else lightDevice.addRequiredClusterServers();
       if (!this.config.noDevices) await this.registerDevice(lightDevice);
       this.bridgedDevices.set('Light ' + i, lightDevice);
     }
