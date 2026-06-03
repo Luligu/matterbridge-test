@@ -179,7 +179,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
+      // istanbul ignore next line
       if (this.verifyMatterbridgeVersion('3.8.0')) switchDevice.addRequiredClusters();
+      // istanbul ignore next line
       else switchDevice.addRequiredClusterServers();
       if (!this.config.noDevices) await this.registerDevice(switchDevice);
       this.bridgedDevices.set('Switch ' + i, switchDevice);
@@ -224,7 +226,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
+      // istanbul ignore next line
       if (this.verifyMatterbridgeVersion('3.8.0')) outletDevice.addRequiredClusters();
+      // istanbul ignore next line
       else outletDevice.addRequiredClusterServers();
       if (!this.config.noDevices) await this.registerDevice(outletDevice);
       this.bridgedDevices.set('Outlet ' + i, outletDevice);
@@ -291,7 +295,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
+      // istanbul ignore next line
       if (this.verifyMatterbridgeVersion('3.8.0')) lightDevice.addRequiredClusters();
+      // istanbul ignore next line
       else lightDevice.addRequiredClusterServers();
       if (!this.config.noDevices) await this.registerDevice(lightDevice);
       this.bridgedDevices.set('Light ' + i, lightDevice);
