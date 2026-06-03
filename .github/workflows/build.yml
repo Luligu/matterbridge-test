@@ -1,4 +1,4 @@
-# Node.js CI (plugin) v. 2.0.3
+# Node.js CI (plugin) v. 2.0.4
 # Path: .github/workflows/build.yml
 
 name: Node.js CI
@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22.x, 24.x, 26.x]
+        node-version: [22.x, 24.x, 26.2.x]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
