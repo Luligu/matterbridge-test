@@ -28,6 +28,7 @@ import initializePlugin, { TestPlatform, type TestPlatformConfig } from '../src/
 // Warning: the tests in this unit are supposed to run sequentially.
 
 // Setup the test environment
+process.argv = ['node', NAME, '--logger', 'debug', '--filelogger', '--matterlogger', 'debug', '--matterfilelogger'];
 await setupTest(NAME, false);
 
 describe('TestPlatform', () => {

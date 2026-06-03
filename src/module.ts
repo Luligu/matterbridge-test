@@ -180,7 +180,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
       // istanbul ignore next line
-      if (this.verifyMatterbridgeVersion('3.8.0')) switchDevice.addRequiredClusters();
+      if (this.verifyMatterbridgeVersion('3.8.0', false)) switchDevice.addRequiredClusters();
       // istanbul ignore next line
       else switchDevice.addRequiredClusterServers();
       if (!this.config.noDevices) await this.registerDevice(switchDevice);
@@ -227,7 +227,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
       // istanbul ignore next line
-      if (this.verifyMatterbridgeVersion('3.8.0')) outletDevice.addRequiredClusters();
+      if (this.verifyMatterbridgeVersion('3.8.0', false)) outletDevice.addRequiredClusters();
       // istanbul ignore next line
       else outletDevice.addRequiredClusterServers();
       if (!this.config.noDevices) await this.registerDevice(outletDevice);
@@ -296,7 +296,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
       // istanbul ignore next line
-      if (this.verifyMatterbridgeVersion('3.8.0')) lightDevice.addRequiredClusters();
+      if (this.verifyMatterbridgeVersion('3.8.0', false)) lightDevice.addRequiredClusters();
       // istanbul ignore next line
       else lightDevice.addRequiredClusterServers();
       if (!this.config.noDevices) await this.registerDevice(lightDevice);
@@ -576,7 +576,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    * @param {unknown} [body] - Optional request body (for POST, PUT, PATCH).
    * @returns {Promise<unknown>} - A JSON-serializable value, or undefined to respond with 404.
    */
-  // @ts-expect-error - onFetch is only in Matterbridge 3.8.0.
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore - onFetch is only in Matterbridge 3.8.0.
   // eslint-disable-next-line @typescript-eslint/require-await
   async onFetch(method: string, path?: string, query?: Record<string, unknown>, body?: unknown): Promise<unknown> {
     this.log.debug(
