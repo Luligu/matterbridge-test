@@ -149,12 +149,12 @@ describe('TestPlatform', () => {
     await testPlatform.onStart();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onStart called with reason:', 'none');
     expect(testPlatform.getDevices()).toHaveLength(config.loadSwitches + config.loadOutlets + config.loadLights);
-    jest.useFakeTimers();
     await testPlatform.onConfigure();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onConfigure called');
-    jest.advanceTimersByTime(65 * 1000);
-    jest.useRealTimers();
-    await flushAsync();
+    // Simulate multiple interval executions
+    for (let i = 0; i < 10; i++) {
+      await testPlatform.intervalHandler();
+    }
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Interval called');
     await testPlatform.onShutdown();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'none');
