@@ -177,7 +177,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         });
       }
       switchDevice.addRequiredClusters();
-      if (!this.config.noDevices) await this.registerDevice(switchDevice);
+      if (!this.config.noDevices) {
+        await this.registerDevice(switchDevice);
+      }
     }
 
     for (let i = 0; i < this.config.loadOutlets; i++) {
@@ -218,7 +220,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         });
       }
       outletDevice.addRequiredClusters();
-      if (!this.config.noDevices) await this.registerDevice(outletDevice);
+      if (!this.config.noDevices) {
+        await this.registerDevice(outletDevice);
+      }
     }
 
     for (let i = 0; i < this.config.loadLights; i++) {
@@ -281,7 +285,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         });
       }
       lightDevice.addRequiredClusters();
-      if (!this.config.noDevices) await this.registerDevice(lightDevice);
+      if (!this.config.noDevices) {
+        await this.registerDevice(lightDevice);
+      }
     }
 
     this.log.info(`Finished starting platform ${this.config.name} with ${this.getDevices().length} devices:`);

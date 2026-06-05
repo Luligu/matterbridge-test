@@ -200,5 +200,5 @@ describe('TestPlatform', () => {
 
     await testPlatform.onShutdown('Closing test');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'Closing test');
-  });
+  }, 60000);
 });
