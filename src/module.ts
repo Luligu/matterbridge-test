@@ -73,7 +73,6 @@ export default function initializePlugin(matterbridge: PlatformMatterbridge, log
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
   private interval: NodeJS.Timeout | undefined;
-  bridgedDevices = new Map<string, MatterbridgeEndpoint>();
 
   // prettier-ignore
   constructor(matterbridge: PlatformMatterbridge, log: AnsiLogger, override config: TestPlatformConfig) {
@@ -179,7 +178,6 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       switchDevice.addRequiredClusters();
       if (!this.config.noDevices) await this.registerDevice(switchDevice);
-      this.bridgedDevices.set('Switch ' + i, switchDevice);
     }
 
     for (let i = 0; i < this.config.loadOutlets; i++) {
@@ -221,7 +219,6 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       outletDevice.addRequiredClusters();
       if (!this.config.noDevices) await this.registerDevice(outletDevice);
-      this.bridgedDevices.set('Outlet ' + i, outletDevice);
     }
 
     for (let i = 0; i < this.config.loadLights; i++) {
@@ -285,11 +282,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       lightDevice.addRequiredClusters();
       if (!this.config.noDevices) await this.registerDevice(lightDevice);
-      this.bridgedDevices.set('Light ' + i, lightDevice);
     }
 
-    this.log.info(`Finished starting platform ${this.config.name} with ${this.bridgedDevices.size} devices:`);
-    for (const device of this.bridgedDevices.values()) {
+    this.log.info(`Finished starting platform ${this.config.name} with ${this.getDevices().length} devices:`);
+    for (const device of this.getDevices()) {
       this.log.info(`- device ${device.deviceName} with serial ${device.serialNumber}`);
     }
   }
@@ -328,7 +324,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   async intervalHandler(): Promise<void> {
     this.log.info('Interval called');
     for (let i = 0; i < this.config.loadSwitches; i++) {
-      const device = this.bridgedDevices.get('Switch ' + i);
+      const device = this.getDeviceByName('Switch ' + i);
       const state = device?.getAttribute(OnOff.id, 'onOff');
       await device?.setAttribute(OnOff.id, 'onOff', !state, device?.log);
       if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', state, device?.log);
@@ -360,7 +356,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
     }
     for (let i = 0; i < this.config.loadOutlets; i++) {
-      const device = this.bridgedDevices.get('Outlet ' + i);
+      const device = this.getDeviceByName('Outlet ' + i);
       const state = device?.getAttribute(OnOff.id, 'onOff');
       await device?.setAttribute(OnOff.id, 'onOff', !state, device?.log);
       if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation, 'reachable', state, device?.log);
@@ -392,7 +388,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
     }
     for (let i = 0; i < this.config.loadLights; i++) {
-      const device = this.bridgedDevices.get('Light ' + i);
+      const device = this.getDeviceByName('Light ' + i);
       const state = device?.getAttribute(OnOff.id, 'onOff');
       await device?.setAttribute(OnOff.id, 'onOff', !state, device?.log);
       if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', state, device?.log);
@@ -467,7 +463,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   // eslint-disable-next-line @typescript-eslint/require-await
   override async onChangeLoggerLevel(logLevel: LogLevel) {
     this.log.info(`Logger level set to: ${logLevel}`);
-    for (const device of this.bridgedDevices.values()) {
+    for (const device of this.getDevices()) {
       device.log.logLevel = logLevel;
     }
   }
@@ -498,41 +494,41 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     this.log.info(`Received action ${CYAN}${action}${nf}${value ? ' with ' + CYAN + value + nf : ''} ${id ? 'for schema ' + CYAN + id + nf : ''}`);
     if (action === 'turnOn') {
       this.log.info('Turning on all the devices');
-      for (const device of this.bridgedDevices.values()) {
+      for (const device of this.getDevices()) {
         await device.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', true, device.log);
         await device.setAttribute(OnOff.id, 'onOff', true, device.log);
       }
     }
     if (action === 'turnOff') {
       this.log.info('Turning off all the devices');
-      for (const device of this.bridgedDevices.values()) {
+      for (const device of this.getDevices()) {
         await device.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', true, device.log);
         await device.setAttribute(OnOff.id, 'onOff', false, device.log);
       }
     }
     if (action === 'turnOnDevice' && isValidString(value, 5)) {
       this.log.info(`Turning on the device ${CYAN}${value}${nf}`);
-      const device = this.bridgedDevices.get(value);
+      const device = this.getDeviceByName(value);
       if (device) {
         await device.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', true, device.log);
         await device.setAttribute(OnOff.id, 'onOff', true, device.log);
       } else {
         this.log.error(`Device ${CYAN}${value}${er} not found:`);
-        for (const device of this.bridgedDevices.keys()) {
-          this.log.info(`- device ${device}`);
+        for (const device of this.getDevices()) {
+          this.log.info(`- device ${device.name}`);
         }
       }
     }
     if (action === 'turnOffDevice' && isValidString(value, 5)) {
       this.log.info(`Turning off the device ${CYAN}${value}${nf}`);
-      const device = this.bridgedDevices.get(value);
+      const device = this.getDeviceByName(value);
       if (device) {
         await device.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', true, device.log);
         await device.setAttribute(OnOff.id, 'onOff', false, device.log);
       } else {
         this.log.error(`Device ${CYAN}${value}${er} not found:`);
-        for (const device of this.bridgedDevices.keys()) {
-          this.log.info(`- device ${device}`);
+        for (const device of this.getDevices()) {
+          this.log.info(`- device ${device.name}`);
         }
       }
     }
