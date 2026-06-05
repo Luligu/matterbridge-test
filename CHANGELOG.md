@@ -36,8 +36,8 @@ If you like this project and find it useful, please consider giving it a star on
 
 ### Added
 
-- [codecov]: Add merge of Jest and Vitest coverage reports. This allows to run both Jest and Vitest tests in the same package and have a unified coverage report in Codecov.
 - [frontend]: Add a plugin frontend to test the new plugin frontend API.
+- [codecov]: Add merge of Jest and Vitest coverage reports. This allows to run both Jest and Vitest tests in the same package and have a unified coverage report in Codecov.
 
 ### Changed
 
