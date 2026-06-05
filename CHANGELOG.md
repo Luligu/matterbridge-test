@@ -28,20 +28,22 @@ If you like this project and find it useful, please consider giving it a star on
 
 <a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/assets/bmc-button.svg" alt="Buy me a coffee" width="120"></a>
 
-## [2.0.18] - Dev branch
+## [2.0.18] - 2026-06-05
 
 ### Breaking changes
 
-- [platform]: Require matterbridge 3.8.0.
+- [matterbridge]: Require matterbridge v.3.8.0 with matter v.1.5.1 and matter.js v.0.17.1.
 
 ### Added
 
 - [codecov]: Add merge of Jest and Vitest coverage reports. This allows to run both Jest and Vitest tests in the same package and have a unified coverage report in Codecov.
+- [frontend]: Add a plugin frontend to test the new plugin frontend API.
 
 ### Changed
 
 - [package]: Update dependencies.
-- [package]: Bump package to `automator` v.3.1.10.
+- [package]: Bump package to `automator` v.3.1.11.
+
 - [package]: Bump `@eslint/json` to v.2.0.0.
 - [package]: Bump `@eslint/markdown` to v.8.0.2.
 - [package]: Bump `@types/node` to v.25.9.1.
@@ -54,6 +56,7 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Bump `ts-jest` to v.29.4.11.
 - [package]: Bump `typescript-eslint` to v.8.60.1.
 - [package]: Bump `vitest` to v.4.1.8.
+
 - [oxlint]: Bump `oxlint` config to v.1.0.2.
 - [oxfmt]: Bump `oxfmt` config to v.1.0.2.
 - [jest]: Bump `jest` config to v.2.0.2.
@@ -66,7 +69,9 @@ If you like this project and find it useful, please consider giving it a star on
 - [workflow]: Bump `.github\workflows\build.yml` config to v.2.0.4.
 - [workflow]: Bump `.github\workflows\codecov.yml` config to v.2.0.4.
 - [workflow]: Bump `.github\workflows\publish.yml` config to v.2.0.4.
-- [package]: Update `scripts`.
+
+- [claude]: Move CLAUDE.md in the repo root.
+- [claude]: Add .claude/settings.json with permissions configuration.
 
 <a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/assets/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
 
