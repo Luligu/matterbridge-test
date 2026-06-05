@@ -2,18 +2,8 @@ const NAME = 'VitestMatter';
 const MATTER_PORT = 8000;
 
 import { LogLevel } from 'matterbridge/logger';
-import {
-  createServerNode,
-  createTestEnvironment,
-  destroyTestEnvironment,
-  getPlatformMatterbridge,
-  log,
-  loggerLogSpy,
-  setDebug,
-  setupTest,
-  startServerNode,
-  stopServerNode,
-} from 'matterbridge/vitest-utils';
+import { log, loggerLogSpy, setDebug, setupTest } from 'matterbridge/vitest-utils';
+import { createServerNode, createTestEnvironment, destroyTestEnvironment, getMatterbridge, startServerNode, stopServerNode } from 'matterbridge/vitest-utils/matter';
 
 import { TestPlatform, type TestPlatformConfig } from '../src/module.js';
 
@@ -76,7 +66,7 @@ describe('TestPlatform', () => {
   });
 
   it('should initialize platform with config name', async () => {
-    const matterbridge = await getPlatformMatterbridge();
+    const matterbridge = await getMatterbridge();
     testPlatform = new TestPlatform(matterbridge, log, config);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Initializing platform:', config.name);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Finished initializing platform:', config.name);

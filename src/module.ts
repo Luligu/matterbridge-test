@@ -80,8 +80,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('3.7.0')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "3.7.0". Please update Matterbridge to the latest version in the frontend.`);
+    if (typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('3.8.0')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "3.8.0". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -177,12 +177,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Received changeToMode command with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
-      // istanbul ignore next line
-      if (this.verifyMatterbridgeVersion('3.8.0', false)) switchDevice.addRequiredClusters();
-      // istanbul ignore next line
-      else switchDevice.addRequiredClusterServers();
+      switchDevice.addRequiredClusters();
       if (!this.config.noDevices) await this.registerDevice(switchDevice);
       this.bridgedDevices.set('Switch ' + i, switchDevice);
     }
@@ -224,12 +219,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
-      // istanbul ignore next line
-      if (this.verifyMatterbridgeVersion('3.8.0', false)) outletDevice.addRequiredClusters();
-      // istanbul ignore next line
-      else outletDevice.addRequiredClusterServers();
+      outletDevice.addRequiredClusters();
       if (!this.config.noDevices) await this.registerDevice(outletDevice);
       this.bridgedDevices.set('Outlet ' + i, outletDevice);
     }
@@ -293,12 +283,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           this.log.info(`Received command changeToMode with request ${data.request.newMode} for endpoint ${data.endpoint?.number}`);
         });
       }
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - addRequiredClusters is only in Matterbridge 3.8.0
-      // istanbul ignore next line
-      if (this.verifyMatterbridgeVersion('3.8.0', false)) lightDevice.addRequiredClusters();
-      // istanbul ignore next line
-      else lightDevice.addRequiredClusterServers();
+      lightDevice.addRequiredClusters();
       if (!this.config.noDevices) await this.registerDevice(lightDevice);
       this.bridgedDevices.set('Light ' + i, lightDevice);
     }
@@ -344,18 +329,18 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     this.log.info('Interval called');
     for (let i = 0; i < this.config.loadSwitches; i++) {
       const device = this.bridgedDevices.get('Switch ' + i);
-      const state = device?.getAttribute(OnOff.Cluster.id, 'onOff');
-      await device?.setAttribute(OnOff.Cluster.id, 'onOff', !state, device?.log);
-      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation.Cluster.id, 'reachable', state, device?.log);
+      const state = device?.getAttribute(OnOff.id, 'onOff');
+      await device?.setAttribute(OnOff.id, 'onOff', !state, device?.log);
+      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', state, device?.log);
       if (this.config.enableElectrical) {
         const voltage = this.getRandomNumberInRange(220, 240);
         const current = this.getRandomNumberInRange(20, 30);
-        await device?.setAttribute(ElectricalPowerMeasurement.Complete, 'voltage', voltage * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement.Complete, 'activeCurrent', current * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement.Complete, 'activePower', voltage * current * 1000, device.log);
-        const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement.Complete.id, 'cumulativeEnergyImported', device.log);
+        await device?.setAttribute(ElectricalPowerMeasurement, 'voltage', voltage * 1000, device.log);
+        await device?.setAttribute(ElectricalPowerMeasurement, 'activeCurrent', current * 1000, device.log);
+        await device?.setAttribute(ElectricalPowerMeasurement, 'activePower', voltage * current * 1000, device.log);
+        const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement.id, 'cumulativeEnergyImported', device.log);
         await device?.setAttribute(
-          ElectricalEnergyMeasurement.Complete,
+          ElectricalEnergyMeasurement,
           'cumulativeEnergyImported',
           { energy: cumulativeEnergy ? cumulativeEnergy.energy + 1000 : 1500 * 1000 },
           device.log,
@@ -363,35 +348,31 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       if (this.config.enableModeSelect) {
         const composed = device?.getChildEndpointById(device.id + '_modeSelect');
-        const currentMode = composed?.getAttribute(ModeSelect.Cluster, 'currentMode', device?.log);
-        await composed?.setAttribute(ModeSelect.Cluster, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+        const currentMode = composed?.getAttribute(ModeSelect, 'currentMode', device?.log);
+        await composed?.setAttribute(ModeSelect, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
       }
       if (this.config.enablePowerSource) {
-        if (device?.hasAttributeServer(PowerSource.Complete, 'wiredCurrentType')) {
-          const type = device?.getAttribute(PowerSource.Complete, 'wiredCurrentType', device?.log);
-          await device?.setAttribute(
-            PowerSource.Complete,
-            'wiredCurrentType',
-            type === PowerSource.WiredCurrentType.Ac ? PowerSource.WiredCurrentType.Dc : PowerSource.WiredCurrentType.Ac,
-          );
-          await device?.setAttribute(PowerSource.Complete, 'description', type === PowerSource.WiredCurrentType.Ac ? 'AC Power' : 'DC Power');
+        if (device?.hasAttributeServer(PowerSource, 'wiredCurrentType')) {
+          const type = device?.getAttribute(PowerSource, 'wiredCurrentType', device?.log);
+          await device?.setAttribute(PowerSource, 'wiredCurrentType', type === PowerSource.WiredCurrentType.Ac ? PowerSource.WiredCurrentType.Dc : PowerSource.WiredCurrentType.Ac);
+          await device?.setAttribute(PowerSource, 'description', type === PowerSource.WiredCurrentType.Ac ? 'AC Power' : 'DC Power');
         }
       }
     }
     for (let i = 0; i < this.config.loadOutlets; i++) {
       const device = this.bridgedDevices.get('Outlet ' + i);
-      const state = device?.getAttribute(OnOff.Cluster.id, 'onOff');
-      await device?.setAttribute(OnOff.Cluster.id, 'onOff', !state, device?.log);
-      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation.Cluster, 'reachable', state, device?.log);
+      const state = device?.getAttribute(OnOff.id, 'onOff');
+      await device?.setAttribute(OnOff.id, 'onOff', !state, device?.log);
+      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation, 'reachable', state, device?.log);
       if (this.config.enableElectrical) {
         const voltage = this.getRandomNumberInRange(220, 240);
         const current = this.getRandomNumberInRange(20, 30);
-        await device?.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'voltage', voltage * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activeCurrent', current * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', voltage * current * 1000, device.log);
-        const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement.Cluster.id, 'cumulativeEnergyImported', device.log);
+        await device?.setAttribute(ElectricalPowerMeasurement.id, 'voltage', voltage * 1000, device.log);
+        await device?.setAttribute(ElectricalPowerMeasurement.id, 'activeCurrent', current * 1000, device.log);
+        await device?.setAttribute(ElectricalPowerMeasurement.id, 'activePower', voltage * current * 1000, device.log);
+        const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement.id, 'cumulativeEnergyImported', device.log);
         await device?.setAttribute(
-          ElectricalEnergyMeasurement.Cluster.id,
+          ElectricalEnergyMeasurement.id,
           'cumulativeEnergyImported',
           { energy: cumulativeEnergy ? cumulativeEnergy.energy + 1000 : 1500 * 1000 },
           device.log,
@@ -399,36 +380,31 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       if (this.config.enableModeSelect) {
         const composed = device?.getChildEndpointById(device.id + '_modeSelect');
-        const currentMode = composed?.getAttribute(ModeSelect.Cluster.id, 'currentMode', device?.log);
-        await composed?.setAttribute(ModeSelect.Cluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+        const currentMode = composed?.getAttribute(ModeSelect.id, 'currentMode', device?.log);
+        await composed?.setAttribute(ModeSelect.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
       }
       if (this.config.enablePowerSource) {
-        if (device?.hasAttributeServer(PowerSource.Cluster.id, 'batPercentRemaining')) {
-          const battery = device?.getAttribute(PowerSource.Cluster.id, 'batPercentRemaining', device?.log);
-          await device?.setAttribute(PowerSource.Cluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
-          await device?.setAttribute(
-            PowerSource.Cluster.id,
-            'batChargeLevel',
-            battery + 20 > 200 ? PowerSource.BatChargeLevel.Critical : PowerSource.BatChargeLevel.Ok,
-            device?.log,
-          );
+        if (device?.hasAttributeServer(PowerSource.id, 'batPercentRemaining')) {
+          const battery = device?.getAttribute(PowerSource.id, 'batPercentRemaining', device?.log);
+          await device?.setAttribute(PowerSource.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+          await device?.setAttribute(PowerSource.id, 'batChargeLevel', battery + 20 > 200 ? PowerSource.BatChargeLevel.Critical : PowerSource.BatChargeLevel.Ok, device?.log);
         }
       }
     }
     for (let i = 0; i < this.config.loadLights; i++) {
       const device = this.bridgedDevices.get('Light ' + i);
-      const state = device?.getAttribute(OnOff.Cluster.id, 'onOff');
-      await device?.setAttribute(OnOff.Cluster.id, 'onOff', !state, device?.log);
-      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation.Cluster.id, 'reachable', state, device?.log);
+      const state = device?.getAttribute(OnOff.id, 'onOff');
+      await device?.setAttribute(OnOff.id, 'onOff', !state, device?.log);
+      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', state, device?.log);
       if (this.config.enableElectrical) {
         const voltage = this.getRandomNumberInRange(220, 240);
         const current = this.getRandomNumberInRange(20, 30);
-        await device?.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'voltage', voltage * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activeCurrent', current * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', voltage * current * 1000, device.log);
-        const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement.Cluster.id, 'cumulativeEnergyImported', device.log);
+        await device?.setAttribute(ElectricalPowerMeasurement.id, 'voltage', voltage * 1000, device.log);
+        await device?.setAttribute(ElectricalPowerMeasurement.id, 'activeCurrent', current * 1000, device.log);
+        await device?.setAttribute(ElectricalPowerMeasurement.id, 'activePower', voltage * current * 1000, device.log);
+        const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement.id, 'cumulativeEnergyImported', device.log);
         await device?.setAttribute(
-          ElectricalEnergyMeasurement.Cluster.id,
+          ElectricalEnergyMeasurement.id,
           'cumulativeEnergyImported',
           { energy: cumulativeEnergy ? cumulativeEnergy.energy + 1000 : 1500 * 1000 },
           device.log,
@@ -436,19 +412,14 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
       if (this.config.enableModeSelect) {
         const composed = device?.getChildEndpointById(device.id + '_modeSelect');
-        const currentMode = composed?.getAttribute(ModeSelect.Cluster.id, 'currentMode', device?.log);
-        await composed?.setAttribute(ModeSelect.Cluster.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
+        const currentMode = composed?.getAttribute(ModeSelect.id, 'currentMode', device?.log);
+        await composed?.setAttribute(ModeSelect.id, 'currentMode', currentMode === 1 ? 2 : 1, device?.log);
       }
       if (this.config.enablePowerSource) {
-        if (device?.hasAttributeServer(PowerSource.Cluster.id, 'batPercentRemaining')) {
-          const battery = device?.getAttribute(PowerSource.Cluster.id, 'batPercentRemaining', device?.log);
-          await device?.setAttribute(PowerSource.Cluster.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
-          await device?.setAttribute(
-            PowerSource.Cluster.id,
-            'batChargeLevel',
-            battery + 20 > 200 ? PowerSource.BatChargeLevel.Critical : PowerSource.BatChargeLevel.Ok,
-            device?.log,
-          );
+        if (device?.hasAttributeServer(PowerSource.id, 'batPercentRemaining')) {
+          const battery = device?.getAttribute(PowerSource.id, 'batPercentRemaining', device?.log);
+          await device?.setAttribute(PowerSource.id, 'batPercentRemaining', battery + 20 > 200 ? 20 : battery + 20, device?.log);
+          await device?.setAttribute(PowerSource.id, 'batChargeLevel', battery + 20 > 200 ? PowerSource.BatChargeLevel.Critical : PowerSource.BatChargeLevel.Ok, device?.log);
         }
       }
     }
@@ -528,23 +499,23 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     if (action === 'turnOn') {
       this.log.info('Turning on all the devices');
       for (const device of this.bridgedDevices.values()) {
-        await device.setAttribute(BridgedDeviceBasicInformation.Cluster.id, 'reachable', true, device.log);
-        await device.setAttribute(OnOff.Cluster.id, 'onOff', true, device.log);
+        await device.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', true, device.log);
+        await device.setAttribute(OnOff.id, 'onOff', true, device.log);
       }
     }
     if (action === 'turnOff') {
       this.log.info('Turning off all the devices');
       for (const device of this.bridgedDevices.values()) {
-        await device.setAttribute(BridgedDeviceBasicInformation.Cluster.id, 'reachable', true, device.log);
-        await device.setAttribute(OnOff.Cluster.id, 'onOff', false, device.log);
+        await device.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', true, device.log);
+        await device.setAttribute(OnOff.id, 'onOff', false, device.log);
       }
     }
     if (action === 'turnOnDevice' && isValidString(value, 5)) {
       this.log.info(`Turning on the device ${CYAN}${value}${nf}`);
       const device = this.bridgedDevices.get(value);
       if (device) {
-        await device.setAttribute(BridgedDeviceBasicInformation.Cluster.id, 'reachable', true, device.log);
-        await device.setAttribute(OnOff.Cluster.id, 'onOff', true, device.log);
+        await device.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', true, device.log);
+        await device.setAttribute(OnOff.id, 'onOff', true, device.log);
       } else {
         this.log.error(`Device ${CYAN}${value}${er} not found:`);
         for (const device of this.bridgedDevices.keys()) {
@@ -556,8 +527,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       this.log.info(`Turning off the device ${CYAN}${value}${nf}`);
       const device = this.bridgedDevices.get(value);
       if (device) {
-        await device.setAttribute(BridgedDeviceBasicInformation.Cluster.id, 'reachable', true, device.log);
-        await device.setAttribute(OnOff.Cluster.id, 'onOff', false, device.log);
+        await device.setAttribute(BridgedDeviceBasicInformation.id, 'reachable', true, device.log);
+        await device.setAttribute(OnOff.id, 'onOff', false, device.log);
       } else {
         this.log.error(`Device ${CYAN}${value}${er} not found:`);
         for (const device of this.bridgedDevices.keys()) {

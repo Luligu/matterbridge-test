@@ -2,18 +2,8 @@ const NAME = 'JestMatter';
 const MATTER_PORT = 7000;
 
 import { jest } from '@jest/globals';
-import {
-  createServerNode,
-  createTestEnvironment,
-  destroyTestEnvironment,
-  getPlatformMatterbridge,
-  log,
-  loggerLogSpy,
-  setDebug,
-  setupTest,
-  startServerNode,
-  stopServerNode,
-} from 'matterbridge/jest-utils';
+import { log, loggerLogSpy, setDebug, setupTest } from 'matterbridge/jest-utils';
+import { createServerNode, createTestEnvironment, destroyTestEnvironment, getMatterbridge, startServerNode, stopServerNode } from 'matterbridge/jest-utils/matter';
 import { LogLevel } from 'matterbridge/logger';
 
 import { TestPlatform, type TestPlatformConfig } from '../src/module.js';
@@ -78,7 +68,7 @@ describe('TestPlatform', () => {
   });
 
   it('should initialize platform with config name', async () => {
-    const matterbridge = await getPlatformMatterbridge();
+    const matterbridge = await getMatterbridge();
     testPlatform = new TestPlatform(matterbridge, log, config);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Initializing platform:', config.name);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Finished initializing platform:', config.name);
