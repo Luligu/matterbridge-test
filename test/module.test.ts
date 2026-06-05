@@ -120,12 +120,9 @@ describe('TestPlatform', () => {
   });
 
   it('should throw error in load when version is not valid', () => {
-    const savedVersion = matterbridge.matterbridgeVersion;
-    matterbridge.matterbridgeVersion = '1.5.0';
-    expect(() => new TestPlatform(matterbridge, log, config)).toThrow(
+    expect(() => new TestPlatform({ ...matterbridge, matterbridgeVersion: '1.5.0' }, log, config)).toThrow(
       'The test plugin requires Matterbridge version >= "3.8.0". Please update Matterbridge to the latest version in the frontend.',
     );
-    matterbridge.matterbridgeVersion = savedVersion;
   });
 
   it('should return an instance of TestPlatform', async () => {
@@ -236,7 +233,7 @@ describe('TestPlatform', () => {
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'Test reason');
   });
 
-  it('should call onConfigure', async () => {
+  it('should run the interval handler correctly', async () => {
     testPlatform = new TestPlatform(matterbridge, log, { ...config, unregisterOnShutdown: true });
     addMatterbridgePlatform(testPlatform);
     await testPlatform.onStart('Test reason');
