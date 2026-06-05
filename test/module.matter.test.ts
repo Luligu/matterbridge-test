@@ -6,7 +6,7 @@ const MATTER_PORT = 7000;
 import { jest } from '@jest/globals';
 import { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
 import { flushAsync, log, loggerLogSpy, setDebug, setupTest } from 'matterbridge/jest-utils';
-import { createServerNode, createTestEnvironment, destroyTestEnvironment, getMatterbridge, startServerNode, stopServerNode } from 'matterbridge/jest-utils/matter';
+import { addMatterbridge, createServerNode, createTestEnvironment, destroyTestEnvironment, getMatterbridge, startServerNode, stopServerNode } from 'matterbridge/jest-utils/matter';
 import { LogLevel } from 'matterbridge/logger';
 import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
 
@@ -101,6 +101,7 @@ describe('TestPlatform', () => {
   it('should run the platform', async () => {
     testPlatform = initializePlugin(matterbridge, log, { ...config, unregisterOnShutdown: true });
     expect(testPlatform).toBeInstanceOf(TestPlatform);
+    addMatterbridge(testPlatform);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Initializing platform:', config.name);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Finished initializing platform:', config.name);
 

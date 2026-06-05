@@ -521,7 +521,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       } else {
         this.log.error(`Device ${CYAN}${value}${er} not found:`);
         for (const device of this.getDevices()) {
-          this.log.info(`- device ${device.name}`);
+          this.log.info(`- device ${device.deviceName}`);
         }
       }
     }
@@ -534,7 +534,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       } else {
         this.log.error(`Device ${CYAN}${value}${er} not found:`);
         for (const device of this.getDevices()) {
-          this.log.info(`- device ${device.name}`);
+          this.log.info(`- device ${device.deviceName}`);
         }
       }
     }
