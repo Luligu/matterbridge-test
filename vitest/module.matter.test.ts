@@ -6,7 +6,7 @@ const MATTER_PORT = 8000;
 import { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
 import { LogLevel } from 'matterbridge/logger';
 import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
-import { flushAsync, log, loggerLogSpy, setDebug, setupTest } from 'matterbridge/vitest-utils';
+import { flushAsync, log, loggerInfoSpy, loggerLogSpy, setDebug, setupTest } from 'matterbridge/vitest-utils';
 import {
   addMatterbridge,
   createServerNode,
@@ -166,8 +166,8 @@ describe('TestPlatform', async () => {
     await testPlatform.onAction('turnOff');
     await testPlatform.onAction('turnOnDevice', 'Switch 0');
     await testPlatform.onAction('turnOffDevice', 'Switch 0');
-    await testPlatform.onAction('turnOnDevice', 'Switch');
-    await testPlatform.onAction('turnOffDevice', 'Switch');
+    await testPlatform.onAction('turnOnDevice', 'Switch'); // This should not match any device
+    await testPlatform.onAction('turnOffDevice', 'Switch'); // This should not match any device
 
     // Fetch tests
     const valid = await testPlatform.onFetch('GET', 'valid');
@@ -196,14 +196,17 @@ describe('TestPlatform', async () => {
     testPlatform.config.setUpdateInterval = 0.2; // Set a short interval of 200ms for testing
     await testPlatform.onConfigure();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onConfigure called');
-    await flushAsync();
+    await flushAsync(); // Wait 250ms to ensure the interval has executed at least once
     // @ts-expect-error Accessing private property for testing
     clearInterval(testPlatform.interval);
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Interval called');
 
     // Simulate multiple interval executions
+    loggerInfoSpy.mockClear(); // Clear previous calls to loggerInfoSpy
     for (let i = 0; i < 10; i++) {
       await testPlatform.intervalHandler();
     }
+    expect(loggerInfoSpy).toHaveBeenCalledWith('Interval called');
 
     await testPlatform.onShutdown('Closing test');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'Closing test');
