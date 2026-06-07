@@ -6,7 +6,7 @@ const MATTER_PORT = 8000;
 import { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
 import { LogLevel } from 'matterbridge/logger';
 import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
-import { flushAsync, log, loggerInfoSpy, loggerLogSpy, setDebug, setupTest } from 'matterbridge/vitest-utils';
+import { flushAsync, log, loggerErrorSpy, loggerFatalSpy, loggerInfoSpy, loggerLogSpy, loggerWarnSpy, setDebug, setupTest } from 'matterbridge/vitest-utils';
 import {
   addMatterbridge,
   createServerNode,
@@ -67,6 +67,13 @@ describe('TestPlatform', async () => {
   });
 
   afterEach(async () => {
+    // No errors logged during tests
+    // eslint-disable-next-line vitest/no-standalone-expect
+    expect(loggerWarnSpy).not.toHaveBeenCalled();
+    // eslint-disable-next-line vitest/no-standalone-expect
+    expect(loggerErrorSpy).not.toHaveBeenCalled();
+    // eslint-disable-next-line vitest/no-standalone-expect
+    expect(loggerFatalSpy).not.toHaveBeenCalled();
     // Clear debug
     await setDebug(false);
   });
@@ -168,6 +175,7 @@ describe('TestPlatform', async () => {
     await testPlatform.onAction('turnOffDevice', 'Switch 0');
     await testPlatform.onAction('turnOnDevice', 'Switch'); // This should not match any device
     await testPlatform.onAction('turnOffDevice', 'Switch'); // This should not match any device
+    loggerErrorSpy.mockClear(); // Clear any errors from unmatched devices
 
     // Fetch tests
     const valid = await testPlatform.onFetch('GET', 'valid');

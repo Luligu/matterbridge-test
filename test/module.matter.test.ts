@@ -5,7 +5,7 @@ const MATTER_PORT = 7000;
 
 import { jest } from '@jest/globals';
 import { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
-import { flushAsync, log, loggerLogSpy, setDebug, setupTest } from 'matterbridge/jest-utils';
+import { flushAsync, log, loggerErrorSpy, loggerFatalSpy, loggerLogSpy, loggerWarnSpy, setDebug, setupTest } from 'matterbridge/jest-utils';
 import { addMatterbridge, createServerNode, createTestEnvironment, destroyTestEnvironment, getMatterbridge, startServerNode, stopServerNode } from 'matterbridge/jest-utils/matter';
 import { LogLevel } from 'matterbridge/logger';
 import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
@@ -60,7 +60,13 @@ describe('TestPlatform', () => {
   });
 
   afterEach(async () => {
-    // Cleanup after each test
+    // No errors logged during tests
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(loggerWarnSpy).not.toHaveBeenCalled();
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(loggerErrorSpy).not.toHaveBeenCalled();
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(loggerFatalSpy).not.toHaveBeenCalled();
     // Clear debug
     await setDebug(false);
   });
@@ -162,6 +168,7 @@ describe('TestPlatform', () => {
     await testPlatform.onAction('turnOffDevice', 'Switch 0');
     await testPlatform.onAction('turnOnDevice', 'Switch');
     await testPlatform.onAction('turnOffDevice', 'Switch');
+    loggerErrorSpy.mockClear(); // Clear any errors from unmatched devices
 
     // Fetch tests
     const valid = await testPlatform.onFetch('GET', 'valid');

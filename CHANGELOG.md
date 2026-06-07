@@ -30,6 +30,16 @@ If you like this project and find it useful, please consider giving it a star on
 
 ## [2.0.20] - Dev branch
 
+### Changed
+
+- [package]: Update dependencies.
+- [package]: Bump package to `automator` v.3.1.12.
+
+- [workflow]: Bump `.github\workflows\build.yml` config to v.2.0.4.
+- [workflow]: Bump `.github\workflows\codecov.yml` config to v.2.0.5.
+- [workflow]: Bump `.github\workflows\publish.yml` config to v.2.0.4.
+- [eslint]: Bump `eslint` config to v.2.0.7.
+
 <a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/assets/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
 
 ## [2.0.19] - 2026-06-05
