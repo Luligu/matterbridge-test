@@ -3,7 +3,7 @@
 const NAME = 'VitestMatter';
 const MATTER_PORT = 8000;
 
-import { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
+import type { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
 import { LogLevel } from 'matterbridge/logger';
 import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
 import { flushAsync, log, loggerErrorSpy, loggerFatalSpy, loggerInfoSpy, loggerLogSpy, loggerWarnSpy, setDebug, setupTest } from 'matterbridge/vitest-utils';
@@ -24,7 +24,7 @@ import initializePlugin, { TestPlatform, type TestPlatformConfig } from '../src/
 // Setup the test environment
 await setupTest(NAME, false);
 
-describe('TestPlatform', async () => {
+describe('TestPlatform', () => {
   let matterbridge: PlatformMatterbridge;
   let testPlatform: TestPlatform;
 
@@ -58,7 +58,7 @@ describe('TestPlatform', async () => {
     await createTestEnvironment();
     await createServerNode(MATTER_PORT);
     await startServerNode();
-    matterbridge = await getMatterbridge();
+    matterbridge = getMatterbridge();
   });
 
   beforeEach(() => {
@@ -68,11 +68,8 @@ describe('TestPlatform', async () => {
 
   afterEach(async () => {
     // No errors logged during tests
-    // eslint-disable-next-line vitest/no-standalone-expect
     expect(loggerWarnSpy).not.toHaveBeenCalled();
-    // eslint-disable-next-line vitest/no-standalone-expect
     expect(loggerErrorSpy).not.toHaveBeenCalled();
-    // eslint-disable-next-line vitest/no-standalone-expect
     expect(loggerFatalSpy).not.toHaveBeenCalled();
     // Clear debug
     await setDebug(false);
@@ -107,7 +104,7 @@ describe('TestPlatform', async () => {
 
   it('should throw error in load when version is not valid', () => {
     expect(() => new TestPlatform({ ...matterbridge, matterbridgeVersion: '1.5.0' }, log, config)).toThrow(
-      'The test plugin requires Matterbridge version >= "3.8.0". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "3.9.0". Please update Matterbridge to the latest version in the frontend.',
     );
   });
 
@@ -135,8 +132,10 @@ describe('TestPlatform', async () => {
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received off command'));
       }
 
-      if ((device.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined)?.hasClusterServer(ModeSelect)) {
-        await (device.parts.get(device.id + '_modeSelect') as MatterbridgeEndpoint | undefined)?.commandHandler.executeHandler('changeToMode', { request: { newMode: 1 } } as any);
+      if ((device.parts.get(device.id + '_modeSelect') as unknown as MatterbridgeEndpoint | undefined)?.hasClusterServer(ModeSelect)) {
+        await (device.parts.get(device.id + '_modeSelect') as unknown as MatterbridgeEndpoint | undefined)?.commandHandler.executeHandler('changeToMode', {
+          request: { newMode: 1 },
+        } as any);
         expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received changeToMode command'));
       }
 
@@ -211,7 +210,7 @@ describe('TestPlatform', async () => {
 
     // Simulate multiple interval executions
     loggerInfoSpy.mockClear(); // Clear previous calls to loggerInfoSpy
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i += 1) {
       await testPlatform.intervalHandler();
     }
     expect(loggerInfoSpy).toHaveBeenCalledWith('Interval called');

@@ -4,7 +4,7 @@ const NAME = 'JestMatter';
 const MATTER_PORT = 7000;
 
 import { jest } from '@jest/globals';
-import { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
+import type { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
 import { flushAsync, log, loggerErrorSpy, loggerFatalSpy, loggerLogSpy, loggerWarnSpy, setDebug, setupTest } from 'matterbridge/jest-utils';
 import { addMatterbridge, createServerNode, createTestEnvironment, destroyTestEnvironment, getMatterbridge, startServerNode, stopServerNode } from 'matterbridge/jest-utils/matter';
 import { LogLevel } from 'matterbridge/logger';
@@ -51,7 +51,7 @@ describe('TestPlatform', () => {
     await createTestEnvironment();
     await createServerNode(MATTER_PORT);
     await startServerNode();
-    matterbridge = await getMatterbridge();
+    matterbridge = getMatterbridge();
   });
 
   beforeEach(() => {
@@ -61,11 +61,8 @@ describe('TestPlatform', () => {
 
   afterEach(async () => {
     // No errors logged during tests
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(loggerWarnSpy).not.toHaveBeenCalled();
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(loggerErrorSpy).not.toHaveBeenCalled();
-    // eslint-disable-next-line jest/no-standalone-expect
     expect(loggerFatalSpy).not.toHaveBeenCalled();
     // Clear debug
     await setDebug(false);
@@ -100,7 +97,7 @@ describe('TestPlatform', () => {
 
   it('should throw error in load when version is not valid', () => {
     expect(() => new TestPlatform({ ...matterbridge, matterbridgeVersion: '1.5.0' }, log, config)).toThrow(
-      'The test plugin requires Matterbridge version >= "3.8.0". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "3.9.0". Please update Matterbridge to the latest version in the frontend.',
     );
   });
 
@@ -202,7 +199,7 @@ describe('TestPlatform', () => {
     clearInterval(testPlatform.interval);
 
     // Simulate multiple interval executions
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i += 1) {
       await testPlatform.intervalHandler();
     }
 

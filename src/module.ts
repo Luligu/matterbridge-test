@@ -28,8 +28,8 @@ import {
   MatterbridgeDynamicPlatform,
   MatterbridgeEndpoint,
   modeSelect,
-  onOffOutlet,
-  onOffSwitch,
+  onOffLightSwitch,
+  onOffPlugInUnit,
   type PlatformConfig,
   type PlatformMatterbridge,
   powerSource,
@@ -79,8 +79,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     super(matterbridge, log, config);
 
     // Verify that Matterbridge is the correct version
-    if (typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('3.8.0')) {
-      throw new Error(`The test plugin requires Matterbridge version >= "3.8.0". Please update Matterbridge to the latest version in the frontend.`);
+    if (typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('3.9.0')) {
+      throw new Error(`The test plugin requires Matterbridge version >= "3.9.0". Please update Matterbridge to the latest version in the frontend.`);
     }
 
     this.log.info('Initializing platform:', this.config.name);
@@ -136,11 +136,11 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     await this.ready;
     await this.clearSelect();
 
-    for (let i = 0; i < this.config.loadSwitches; i++) {
+    for (let i = 0; i < this.config.loadSwitches; i += 1) {
       this.setSelectDevice('serial_switch_' + i, 'Switch ' + i);
       if (!this.validateDevice('Switch ' + i)) continue;
       const switchDevice = new MatterbridgeEndpoint(
-        [onOffSwitch, bridgedNode, ...(this.config.enableElectrical ? [electricalSensor] : []), ...(this.config.enablePowerSource ? [powerSource] : [])],
+        [onOffLightSwitch, bridgedNode, ...(this.config.enableElectrical ? [electricalSensor] : []), ...(this.config.enablePowerSource ? [powerSource] : [])],
         { id: 'Switch' + i },
         this.config.debug,
       );
@@ -151,9 +151,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         0xfff1,
         'Matterbridge',
         'Matterbridge test plugin',
-        parseInt(this.version.replace(/\D/g, '')),
+        Number.parseInt(this.version.replace(/\D/g, '')),
         this.version,
-        parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
       // Extraneous server cluster for Apple Home app to recognize the device as a switch and not a plug.
@@ -182,11 +182,11 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
     }
 
-    for (let i = 0; i < this.config.loadOutlets; i++) {
+    for (let i = 0; i < this.config.loadOutlets; i += 1) {
       this.setSelectDevice('serial_outlet_' + i, 'Outlet ' + i);
       if (!this.validateDevice('Outlet ' + i)) continue;
       const outletDevice = new MatterbridgeEndpoint(
-        [onOffOutlet, bridgedNode, ...(this.config.enableElectrical ? [electricalSensor] : []), ...(this.config.enablePowerSource ? [powerSource] : [])],
+        [onOffPlugInUnit, bridgedNode, ...(this.config.enableElectrical ? [electricalSensor] : []), ...(this.config.enablePowerSource ? [powerSource] : [])],
         { id: 'Outlet' + i },
         this.config.debug,
       );
@@ -197,9 +197,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         0xfff1,
         'Matterbridge',
         'Matterbridge test plugin',
-        parseInt(this.version.replace(/\D/g, '')),
+        Number.parseInt(this.version.replace(/\D/g, '')),
         this.version,
-        parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
       outletDevice.addCommandHandler('identify', (data) => {
@@ -225,7 +225,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
     }
 
-    for (let i = 0; i < this.config.loadLights; i++) {
+    for (let i = 0; i < this.config.loadLights; i += 1) {
       this.setSelectDevice('serial_light_' + i, 'Light ' + i);
       if (!this.validateDevice('Light ' + i)) continue;
       const lightDevice = new MatterbridgeEndpoint(
@@ -240,9 +240,9 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         0xfff1,
         'Matterbridge',
         'Matterbridge test plugin',
-        parseInt(this.version.replace(/\D/g, '')),
+        Number.parseInt(this.version.replace(/\D/g, '')),
         this.version,
-        parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
       lightDevice.addCommandHandler('identify', (data) => {
@@ -296,12 +296,14 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
   }
 
+  // oxlint-disable-next-line class-methods-use-this
   addPowerSource(device: MatterbridgeEndpoint, type: 'wired' | 'replaceable' | 'rechargeable'): void {
     if (type === 'wired') device.createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac);
     else if (type === 'replaceable') device.createDefaultPowerSourceReplaceableBatteryClusterServer(100);
     else if (type === 'rechargeable') device.createDefaultPowerSourceRechargeableBatteryClusterServer(100);
   }
 
+  // oxlint-disable-next-line class-methods-use-this
   addElectricalMeasurements(device: MatterbridgeEndpoint): void {
     device.createDefaultPowerTopologyClusterServer();
     device.createDefaultElectricalPowerMeasurementClusterServer(220 * 1000, 2.5 * 1000, 220 * 2.5 * 1000, 50 * 1000);
@@ -323,13 +325,14 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     return composed;
   }
 
+  // oxlint-disable-next-line class-methods-use-this
   getRandomNumberInRange = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
   async intervalHandler(): Promise<void> {
     this.log.info('Interval called');
-    for (let i = 0; i < this.config.loadSwitches; i++) {
+    for (let i = 0; i < this.config.loadSwitches; i += 1) {
       const device = this.getDeviceByName('Switch ' + i);
       const state = device?.getAttribute(OnOff, 'onOff');
       await device?.setAttribute(OnOff, 'onOff', !state, device?.log);
@@ -361,7 +364,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         }
       }
     }
-    for (let i = 0; i < this.config.loadOutlets; i++) {
+    for (let i = 0; i < this.config.loadOutlets; i += 1) {
       const device = this.getDeviceByName('Outlet ' + i);
       const state = device?.getAttribute(OnOff, 'onOff');
       await device?.setAttribute(OnOff, 'onOff', !state, device?.log);
@@ -395,7 +398,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         }
       }
     }
-    for (let i = 0; i < this.config.loadLights; i++) {
+    for (let i = 0; i < this.config.loadLights; i += 1) {
       const device = this.getDeviceByName('Light ' + i);
       const state = device?.getAttribute(OnOff, 'onOff');
       await device?.setAttribute(OnOff, 'onOff', !state, device?.log);
@@ -471,7 +474,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    * @param {LogLevel} logLevel The new logger level.
    */
   // eslint-disable-next-line @typescript-eslint/require-await
-  override async onChangeLoggerLevel(logLevel: LogLevel) {
+  override async onChangeLoggerLevel(logLevel: LogLevel): Promise<void> {
     this.log.info(`Logger level set to: ${logLevel}`);
     for (const device of this.getDevices()) {
       device.log.logLevel = logLevel;
@@ -500,7 +503,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    *      "default": false
    *  },
    */
-  override async onAction(action: string, value?: string, id?: string) {
+  override async onAction(action: string, value?: string, id?: string): Promise<void> {
     this.log.info(`Received action ${CYAN}${action}${nf}${value ? ' with ' + CYAN + value + nf : ''} ${id ? 'for schema ' + CYAN + id + nf : ''}`);
     if (action === 'turnOn') {
       this.log.info('Turning on all the devices');
@@ -574,7 +577,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    * @param {TestPlatformConfig} config The new plugin config.
    */
   // eslint-disable-next-line @typescript-eslint/require-await
-  override async onConfigChanged(config: TestPlatformConfig) {
+  override async onConfigChanged(config: TestPlatformConfig): Promise<void> {
     this.log.info(`The config for plugin ${CYAN}${config.name}${nf} has been updated.`);
   }
 }
