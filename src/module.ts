@@ -296,14 +296,12 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     }
   }
 
-  // oxlint-disable-next-line class-methods-use-this
   addPowerSource(device: MatterbridgeEndpoint, type: 'wired' | 'replaceable' | 'rechargeable'): void {
     if (type === 'wired') device.createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac);
     else if (type === 'replaceable') device.createDefaultPowerSourceReplaceableBatteryClusterServer(100);
     else if (type === 'rechargeable') device.createDefaultPowerSourceRechargeableBatteryClusterServer(100);
   }
 
-  // oxlint-disable-next-line class-methods-use-this
   addElectricalMeasurements(device: MatterbridgeEndpoint): void {
     device.createDefaultPowerTopologyClusterServer();
     device.createDefaultElectricalPowerMeasurementClusterServer(220 * 1000, 2.5 * 1000, 220 * 2.5 * 1000, 50 * 1000);
@@ -325,7 +323,6 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     return composed;
   }
 
-  // oxlint-disable-next-line class-methods-use-this
   getRandomNumberInRange = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
