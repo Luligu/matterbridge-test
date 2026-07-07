@@ -1,7 +1,6 @@
 /**
- * This file contains the class TestPlatform.
- *
- * @file module.ts
+ * @file src/module.ts
+ * @description This file contains the class TestPlatform.
  * @author Luca Liguori
  * @version 2.0.0
  * @license Apache-2.0
@@ -74,7 +73,7 @@ export default function initializePlugin(matterbridge: PlatformMatterbridge, log
 export class TestPlatform extends MatterbridgeDynamicPlatform {
   private interval: NodeJS.Timeout | undefined;
 
-  // prettier-ignore
+  // oxfmt-ignore
   constructor(matterbridge: PlatformMatterbridge, log: AnsiLogger, override config: TestPlatformConfig) {
     super(matterbridge, log, config);
 
@@ -126,10 +125,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       throw new Error('Throwing error in start');
     }
 
-    // istanbul ignore if
+    /* v8 ignore next */
     if (this.config.delayStart) await waiter('Delay start', () => false, false, 20000, 1000);
 
-    // istanbul ignore if
+    /* v8 ignore next */
     if (this.config.longDelayStart) await waiter('Long delay start', () => false, false, 150000, 1000);
 
     // Clear the select
@@ -470,7 +469,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    *
    * @param {LogLevel} logLevel The new logger level.
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
+  // oxlint-disable-next-line typescript/require-await
   override async onChangeLoggerLevel(logLevel: LogLevel): Promise<void> {
     this.log.info(`Logger level set to: ${logLevel}`);
     for (const device of this.getDevices()) {
@@ -553,10 +552,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    * @param {unknown} [body] - Optional request body (for POST, PUT, PATCH).
    * @returns {Promise<unknown>} - A JSON-serializable value, or undefined to respond with 404.
    */
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - onFetch is only in Matterbridge 3.8.0.
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async onFetch(method: string, path?: string, query?: Record<string, unknown>, body?: unknown): Promise<unknown> {
+  // oxlint-disable-next-line typescript/require-await
+  override async onFetch(method: string, path?: string, query?: Record<string, unknown>, body?: unknown): Promise<unknown> {
     this.log.debug(
       `The plugin ${CYAN}${this.name}${db} received onFetch ${method} for path ${CYAN}${path ?? 'none'} query ${CYAN}${JSON.stringify(query) ?? 'none'} body ${CYAN}${JSON.stringify(body) ?? 'none'}${db}`,
     );
@@ -573,7 +570,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    *
    * @param {TestPlatformConfig} config The new plugin config.
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
+  // oxlint-disable-next-line typescript/require-await
   override async onConfigChanged(config: TestPlatformConfig): Promise<void> {
     this.log.info(`The config for plugin ${CYAN}${config.name}${nf} has been updated.`);
   }

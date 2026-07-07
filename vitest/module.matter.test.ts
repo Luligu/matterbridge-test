@@ -1,4 +1,10 @@
-/* eslint-disable vitest/no-conditional-expect */
+/**
+ * @file vitest/module.matter.test.ts
+ * @description This file contains the tests for the TestPlatform.
+ * @author Luca Liguori
+ */
+
+/* oxlint-disable vitest/no-conditional-expect */
 
 const NAME = 'VitestMatter';
 const MATTER_PORT = 8000;
