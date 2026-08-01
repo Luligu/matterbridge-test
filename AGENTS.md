@@ -1,4 +1,4 @@
-# Matterbridge Agents Instructions (v.1.0.3)
+# Matterbridge Agents Instructions (v.1.0.2)
 
 ## Style And Formatting
 
