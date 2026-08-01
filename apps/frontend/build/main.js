@@ -14,8 +14,12 @@ async function fetchCard(path, dotEl, valueEl) {
   }
 }
 
-// GET /api/valid → onFetch returns a value → 200 JSON
-fetchCard('valid', document.getElementById('dot-valid'), document.getElementById('value-valid'));
+// GET /api/info → onFetch returns plugin info → 200 JSON
+fetchCard('info', document.getElementById('dot-info'), document.getElementById('value-info'));
+// GET /api/info?verbose=true&limit=5 → onFetch receives the parsed query → 200 JSON echoing it back
+fetchCard('info?verbose=true&limit=5', document.getElementById('dot-query'), document.getElementById('value-query'));
+// GET /api/devices → onFetch returns the registered devices list → 200 JSON
+fetchCard('devices', document.getElementById('dot-devices'), document.getElementById('value-devices'));
 // GET /api/invalid → onFetch returns undefined → 404 JSON error
 fetchCard('invalid', document.getElementById('dot-invalid'), document.getElementById('value-invalid'));
 

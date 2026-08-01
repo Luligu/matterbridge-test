@@ -558,7 +558,8 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     this.log.debug(
       `The plugin ${CYAN}${this.name}${db} received onFetch ${method} for path ${CYAN}${path ?? 'none'} query ${CYAN}${JSON.stringify(query) ?? 'none'} body ${CYAN}${JSON.stringify(body) ?? 'none'}${db}`,
     );
-    if (method === 'GET' && path === 'valid') return { status: 'ok', plugin: this.name };
+    if (method === 'GET' && path === 'info') return { plugin: this.name, type: this.type, version: this.version, deviceCount: this.getDevices().length, query: query ?? null };
+    if (method === 'GET' && path === 'devices') return this.getDevices().map((device) => ({ name: device.deviceName, serialNumber: device.serialNumber }));
     if (method === 'POST' && path === 'resource') return { status: 'created', plugin: this.name };
     if (method === 'PUT' && path === 'resource') return { status: 'updated', plugin: this.name };
     if (method === 'PATCH' && path === 'resource') return { status: 'patched', plugin: this.name };

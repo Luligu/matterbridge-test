@@ -183,9 +183,21 @@ describe('TestPlatform', () => {
     loggerErrorSpy.mockClear(); // Clear any errors from unmatched devices
 
     // Fetch tests
-    const valid = await testPlatform.onFetch('GET', 'valid');
-    expect(valid).toEqual({ status: 'ok', plugin: testPlatform.name });
+    const info = await testPlatform.onFetch('GET', 'info');
+    expect(info).toEqual({ plugin: testPlatform.name, type: testPlatform.type, version: testPlatform.version, deviceCount: testPlatform.getDevices().length, query: null });
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.DEBUG, expect.stringContaining('received onFetch'));
+
+    const infoWithQuery = await testPlatform.onFetch('GET', 'info', { verbose: 'true', limit: '5' });
+    expect(infoWithQuery).toEqual({
+      plugin: testPlatform.name,
+      type: testPlatform.type,
+      version: testPlatform.version,
+      deviceCount: testPlatform.getDevices().length,
+      query: { verbose: 'true', limit: '5' },
+    });
+
+    const devices = await testPlatform.onFetch('GET', 'devices');
+    expect(devices).toEqual(testPlatform.getDevices().map((device) => ({ name: device.deviceName, serialNumber: device.serialNumber })));
 
     const post = await testPlatform.onFetch('POST', 'resource', {}, { action: 'create' });
     expect(post).toEqual({ status: 'created', plugin: testPlatform.name });

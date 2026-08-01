@@ -51,24 +51,16 @@ header {
   gap: 10px;
 }
 
-.logo-text {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--text);
+.logo-img {
+  border-radius: 8px;
+  display: block;
 }
 
-.badge {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  background: var(--border);
+.logo-text {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--muted);
-  padding: 3px 8px;
-  border-radius: 4px;
 }
 
 /* Hero */
@@ -76,25 +68,6 @@ header {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.plugin-path {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
-  letter-spacing: 0.02em;
-  opacity: 0;
-  animation: fade-up 0.5s ease 0.1s forwards;
-}
-
-.hero h1 {
-  font-size: clamp(28px, 6vw, 40px);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  color: var(--text);
-  opacity: 0;
-  animation: fade-up 0.5s ease 0.15s forwards;
 }
 
 .subtitle {
@@ -109,8 +82,8 @@ header {
 /* Status row */
 .status-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
   opacity: 0;
   animation: fade-up 0.5s ease 0.28s forwards;
 }
@@ -119,10 +92,10 @@ header {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 20px;
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
 }
 
@@ -149,7 +122,6 @@ header {
   font-size: 11px;
   color: var(--muted);
   letter-spacing: 0.02em;
-  text-transform: uppercase;
   font-family: var(--font-mono);
   margin-bottom: 3px;
 }
@@ -158,9 +130,8 @@ header {
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 /* Footer */
