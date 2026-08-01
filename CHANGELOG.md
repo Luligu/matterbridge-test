@@ -33,6 +33,11 @@ If you like this project and find it useful, please consider giving it a star on
 
 - [matterbridge]: Require matterbridge v.3.10.0 with matter v.1.6.0.
 
+### Added
+
+- [frontend] Refactor frontend example.
+- [frontend] Add plugin-frontend agents instructions.
+
 ### Changed
 
 - [package]: Bump `oxfmt` to v.0.61.0.
