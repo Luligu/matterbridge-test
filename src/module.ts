@@ -556,7 +556,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   // oxlint-disable-next-line typescript/require-await
   override async onFetch(method: string, path?: string, query?: Record<string, unknown>, body?: unknown): Promise<unknown> {
     this.log.debug(
-      `The plugin ${CYAN}${this.name}${db} received onFetch ${method} for path ${CYAN}${path ?? 'none'} query ${CYAN}${JSON.stringify(query) ?? 'none'} body ${CYAN}${JSON.stringify(body) ?? 'none'}${db}`,
+      `The plugin ${CYAN}${this.name}${db} received onFetch ${CYAN}${method}${db} for path ${CYAN}${path ?? 'none'}${db} query ${CYAN}${JSON.stringify(query) ?? 'none'}${db} body ${CYAN}${JSON.stringify(body) ?? 'none'}${db}`,
     );
     if (method === 'GET' && path === 'info') return { plugin: this.name, type: this.type, version: this.version, deviceCount: this.getDevices().length, query: query ?? null };
     if (method === 'GET' && path === 'devices') return this.getDevices().map((device) => ({ name: device.deviceName, serialNumber: device.serialNumber }));
