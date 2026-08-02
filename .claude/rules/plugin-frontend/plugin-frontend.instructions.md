@@ -7,7 +7,7 @@ paths:
 
 # Matterbridge Plugin Frontend Guide
 
-Use this guide when writing plugin code that interacts with a plugin's own frontend SPA: bundling and serving that SPA, its custom REST API, and restart/snackbar notifications.
+Use this guide when writing plugin code that interacts with a plugin's own frontend SPA: bundling and serving that SPA and its custom REST API.
 
 This guide is based on `packages/core/src/frontend.ts` and `packages/core/src/matterbridgePlatform.ts` in the `matterbridge` repository.
 
