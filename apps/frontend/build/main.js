@@ -1,10 +1,17 @@
 // matterbridge-test plugin frontend
 
-const BASE = '/plugins/matterbridge-test';
+// Resolve requests from the script directory:
+// - normal: /plugins/matterbridge-test/main.js -> /plugins/matterbridge-test/api/info
+// - Hass Ingress: /api/hassio_ingress/<token>/plugins/matterbridge-test/main.js -> /api/hassio_ingress/<token>/plugins/matterbridge-test/api/info
+const BASE_URL = new URL('.', document.currentScript?.src ?? window.location.href);
+
+function pluginUrl(path) {
+  return new URL(path, BASE_URL);
+}
 
 async function fetchCard(path, dotEl, valueEl) {
   try {
-    const res = await fetch(`${BASE}/api/${path}`);
+    const res = await fetch(pluginUrl(`api/${path}`));
     const data = await res.json();
     dotEl.classList.toggle('online', res.ok);
     valueEl.textContent = typeof data === 'object' ? JSON.stringify(data) : String(data);
@@ -30,7 +37,7 @@ async function methodCard(method, path, body, dotEl, valueEl) {
       options.headers = { 'Content-Type': 'application/json' };
       options.body = JSON.stringify(body);
     }
-    const res = await fetch(`${BASE}/api/${path}`, options);
+    const res = await fetch(pluginUrl(`api/${path}`), options);
     dotEl.classList.toggle('online', res.ok);
     if (res.status === 204) { valueEl.textContent = '204 No Content'; return; }
     const data = await res.json();
@@ -55,7 +62,7 @@ methodCard('DELETE', 'resource', undefined,             document.getElementById(
   const dotEl = document.getElementById('dot-spa');
   const valueEl = document.getElementById('value-spa');
   try {
-    const res = await fetch(`${BASE}/unknown`);
+    const res = await fetch(pluginUrl('unknown'));
     const text = await res.text();
     const ok = res.ok && text.includes('<title>matterbridge-test</title>');
     dotEl.classList.toggle('online', ok);
