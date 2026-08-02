@@ -35,9 +35,9 @@ If you like this project and find it useful, please consider giving it a star on
 
 ### Added
 
-- [chip] Add chip-test toolchain agents instruction and chip-test runner.
-- [frontend] Refactor frontend example.
-- [frontend] Add plugin-frontend agents instructions.
+- [chip]: Add chip-test toolchain agents instruction and chip-test runner.
+- [frontend]: Refactor frontend example.
+- [frontend]: Add plugin-frontend agents instructions.
 
 ### Changed
 
