@@ -158,7 +158,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       );
       // Extraneous server cluster for Apple Home app to recognize the device as a switch and not a plug.
       // The on/off cluster server will be removed from required clusters of onOffSwitch in a future release.
-      switchDevice.createDefaultOnOffClusterServer();
+      if (process.env.MATTERBRIDGE_CHIP_TEST !== '1') switchDevice.createDefaultOnOffClusterServer();
       switchDevice.addCommandHandler('identify', (data) => {
         this.log.info(`Received identify command request ${data.request.identifyTime} for endpoint ${data.endpoint?.number}`);
       });

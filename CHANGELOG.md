@@ -38,6 +38,7 @@ If you like this project and find it useful, please consider giving it a star on
 ### Added
 
 - [chip]: Add chip-test toolchain agents instruction and chip-test runner.
+- [chip]: Add `chipTests.json`/`chipTests.md` with the generic device basic composition, conformance and default warnings tests.
 - [frontend]: Refactor frontend example.
 - [frontend]: Add plugin-frontend agents instructions.
 
