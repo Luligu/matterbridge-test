@@ -29,7 +29,7 @@ If you like this project and find it useful, please consider giving it a star on
 
 <a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/assets/bmc-button.svg" alt="Buy me a coffee" width="120"></a>
 
-## [3.0.2] - Dev branch
+## [3.0.2] - 2026-08-14
 
 ### Breaking changes
 
@@ -42,7 +42,7 @@ If you like this project and find it useful, please consider giving it a star on
 ### Added
 
 - [chip]: Add chip-test toolchain agents instruction and chip-test runner.
-- [chip]: Add `chipTests.json`/`chipTests.md` with the generic device basic composition, conformance and default warnings tests.
+- [chip]: Add `chipTests.json`/`chipTests.md` with the generic device basic composition, conformance and default warnings tests (all tests pass ✅).
 - [frontend]: Refactor frontend example.
 - [frontend]: Add plugin-frontend agents instructions.
 
@@ -52,7 +52,6 @@ If you like this project and find it useful, please consider giving it a star on
 - [package]: Bump `oxlint` to v.1.78.0.
 - [package]: Bump `oxlint-tsgolint` to v.7.0.2001.
 - [package]: Bump `@types/node` to v.26.2.0.
-- [package]: Bump `Dev Container` to v.1.2.0.
 - [package]: Update agents configs.
 
 <a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/assets/bmc-button.svg" alt="Buy me a coffee" width="80"></a>
