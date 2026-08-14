@@ -42,13 +42,13 @@ Dev containers have networking limitations depending on the host OS and Docker s
   "remoteUser": "bun",
   "mounts": [
     // Package specific volumes for node_modules, .cache, Matterbridge .matterbridge, .mattercert to improve performance
-    "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=${localWorkspaceFolderBasename}-bun-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
     "source=${localWorkspaceFolderBasename}-cache,target=${containerWorkspaceFolder}/.cache,type=volume",
     "source=${localWorkspaceFolderBasename}-plugins,target=/home/bun/Matterbridge,type=volume",
     "source=${localWorkspaceFolderBasename}-storage,target=/home/bun/.matterbridge,type=volume",
     "source=${localWorkspaceFolderBasename}-cert,target=/home/bun/.mattercert,type=volume",
     // Dev container shared volumes for matterbridge, npm cache, bun cache, bash history, claude, codex and agents to improve performance
-    "source=matterbridge,target=/matterbridge,type=volume",
+    "source=matterbridge-bun,target=/matterbridge,type=volume",
     "source=npm-cache,target=/home/bun/.npm,type=volume",
     "source=bun-cache,target=/home/bun/.bun/install/cache,type=volume",
     "source=bash-cache,target=/home/bun/.bash-cache,type=volume",
@@ -72,13 +72,16 @@ Dev containers have networking limitations depending on the host OS and Docker s
     // Use network host mode if on Docker Engine on Linux or WSL 2 to allow full local network access and mDNS support
     // "--network=host"
     // Use a shared bridge network to allow to access other containers with their names (dns resolution). With the default bridge, dns resolution does not work (only ip:port).
-    "--network=matterbridge"
+    "--network=matterbridge",
+    // Publish the Matterbridge UI port on the Docker host as a single dual-stack (IPv4 + IPv6) binding, so http://localhost:8283
+    // and http://[::1]:8283 both work even without VS Code port forwarding.
+    "--publish",
+    "[::]:8283:8283"
   ],
-  // Publish the Matterbridge UI port on the Docker host (so http://localhost:8283 works even without VS Code port forwarding)
-  "forwardPorts": [8283],
   "portsAttributes": {
     "8283": {
-      "label": "Matterbridge frontend"
+      "label": "Matterbridge frontend (IPv4 + IPv6)",
+      "onAutoForward": "ignore"
     }
   },
   "otherPortsAttributes": {
@@ -100,13 +103,7 @@ Dev containers have networking limitations depending on the host OS and Docker s
       ],
       // Settings for the VS Code environment specific to the dev container (overrides user and workspace settings)
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "js/ts.tsserver.watchOptions": {
-          "watchFile": "dynamicPriorityPolling",
-          "watchDirectory": "dynamicPriorityPolling",
-          "fallbackPolling": "dynamicPriorityPolling",
-          "excludeDirectories": ["**/.cache/**", "**/node_modules/**", "**/coverage/**", "**/dist/**", "**/build/**", "**/docs/**"]
-        }
+        "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   }
