@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# .devcontainer/post-create.sh v.1.2.0
+# .devcontainer/node/post-create.sh v.2.0.0
 
 # This script runs after the Dev Container is created to set up the dev container environment.
 
@@ -19,8 +19,6 @@ echo "Date: $(date)"
 echo "Node.js version: $(node -v)"
 echo "Npm version: $(npm -v)"
 echo "Npm cache: $(npm config get cache)"
-echo "Bun version: $(bun -v)"
-echo "Bun global cache: ${HOME}/.bun/install/cache"
 echo ""
 
 echo "1.post-create - Creating directories..."
@@ -32,11 +30,11 @@ sudo chown -R node:node . /home/node/Matterbridge /home/node/.matterbridge /home
 sudo chown -R node:node /home/node/.claude /home/node/.codex /home/node/.agents /home/node/.npm /home/node/.bash-cache /home/node/.bun
 
 echo "3.post-create - Building Matterbridge..."
-sudo chmod +x .devcontainer/install-matterbridge-*.sh
+sudo chmod +x .devcontainer/node/install-matterbridge-*.sh
 # Use this for the main branch:
-# .devcontainer/install-matterbridge-main.sh
+# .devcontainer/node/install-matterbridge-main.sh
 # Use this for the dev branch:
-.devcontainer/install-matterbridge-dev.sh
+.devcontainer/node/install-matterbridge-dev.sh
 
 echo "4.post-create - Installing the plugin dependencies..."
 npm install --no-fund --no-audit

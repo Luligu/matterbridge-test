@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# .devcontainer/post-start.sh v.1.2.0
+# .devcontainer/node/post-start.sh v.2.0.0
 
 # This script runs after the Dev Container is started to set up the dev container environment.
 
@@ -19,8 +19,6 @@ echo "Date: $(date)"
 echo "Node.js version: $(node -v)"
 echo "Npm version: $(npm -v)"
 echo "Npm cache: $(npm config get cache)"
-echo "Bun version: $(bun -v)"
-echo "Bun global cache: ${HOME}/.bun/install/cache"
 echo ""
 
 echo "1.post-start - Installing the plugin dependencies..."

@@ -35,6 +35,10 @@ If you like this project and find it useful, please consider giving it a star on
 
 - [matterbridge]: Require matterbridge v.3.10.0 with matter v.1.6.0.
 
+### Development Breaking changes
+
+- [devcontainer]: Bump `devcontainer` to v.2.0.0. Split into two dev container configs, `.devcontainer/node` and `.devcontainer/bun`. Rebuild all dev containers after pulling this change.
+
 ### Added
 
 - [chip]: Add chip-test toolchain agents instruction and chip-test runner.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# .devcontainer/install-matterbridge-dev.sh v.1.2.0
+# .devcontainer/node/install-matterbridge-dev.sh v.2.0.0
 
 # This script globally installs Matterbridge from the dev branch.
 # To be used only inside the Dev Container with the mounted matterbridge volume.
@@ -29,15 +29,12 @@ SHA7=$(git rev-parse --short=7 HEAD) && BASE_VERSION=$(node -p "require('./packa
 
 echo "5.install-matterbridge-dev - Installing Matterbridge dependencies and building..."
 npm ci --no-fund --no-audit && npm run build
-# bun install --no-fund --no-audit && bun run build
 
 echo "6.install-matterbridge-dev - Building Matterbridge frontend..."
 cd apps/frontend && npm ci --no-fund --no-audit && npm run build && cd ../..
-# cd apps/frontend && bun install --no-fund --no-audit && bun run build && cd ../..
 
 echo "7.install-matterbridge-dev - Installing Matterbridge globally..."
 sudo npm install . --global --no-fund --no-audit
-# bun link
 sudo rm -rf .agents .cache .claude .codex .devcontainer .git .github .vscode docker docs reflector screenshots scripts systemd
 
 echo "8.install-matterbridge-dev - Matterbridge has been installed from the dev branch."

@@ -81,7 +81,8 @@
     "coverage": {
       "lines": 100,
       "functions": 100
-    }
+    },
+    "skipDevContainer": true
   },
   "scripts": {
     "start": "matterbridge",

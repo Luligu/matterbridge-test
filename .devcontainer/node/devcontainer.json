@@ -1,6 +1,6 @@
-// .devcontainer/devcontainer.json v.1.2.0
+// .devcontainer/node/devcontainer.json v.2.0.0
 
-// This file defines the development container configuration for a Matterbridge Plugin.
+// This file defines the node development container configuration for a Matterbridge Plugin.
 
 /*
   ************************************************* NOTICE *************************************************
@@ -31,10 +31,9 @@ Dev containers have networking limitations depending on the host OS and Docker s
 */
 {
   // Name of the dev container
-  "name": "Matterbridge Plugin Dev Container",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "name": "Matterbridge Plugin Node Dev Container",
+  // Built by initialize.sh with an explicit tag (see comment there for why).
+  "image": "${localWorkspaceFolderBasename}-node",
   // Inherit timezone from the host environment (set TZ on the host, e.g. Europe/Paris)
   "containerEnv": {
     "TZ": "${localEnv:TZ}"
@@ -58,15 +57,15 @@ Dev containers have networking limitations depending on the host OS and Docker s
     "source=agents,target=/home/node/.agents,type=volume"
   ],
   // Set up the Docker environment (runs on the host before the container starts)
-  "initializeCommand": "bash .devcontainer/initialize.sh",
+  "initializeCommand": "bash .devcontainer/node/initialize.sh",
   // On create, prepare the directories, install and link the dev of matterbridge and install and build the plugin (runs inside the container)
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postCreateCommand": "bash .devcontainer/node/post-create.sh",
   // On start, install and build the plugin (runs inside the container)
-  "postStartCommand": "bash .devcontainer/post-start.sh",
+  "postStartCommand": "bash .devcontainer/node/post-start.sh",
   "runArgs": [
     // Give the Docker container the same name as the repository (must be unique on host)
     "--name",
-    "${localWorkspaceFolderBasename}",
+    "${localWorkspaceFolderBasename}-node",
     // OpenAI sandbox requisites (https://learn.chatgpt.com/docs/sandboxing?surface=cli)
     "--security-opt",
     "seccomp=unconfined",
