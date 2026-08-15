@@ -29,7 +29,7 @@ sudo chown -R bun:bun . /home/bun/Matterbridge /home/bun/.matterbridge /home/bun
 sudo chown -R bun:bun /home/bun/.claude /home/bun/.codex /home/bun/.agents /home/bun/.npm /home/bun/.bash-cache /home/bun/.bun
 
 echo "3.post-create - Building Matterbridge..."
-sudo chmod +x .devcontainer/bun/install-matterbridge-*.sh
+sudo chmod +x .devcontainer/bun/*.sh
 # Use this for the main branch:
 # .devcontainer/bun/install-matterbridge-main.sh
 # Use this for the dev branch:
