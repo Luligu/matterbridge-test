@@ -15,4 +15,7 @@ docker network inspect matterbridge >/dev/null 2>&1 || docker network create mat
 echo "2.initialize - Pulling the bun dev container image..."
 docker pull luligu/matterbridge:bun-dev-container
 
-echo "3.initialize - Initialization completed!"
+echo "3.initialize - Setting script permissions..."
+chmod +x .devcontainer/bun/*.sh
+
+echo "4.initialize - Initialization completed!"
