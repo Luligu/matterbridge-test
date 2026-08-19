@@ -27,7 +27,7 @@ sudo mkdir -p /home/node/.claude /home/node/.codex /home/node/.agents /home/node
 
 echo "2.post-create - Setting permissions..."
 sudo chown -R node:node . /home/node/Matterbridge /home/node/.matterbridge /home/node/.mattercert
-sudo chown -R node:node /home/node/.claude /home/node/.codex /home/node/.agents /home/node/.npm /home/node/.bash-cache /home/node/.bun
+sudo chown -R node:node /home/node/.claude /home/node/.codex /home/node/.agents /home/node/.npm /home/node/.bash-cache /home/node/.bun ./node_modules
 
 echo "3.post-create - Building Matterbridge..."
 sudo chmod +x .devcontainer/node/*.sh

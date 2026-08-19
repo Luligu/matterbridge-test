@@ -26,7 +26,7 @@ sudo mkdir -p /home/bun/.claude /home/bun/.codex /home/bun/.agents /home/bun/.np
 
 echo "2.post-create - Setting permissions..."
 sudo chown -R bun:bun . /home/bun/Matterbridge /home/bun/.matterbridge /home/bun/.mattercert
-sudo chown -R bun:bun /home/bun/.claude /home/bun/.codex /home/bun/.agents /home/bun/.npm /home/bun/.bash-cache /home/bun/.bun
+sudo chown -R bun:bun /home/bun/.claude /home/bun/.codex /home/bun/.agents /home/bun/.npm /home/bun/.bash-cache /home/bun/.bun ./node_modules
 
 echo "3.post-create - Building Matterbridge..."
 sudo chmod +x .devcontainer/bun/*.sh
