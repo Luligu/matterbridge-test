@@ -38,6 +38,9 @@ Dev containers have networking limitations depending on the host OS and Docker s
   "containerEnv": {
     "TZ": "${localEnv:TZ}"
   },
+  // Both the node and bun base images already use UID/GID 1000. Disabling the UID update avoids
+  // VS Code creating a workspace-derived vsc-matterbridge-test-* image shared by both variants.
+  "updateRemoteUserUID": false,
   // Use the non-root node user (passwordless sudo in this image)
   "remoteUser": "node",
   "mounts": [
