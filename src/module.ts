@@ -305,7 +305,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   addElectricalMeasurements(device: MatterbridgeEndpoint): void {
     device.createDefaultPowerTopologyClusterServer();
     device.createDefaultElectricalPowerMeasurementClusterServer(220 * 1000, 2.5 * 1000, 220 * 2.5 * 1000, 50 * 1000);
-    device.createDefaultElectricalEnergyMeasurementClusterServer(1500 * 1000);
+    device.createDefaultElectricalEnergyMeasurementClusterServer(1500 * 1000, 0);
   }
 
   addModeSelect(device: MatterbridgeEndpoint, description: string): MatterbridgeEndpoint {
