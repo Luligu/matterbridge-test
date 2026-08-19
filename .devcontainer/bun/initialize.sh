@@ -12,9 +12,10 @@ echo ""
 echo "1.initialize - Creating the Matterbridge Docker network..."
 docker network inspect matterbridge >/dev/null 2>&1 || docker network create matterbridge
 
-echo "2.initialize - Building the bun dev container image..."
-# Built and tagged explicitly (rather than relying on the CLI's auto-generated tag, which is
-# derived only from the workspace folder path and would collide with the node variant's image).
-docker build --pull -t "$(basename "$PWD")-bun" .devcontainer/bun
+echo "2.initialize - Pulling the bun dev container image..."
+docker pull luligu/matterbridge:bun-dev-container
 
-echo "3.initialize - Initialization completed!"
+echo "3.initialize - Setting script permissions..."
+chmod +x .devcontainer/bun/*.sh
+
+echo "4.initialize - Initialization completed!"

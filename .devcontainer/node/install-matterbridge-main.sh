@@ -30,7 +30,7 @@ SHA7=$(git rev-parse --short=7 HEAD) && BASE_VERSION=$(node -p "require('./packa
 echo "5.install-matterbridge-main - Installing Matterbridge dependencies and building..."
 npm ci --no-fund --no-audit && npm run build
 
-echo "6.install-matterbridge-main - Building Matterbridge frontend..."
+echo "6.install-matterbridge-main - Installing Matterbridge frontend dependencies and building..."
 cd apps/frontend && npm ci --no-fund --no-audit && npm run build && cd ../..
 
 echo "7.install-matterbridge-main - Installing Matterbridge globally..."

@@ -30,7 +30,7 @@ sudo chown -R node:node . /home/node/Matterbridge /home/node/.matterbridge /home
 sudo chown -R node:node /home/node/.claude /home/node/.codex /home/node/.agents /home/node/.npm /home/node/.bash-cache /home/node/.bun
 
 echo "3.post-create - Building Matterbridge..."
-sudo chmod +x .devcontainer/node/install-matterbridge-*.sh
+sudo chmod +x .devcontainer/node/*.sh
 # Use this for the main branch:
 # .devcontainer/node/install-matterbridge-main.sh
 # Use this for the dev branch:
