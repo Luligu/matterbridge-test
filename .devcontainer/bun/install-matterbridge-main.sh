@@ -30,7 +30,7 @@ SHA7=$(git rev-parse --short=7 HEAD) && BASE_VERSION=$(bun -e "console.log(requi
 echo "5.install-matterbridge-main - Installing Matterbridge dependencies and building..."
 rm -f package-lock.json && bun install && bun run build
 
-echo "6.install-matterbridge-main - Building Matterbridge frontend..."
+echo "6.install-matterbridge-main - Installing Matterbridge frontend dependencies and building..."
 cd apps/frontend && rm -f package-lock.json && bun install && bun run build && cd ../..
 
 echo "7.install-matterbridge-main - Installing Matterbridge globally..."

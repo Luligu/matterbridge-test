@@ -48,7 +48,7 @@ Dev containers have networking limitations depending on the host OS and Docker s
     "source=${localWorkspaceFolderBasename}-storage,target=/home/node/.matterbridge,type=volume",
     "source=${localWorkspaceFolderBasename}-cert,target=/home/node/.mattercert,type=volume",
     // Dev container shared volumes for matterbridge, npm cache, bun cache, bash history, claude, codex and agents to improve performance
-    "source=matterbridge-node,target=/matterbridge,type=volume",
+    "source=matterbridge-node-plugin-dev-container,target=/matterbridge,type=volume",
     "source=npm-cache,target=/home/node/.npm,type=volume",
     "source=bun-cache,target=/home/node/.bun/install/cache,type=volume",
     "source=bash-cache,target=/home/node/.bash-cache,type=volume",
