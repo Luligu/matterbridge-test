@@ -22,7 +22,7 @@ echo "Npm cache: $(npm config get cache)"
 echo ""
 
 echo "1.post-start - Installing the plugin dependencies..."
-npm install --no-fund --no-audit
+npm ci --no-fund --no-audit
 
 echo "2.post-start - Linking Matterbridge..."
 if ! npm link matterbridge --no-fund --no-audit; then
@@ -34,4 +34,10 @@ fi
 echo "3.post-start - Building the plugin..."
 npm run build
 
-echo "4.post-start - Post start setup completed!"
+echo "4.post-start - Checking for the plugin frontend..."
+if [ -f apps/frontend/package.json ]; then
+	echo "4.post-start - Building the plugin frontend..."
+	cd apps/frontend && npm ci --no-fund --no-audit && npm run build && cd ../..
+fi
+
+echo "5.post-start - Post start setup completed!"

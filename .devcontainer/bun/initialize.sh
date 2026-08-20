@@ -10,7 +10,7 @@ echo "Welcome to Matterbridge Plugin Dev Container (initialize.sh)"
 echo ""
 
 echo "1.initialize - Creating the Matterbridge Docker network..."
-docker network inspect matterbridge >/dev/null 2>&1 || docker network create matterbridge
+docker network inspect matterbridge >/dev/null 2>&1 || docker network create --ipv6 matterbridge
 
 echo "2.initialize - Pulling the bun dev container image..."
 docker pull luligu/matterbridge:bun-dev-container

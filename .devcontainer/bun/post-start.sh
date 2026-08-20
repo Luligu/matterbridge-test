@@ -21,7 +21,9 @@ echo "Bun global cache: ${HOME}/.bun/install/cache"
 echo ""
 
 echo "1.post-start - Installing the plugin dependencies..."
+[ -f package-lock.json ] && mv package-lock.json package-lock.json.bak || true
 bun install
+[ -f package-lock.json.bak ] && mv package-lock.json.bak package-lock.json || true
 
 echo "2.post-start - Linking Matterbridge..."
 if ! bun link matterbridge; then
@@ -33,4 +35,14 @@ fi
 echo "3.post-start - Building the plugin..."
 bun run build
 
-echo "4.post-start - Post start setup completed!"
+echo "4.post-start - Checking for the plugin frontend..."
+if [ -f apps/frontend/package.json ]; then
+	echo "4.post-start - Building the plugin frontend..."
+	cd apps/frontend
+	[ -f package-lock.json ] && mv package-lock.json package-lock.json.bak || true
+	bun install && bun run build
+	[ -f package-lock.json.bak ] && mv package-lock.json.bak package-lock.json || true
+	cd ../..
+fi
+
+echo "5.post-start - Post start setup completed!"

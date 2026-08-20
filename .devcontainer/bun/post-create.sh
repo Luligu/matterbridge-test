@@ -22,21 +22,23 @@ echo ""
 
 echo "1.post-create - Creating directories..."
 sudo mkdir -p /home/bun/Matterbridge /home/bun/.matterbridge /home/bun/.mattercert
-sudo mkdir -p /home/bun/.claude /home/bun/.codex /home/bun/.agents /home/bun/.npm /home/bun/.bash-cache /home/bun/.bun/install/cache
+sudo mkdir -p /home/bun/.claude /home/bun/.codex /home/bun/.agents /home/bun/.bash-cache /home/bun/.npm /home/bun/.bun/install/cache
 
 echo "2.post-create - Setting permissions..."
 sudo chown -R bun:bun . /home/bun/Matterbridge /home/bun/.matterbridge /home/bun/.mattercert
-sudo chown -R bun:bun /home/bun/.claude /home/bun/.codex /home/bun/.agents /home/bun/.npm /home/bun/.bash-cache /home/bun/.bun ./node_modules
+sudo chown -R bun:bun /home/bun/.claude /home/bun/.codex /home/bun/.agents /home/bun/.bash-cache /home/bun/.npm /home/bun/.bun
 
 echo "3.post-create - Building Matterbridge..."
 sudo chmod +x .devcontainer/bun/*.sh
 # Use this for the main branch:
-# .devcontainer/bun/install-matterbridge-main.sh
+# .devcontainer/bun/install-matterbridge.sh main
 # Use this for the dev branch:
-.devcontainer/bun/install-matterbridge-dev.sh
+.devcontainer/bun/install-matterbridge.sh dev
 
 echo "4.post-create - Installing the plugin dependencies..."
+[ -f package-lock.json ] && mv package-lock.json package-lock.json.bak || true
 bun install
+[ -f package-lock.json.bak ] && mv package-lock.json.bak package-lock.json || true
 
 echo "5.post-create - Linking Matterbridge..."
 if ! bun link matterbridge; then
@@ -48,10 +50,20 @@ fi
 echo "6.post-create - Building the plugin..."
 bun run build
 
-echo "7.post-create - Adding the plugin to Matterbridge..."
+echo "7.post-create - Checking for the plugin frontend..."
+if [ -f apps/frontend/package.json ]; then
+	echo "7.post-create - Building the plugin frontend..."
+	cd apps/frontend
+	[ -f package-lock.json ] && mv package-lock.json package-lock.json.bak || true
+	bun install && bun run build
+	[ -f package-lock.json.bak ] && mv package-lock.json.bak package-lock.json || true
+	cd ../..
+fi
+
+echo "8.post-create - Adding the plugin to Matterbridge..."
 bun run add
 
-echo "8.post-create - Checking for outdated packages..."
+echo "9.post-create - Checking for outdated packages..."
 bun outdated || true
 
-echo "9.post-create - Post create setup completed!"
+echo "10.post-create - Post create setup completed!"
