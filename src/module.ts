@@ -145,6 +145,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         this.config.debug,
       );
       switchDevice.log.logName = 'Switch' + i;
+      switchDevice.configUrl = '/plugins/matterbridge-test?name=Switch' + i + '&serial=serial_switch_' + i;
       switchDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
         'Switch ' + i,
         'serial_switch_' + i,
@@ -191,6 +192,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         this.config.debug,
       );
       outletDevice.log.logName = 'Outlet' + i;
+      outletDevice.configUrl = '/plugins/matterbridge-test?name=Outlet' + i + '&serial=serial_outlet_' + i;
       outletDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
         'Outlet ' + i,
         'serial_outlet_' + i,
@@ -234,6 +236,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         this.config.debug,
       );
       lightDevice.log.logName = 'Light' + i;
+      lightDevice.configUrl = '/plugins/matterbridge-test?name=Light' + i + '&serial=serial_light_' + i;
       lightDevice.createDefaultBridgedDeviceBasicInformationClusterServer(
         'Light ' + i,
         'serial_light_' + i,

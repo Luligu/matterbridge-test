@@ -9,6 +9,14 @@ function pluginUrl(path) {
   return new URL(path, BASE_URL);
 }
 
+const urlParams = new URLSearchParams(window.location.search);
+const queryName = urlParams.get('name');
+const querySerial = urlParams.get('serial');
+if (queryName !== null || querySerial !== null) {
+  document.getElementById('device-query-card').hidden = false;
+  document.getElementById('value-device-query').textContent = JSON.stringify({ name: queryName, serial: querySerial });
+}
+
 async function fetchCard(path, dotEl, valueEl) {
   try {
     const res = await fetch(pluginUrl(`api/${path}`));
