@@ -1,4 +1,4 @@
-# Matterbridge Agents Instructions (v.1.0.2)
+# Matterbridge Agents Instructions (v.1.1.0)
 
 ## Style And Formatting
 
@@ -31,9 +31,13 @@
 
 ## Additional Agent Guidance
 
-For task-specific guidance, read relevant files in [.agents](./.agents/):
+For task-specific guidance, read relevant files in [.agents/rules](./.agents/rules/):
 
-- `.agents/testing.md` for testing and validation expectations;
-- `.agents/matterbridge.md` for instruction about using matterbridge in a plugin.
-- `.agents/plugin-frontend.md` for serving a plugin frontend SPA and exposing its custom REST API.
-- `.agents/chip-tests.md` for the CHIP conformance test harness and certification-test workflow.
+- `.agents/rules/testing.instructions.md` for testing and validation expectations;
+- `.agents/rules/matterbridge.instructions.md` for instruction about using matterbridge in a plugin.
+- `.agents/rules/plugin-frontend.instructions.md` for serving a plugin frontend SPA and exposing its custom REST API.
+- `.agents/rules/chip-tests.instructions.md` for the CHIP conformance test harness and certification-test workflow.
+
+Shared skills live in [.agents/skills](./.agents/skills/):
+
+- `.agents/skills/agent-check/SKILL.md` for verifying which coding agent is running and that it loaded the shared instructions, rules and skills.
