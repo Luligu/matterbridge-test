@@ -61,19 +61,19 @@ See also the [Style Guide](./STYLEGUIDE.md) for JSDoc, naming, and logging conve
 
 Guidance is written once in `.agents/` and reached by every agent. Content lives only in the source files; the stubs exist because each tool discovers rules from its own hardcoded folder.
 
-| File                                         | Notes                                                            |
-| -------------------------------------------- | ---------------------------------------------------------------- |
-| `AGENTS.md`                                  | Shared project instructions — the single source                  |
-| `CLAUDE.md`                                  | Imports `AGENTS.md`, plus Claude-specific notes                  |
-| `.github/copilot-instructions.md`            | Points Copilot at `AGENTS.md`                                    |
-| `.agents/README.md`                          | How the shared setup is wired                                    |
-| `.agents/rules/*.instructions.md`            | Path-scoped guidance — the content                               |
-| `.agents/skills/<name>/SKILL.md`             | Agent Skills — discovered natively, no stub needed               |
-| `.github/instructions/*.instructions.md`     | Stubs with `applyTo` globs, for Copilot in VS Code and on GitHub |
-| `.claude/rules/*.md`                         | Stubs with `paths` globs, for Claude Code                        |
-| `.claude/skills/<name>/SKILL.md`             | Stubs importing the shared skills, for Claude Code               |
-| `.codex/config.toml`                         | Codex project permissions, approvals, and profile                |
-| `.codex/rules/default.rules`                 | Codex command allow, prompt, and deny rules                      |
+| File                                     | Notes                                                            |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `AGENTS.md`                              | Shared project instructions — the single source                  |
+| `CLAUDE.md`                              | Imports `AGENTS.md`, plus Claude-specific notes                  |
+| `.github/copilot-instructions.md`        | Points Copilot at `AGENTS.md`                                    |
+| `.agents/README.md`                      | How the shared setup is wired                                    |
+| `.agents/rules/*.instructions.md`        | Path-scoped guidance — the content                               |
+| `.agents/skills/<name>/SKILL.md`         | Agent Skills — discovered natively, no stub needed               |
+| `.github/instructions/*.instructions.md` | Stubs with `applyTo` globs, for Copilot in VS Code and on GitHub |
+| `.claude/rules/*.md`                     | Stubs with `paths` globs, for Claude Code                        |
+| `.claude/skills/<name>/SKILL.md`         | Stubs importing the shared skills, for Claude Code               |
+| `.codex/config.toml`                     | Codex project permissions, approvals, and profile                |
+| `.codex/rules/default.rules`             | Codex command allow, prompt, and deny rules                      |
 
 Rules currently defined: `chip-tests` (CHIP conformance test harness), `matterbridge` (endpoint guide), `plugin-frontend` (plugin SPA and REST API), `testing` (unit test standards).
 

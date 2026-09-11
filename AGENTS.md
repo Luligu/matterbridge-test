@@ -1,4 +1,4 @@
-# Matterbridge Agents Instructions (v.1.1.0)
+# Matterbridge Agents Instructions (v.1.0.3)
 
 ## Style And Formatting
 
@@ -20,7 +20,7 @@
 
 ## Testing And Validation
 
-- Prefer the existing npm scripts in [package.json](./package.json) and the VS Code tasks in [tasks.json](./.vscode/tasks.json) when validating changes.
+- HARD RULE: never invoke `tsc`, `vitest`, `oxlint`, or `oxfmt` directly (via `npx`, `node node_modules/...`, or any other ad hoc form). Always use the matching entry in [package.json](./package.json) `scripts` or [tasks.json](./.vscode/tasks.json) — e.g. `npm run typecheck` (not `npx tsc`), `npm run lint`/`npm run lint:fix` (not `npx oxlint`), `npm run format`/`npm run format:check` (not `npx oxfmt`), `npm run test`/`npm run test:coverage` or a specific `Test: <Area>` task (not `npx vitest`/`node node_modules/vitest/vitest.mjs` typed out by hand). If a touched area has no matching script or task, say so and ask before improvising a raw invocation — do not silently fall back to `npx`.
 - Keep tests deterministic and simple. Prefer small data sets and straightforward setup.
 - Some tests are intentionally multi-step flows. State may persist across successive steps within a single test flow, but each test unit must remain isolated from other tests.
 - For validation, run the relevant full test file or the matching suite/task for the touched area rather than assuming arbitrary isolated single-test execution is reliable.
@@ -34,10 +34,10 @@
 For task-specific guidance, read relevant files in [.agents/rules](./.agents/rules/):
 
 - `.agents/rules/testing.instructions.md` for testing and validation expectations;
-- `.agents/rules/matterbridge.instructions.md` for instruction about using matterbridge in a plugin.
-- `.agents/rules/plugin-frontend.instructions.md` for serving a plugin frontend SPA and exposing its custom REST API.
-- `.agents/rules/chip-tests.instructions.md` for the CHIP conformance test harness and certification-test workflow.
+- `.agents/rules/matterbridge.instructions.md` for instruction about using matterbridge in a plugin;
+- `.agents/rules/plugin-frontend.instructions.md` for guidance on plugin frontend SPAs and custom REST APIs;
+- `.agents/rules/chip-tests.instructions.md` for guidance on the CHIP conformance test harness.
 
-Shared skills live in [.agents/skills](./.agents/skills/):
+The following workflows are available as skills in [.agents/skills](./.agents/skills/), discovered automatically and invocable with `$<name>` (Codex) or `/<name>` (Claude Code, Copilot, Gemini / Antigravity):
 
-- `.agents/skills/agent-check/SKILL.md` for verifying which coding agent is running and that it loaded the shared instructions, rules and skills.
+- `$verify-agent-context` for verifying which coding agent is running and that it loaded the shared instructions, rules and skills from AGENTS.md and `.agents/`.

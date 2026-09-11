@@ -23,7 +23,9 @@ import {
   onOffLight,
   powerSource,
   setAttribute,
+  setCluster,
   subscribeAttribute,
+  subscribeCommand,
   updateAttribute,
 } from 'matterbridge';
 
@@ -192,6 +194,8 @@ Common helpers on the endpoint instance:
 - `setAttribute(cluster, attribute, value)`
 - `updateAttribute(cluster, attribute, value)`
 - `subscribeAttribute(cluster, attribute, listener)`
+- `subscribeCommand(cluster, command, listener)`
+- `setCluster(cluster, value)`
 - `addRequiredClusterServers()`
 - `addOptionalClusterServers()`
 - `addRequiredClusters()`
@@ -303,7 +307,7 @@ For most plugins, follow this order:
 2. Create the endpoint or single-class device.
 3. Set device identity with one of the Basic Information helpers if you are using a raw `MatterbridgeEndpoint`.
 4. Add explicit cluster servers you need.
-5. Call `addRequiredClusterServers()` last.
+5. Call `addRequiredClusters()` last.
 6. Register the device with `await this.registerDevice(device)`.
 7. Optionally add UI metadata with `setSelectDevice()` and `setSelectEntity()`.
 

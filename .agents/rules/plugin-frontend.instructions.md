@@ -6,42 +6,42 @@ description: 'How a plugin serves its own frontend SPA and custom REST API via o
 
 Use this guide when writing plugin code that interacts with a plugin's own frontend SPA: bundling and serving that SPA and its custom REST API.
 
-This guide is based on `packages/core/src/frontend.ts` and `packages/core/src/matterbridgePlatform.ts` in the `matterbridge` repository.
+This guidance is based on `packages/core/src/frontend.ts` and `packages/core/src/matterbridgePlatform.ts` in the `matterbridge` repository.
 
-## Serving a plugin's own bundled frontend SPA
+## Serving a plugin's bundled frontend SPA
 
-If the plugin package ships a built SPA at `apps/frontend/build/index.html`, `pluginManager.ts` sets `plugin.frontendPath` and Matterbridge automatically mounts, per plugin:
+When a plugin package contains a built SPA at `apps/frontend/build/index.html`, `pluginManager.ts` sets `plugin.frontendPath`. Matterbridge then automatically mounts these routes for the plugin:
 
-- `/plugins/<pluginName>/*` — static hosting of the plugin's build output.
-- `/plugins/<pluginName>/api/:path` — the `onFetch`-backed REST namespace described below (JSON body parsing included).
-- `/plugins/<pluginName>/{*splat}` — SPA fallback serving the plugin's own `index.html` for unmatched routes.
+- `/plugins/<pluginName>/*` serves the plugin's build output as static files.
+- `/plugins/<pluginName>/api/:path` exposes the plugin REST namespace backed by `onFetch`, with JSON body parsing included.
+- `/plugins/<pluginName>/{*splat}` serves the plugin's `index.html` as the SPA fallback for unmatched routes.
 
-A plugin's own frontend should call its own namespace (`/plugins/<pluginName>/api/...`), not the core `/api/...` endpoints.
+A plugin frontend must call its own `/plugins/<pluginName>/api/...` namespace rather than the core `/api/...` endpoints.
 
-## The plugin-extensible hook: `onFetch`
+## Use `onFetch` for a plugin's custom API
 
-The frontend's WebSocket RPC protocol is a fixed dispatch of built-in `/api/...` methods, and it has no plugin extension point. The one method that hands control back to plugin code for a plugin's own frontend is `onFetch`, declared on `MatterbridgePlatform` and meant to be overridden in your platform class.
+The frontend WebSocket RPC protocol dispatches a fixed set of built-in `/api/...` methods and does not provide a plugin extension point. Override `onFetch` in the platform class when the plugin's frontend needs to communicate with plugin code.
 
-### `onFetch` — custom plugin REST API
+### `onFetch` signature
 
 ```ts
 async onFetch(method: string, path?: string, query?: Record<string, unknown>, body?: unknown): Promise<unknown>
 ```
 
-Called by the Matterbridge frontend for plugin API requests. Reached via `GET|POST|PUT|PATCH|DELETE /plugins/<pluginName>/api/:path`, mounted automatically for every enabled, error-free plugin.
+Matterbridge calls this method for `GET`, `POST`, `PUT`, `PATCH`, and `DELETE` requests to `/plugins/<pluginName>/api/:path` for every enabled, error-free plugin.
 
-- `method` — HTTP method.
-- `path` — the `:path` route param (e.g. `'devices'`, `'devices/42'`). Typed optional on `onFetch` because the method can be called directly (e.g. in tests) without one; via the real mounted route it is always a defined string, since Express requires `:path` to match at least one segment.
-- `query` — query string parameters.
-- `body` — request body (`POST`/`PUT`/`PATCH`).
-- Return a JSON-serializable value, or `undefined` to respond with **404**.
-- A thrown error becomes a **500** `{ error: 'Internal error in plugin <name>' }`.
-- `DELETE` responds **204** with no body; every other method responds `res.json(value)`.
-- If `plugin.platform` isn't running yet, the frontend returns **503** before calling `onFetch`.
+- `method` is the HTTP method.
+- `path` is the `:path` route parameter, such as `'devices'` or `'devices/42'`. It is optional in the TypeScript signature because tests and other code can call `onFetch` directly without a path. Requests through the mounted Express route always provide a non-empty string because `:path` must match at least one segment.
+- `query` contains the query-string parameters.
+- `body` contains the parsed request body for `POST`, `PUT`, and `PATCH` requests.
+- Return a JSON-serializable value. Return `undefined` to produce a `404` response.
+- A thrown error becomes a `500` response with `{ error: 'Internal error in plugin <name>' }`.
+- `DELETE` returns `204` with no response body. Every other method returns `res.json(value)`.
+- If `plugin.platform` is not running, Matterbridge returns `503` without calling `onFetch`.
 
-The default base-class implementation logs and returns `undefined` (404) — override it to expose real endpoints.
+The base implementation only logs the request and returns `undefined`, so override it to expose real endpoints.
 
-## Avoid these mistakes
+## Avoid unsupported routing patterns
 
-- Do not invent a custom WebSocket method name expecting the frontend to route to it — the WS dispatch is a fixed core method list with no plugin extension point. Use `onFetch` under `/plugins/<pluginName>/api/...` for a plugin's own frontend traffic.
-- Do not build a plugin's custom frontend to call core `/api/...` routes — use `/plugins/<pluginName>/api/...`, backed by your own `onFetch`.
+- Do not invent custom WebSocket method names for plugin frontend traffic. The WebSocket dispatch list is fixed; use `onFetch` through `/plugins/<pluginName>/api/...`.
+- Do not call core `/api/...` routes from a plugin's custom frontend. Use the plugin's own `/plugins/<pluginName>/api/...` namespace.
