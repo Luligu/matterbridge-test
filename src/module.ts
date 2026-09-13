@@ -83,7 +83,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       throw new Error(`The test plugin requires Matterbridge version >= "3.10.0". Please update Matterbridge to the latest version in the frontend.`);
     }
 
-    this.log.info('Initializing platform:', this.config.name);
+    this.log.info(`Initializing platform ${this.config.name}...`);
     this.log.debug('- with matterbridge version ', matterbridge.matterbridgeVersion);
     this.log.debug('- with config:', this.config);
     this.log.debug('- with noDevice:', this.config.noDevices);
@@ -107,7 +107,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       throw new Error('Throwing error in load');
     }
 
-    this.log.info('Finished initializing platform:', this.config.name);
+    this.log.info(`Platform ${this.config.name} initialized successfully`);
   }
 
   /**
@@ -119,7 +119,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    * @throws {Error} - Throws an error if the method is not overridden.
    */
   override async onStart(reason?: string): Promise<void> {
-    this.log.info('onStart called with reason:', reason ?? 'none');
+    this.log.info(`Starting platform ${this.config.name} with reason: ${reason ?? 'no reason provided'}...`);
 
     if (this.config.throwStart) {
       await this.onShutdown('Throwing error in start');
@@ -297,6 +297,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     for (const device of this.getDevices()) {
       this.log.info(`- device ${device.deviceName} with serial ${device.serialNumber}`);
     }
+    this.log.info(`Platform ${this.config.name} started successfully`);
   }
 
   addPowerSource(device: MatterbridgeEndpoint, type: 'wired' | 'replaceable' | 'rechargeable'): void {
@@ -440,17 +441,18 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    */
   override async onConfigure(): Promise<void> {
     await super.onConfigure();
-    this.log.info('onConfigure called');
+    this.log.info(`Configuring platform ${this.config.name}...`);
     if (this.config.throwConfigure) {
       await this.onShutdown('Throwing error in configure');
       throw new Error('Throwing error in configure');
     }
 
-    if (this.config.setUpdateInterval === 0) return;
-
-    this.interval = setInterval(() => {
-      fireAndForget(this.intervalHandler(), this.log, 'Error in interval handler');
-    }, this.config.setUpdateInterval * 1000);
+    if (this.config.setUpdateInterval !== 0) {
+      this.interval = setInterval(() => {
+        fireAndForget(this.intervalHandler(), this.log, 'Error in interval handler');
+      }, this.config.setUpdateInterval * 1000);
+    }
+    this.log.info(`Platform ${this.config.name} configured successfully`);
   }
 
   /**
@@ -462,10 +464,11 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
    */
   override async onShutdown(reason?: string): Promise<void> {
     await super.onShutdown(reason);
-    this.log.info('onShutdown called with reason:', reason ?? 'none');
+    this.log.info(`Shutting down platform ${this.config.name} with reason: ${reason ?? 'no reason provided'}...`);
     if (this.interval) clearInterval(this.interval);
     this.interval = undefined;
     if (this.config.throwShutdown) throw new Error('Throwing error in shutdown');
+    this.log.info(`Platform ${this.config.name} shut down successfully`);
   }
 
   /**

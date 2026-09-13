@@ -118,11 +118,11 @@ describe('TestPlatform', () => {
     testPlatform = initializePlugin(matterbridge, log, { ...config, unregisterOnShutdown: true });
     expect(testPlatform).toBeInstanceOf(TestPlatform);
     addMatterbridge(testPlatform);
-    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Initializing platform:', config.name);
-    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'Finished initializing platform:', config.name);
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Initializing platform ${config.name}...`);
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Platform ${config.name} initialized successfully`);
 
     await testPlatform.onStart('Starting test');
-    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onStart called with reason:', 'Starting test');
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Starting platform ${config.name} with reason: Starting test...`);
 
     // Invoke command handlers
     for (const device of testPlatform.getDevices()) {
@@ -220,7 +220,7 @@ describe('TestPlatform', () => {
     // Configure and interval tests
     testPlatform.config.setUpdateInterval = 0.2; // Set a short interval of 200ms for testing
     await testPlatform.onConfigure();
-    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onConfigure called');
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Configuring platform ${config.name}...`);
     await flushAsync(); // Wait 250ms to ensure the interval has executed at least once
     // @ts-expect-error Accessing private property for testing
     clearInterval(testPlatform.interval);
@@ -234,6 +234,6 @@ describe('TestPlatform', () => {
     expect(loggerInfoSpy).toHaveBeenCalledWith('Interval called');
 
     await testPlatform.onShutdown('Closing test');
-    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, 'onShutdown called with reason:', 'Closing test');
+    expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Shutting down platform ${config.name} with reason: Closing test...`);
   }, 60000);
 });
