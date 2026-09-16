@@ -11,7 +11,7 @@ const MATTER_PORT = 8000;
 
 import type { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
 import { LogLevel } from 'matterbridge/logger';
-import { ColorControl, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
+import { ColorControl, ElectricalEnergyMeasurement, ElectricalPowerMeasurement, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
 import { flushAsync, log, loggerErrorSpy, loggerFatalSpy, loggerInfoSpy, loggerLogSpy, loggerWarnSpy, setDebug, setupTest } from 'matterbridge/vitest-utils';
 import {
   addMatterbridge,
@@ -118,6 +118,12 @@ describe('TestPlatform', () => {
     testPlatform = initializePlugin(matterbridge, log, { ...config, unregisterOnShutdown: true });
     expect(testPlatform).toBeInstanceOf(TestPlatform);
     addMatterbridge(testPlatform);
+    // This harness has one bridge; standalone servers have their own endpoint number spaces.
+    const registerDevice = testPlatform.registerDevice.bind(testPlatform);
+    const registerDeviceSpy = vi.spyOn(testPlatform, 'registerDevice').mockImplementation(async (device) => {
+      if (device.mode === 'server') return;
+      await registerDevice(device);
+    });
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Initializing platform ${config.name}...`);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Platform ${config.name} initialized successfully`);
 
@@ -232,6 +238,48 @@ describe('TestPlatform', () => {
       await testPlatform.intervalHandler();
     }
     expect(loggerInfoSpy).toHaveBeenCalledWith('Interval called');
+
+    // Verify measurements for all three device types across an off/on cycle.
+    const electricalDevices = ['Switch 0', 'Outlet 0', 'Light 0'].map((name) => {
+      const device = testPlatform.getDeviceByName(name);
+      if (!device) throw new Error(`Missing test device ${name}`);
+      return device;
+    });
+    const randomSpy = vi.spyOn(testPlatform, 'getRandomNumberInRange').mockImplementation((min) => min);
+    for (const device of electricalDevices) {
+      await device.setAttribute(OnOff, 'onOff', true);
+      await device.setAttribute(OnOff, 'onOff', false);
+      await vi.waitFor(() => {
+        expect(device.getAttribute(ElectricalPowerMeasurement, 'activeCurrent')).toBe(0);
+        expect(device.getAttribute(ElectricalPowerMeasurement, 'activePower')).toBe(0);
+      });
+      await device.setAttribute(OnOff, 'onOff', true);
+      await vi.waitFor(() => {
+        expect(device.getAttribute(ElectricalPowerMeasurement, 'activeCurrent')).toBe(2_500);
+        expect(device.getAttribute(ElectricalPowerMeasurement, 'activePower')).toBe(550_000);
+      });
+    }
+    for (const device of electricalDevices) {
+      await device.setAttribute(OnOff, 'onOff', true);
+      await device.setAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported', { energy: 10_000 });
+    }
+    await testPlatform.intervalHandler();
+    for (const device of electricalDevices) {
+      expect(device.getAttribute(OnOff, 'onOff')).toBe(false);
+      expect(device.getAttribute(ElectricalPowerMeasurement, 'voltage')).toBe(220_000);
+      expect(device.getAttribute(ElectricalPowerMeasurement, 'activeCurrent')).toBe(0);
+      expect(device.getAttribute(ElectricalPowerMeasurement, 'activePower')).toBe(0);
+      expect(Number(device.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported')?.energy)).toBe(10_000);
+    }
+    await testPlatform.intervalHandler();
+    for (const device of electricalDevices) {
+      expect(device.getAttribute(OnOff, 'onOff')).toBe(true);
+      expect(device.getAttribute(ElectricalPowerMeasurement, 'activeCurrent')).toBe(20_000);
+      expect(device.getAttribute(ElectricalPowerMeasurement, 'activePower')).toBe(4_400_000);
+      expect(Number(device.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported')?.energy)).toBe(11_000);
+    }
+    randomSpy.mockRestore();
+    registerDeviceSpy.mockRestore();
 
     await testPlatform.onShutdown('Closing test');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Shutting down platform ${config.name} with reason: Closing test...`);

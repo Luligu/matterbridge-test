@@ -27,6 +27,12 @@ It is designed to throw exceptions at various points to test Matterbridge's resp
 
 Additionally, it can generate an unlimited number of devices to test the controller's capabilities, and the update interval is configurable.
 
+Interval updates set current and power to zero for switches, outlets, and lights toggled off, and generate simulated measurements for those toggled on. Cumulative imported energy increases only when the device is toggled on.
+
+With electrical measurements enabled, on/off changes also update generated switches, outlets, and lights immediately: off sets current and power to zero, and on restores their initial values of `2_500` and `550_000`, respectively.
+
+The standalone `LightServerFlat`, `OutletServerFlat`, and `OutletServerComposed` devices set their `activeCurrent` and `activePower` measurements to zero when switched off and restore their initial values of `1_000` and `220_000`, respectively, when switched on. For `OutletServerComposed`, the on/off child controls the measurements on the electrical sensor child.
+
 If you want to write your plugin, the easiest way to start create a new plugin is to clone the [Matterbridge Plugin Template](https://github.com/Luligu/matterbridge-plugin-template) which has **Dev Container support for instant development environment** and all tools and extensions (like Node.js, npm, TypeScript, ESLint, Prettier, Jest and Vitest) already loaded and configured.
 
 If you like this project and find it useful, please consider giving it a star on [GitHub](https://github.com/Luligu/matterbridge-test) and sponsoring it.
