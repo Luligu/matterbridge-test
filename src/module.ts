@@ -362,7 +362,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     );
     lightServerFlat.createDefaultOnOffClusterServer(true);
     this.addPowerSource(lightServerFlat, 'wired');
-    this.addElectricalMeasurements(lightServerFlat, PowerTopology.Feature.NodeTopology, [EndpointNumber(1000)], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 1_000_000);
+    this.addElectricalMeasurements(lightServerFlat, PowerTopology.Feature.NodeTopology, [EndpointNumber(1000)], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
     lightServerFlat.addRequiredClusters();
     lightServerFlat.subscribeAttribute(OnOff, 'onOff', (value) => {
       this.log.info(`LightServerFlat onOff attribute changed to ${value}`);
@@ -399,7 +399,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     );
     outletServerFlat.createDefaultOnOffClusterServer(true);
     this.addPowerSource(outletServerFlat, 'wired');
-    this.addElectricalMeasurements(outletServerFlat, PowerTopology.Feature.NodeTopology, [EndpointNumber(1000)], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 1_000_000);
+    this.addElectricalMeasurements(outletServerFlat, PowerTopology.Feature.NodeTopology, [EndpointNumber(1000)], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
     outletServerFlat.addRequiredClusters();
     outletServerFlat.subscribeAttribute(OnOff, 'onOff', (value) => {
       this.log.info(`OutletServerFlat onOff attribute changed to ${value}`);
@@ -449,7 +449,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       220_000,
       50_000,
       1_000_000,
-      1_000_000,
+      0,
     );
 
     outletServerComposed.addRequiredClusters();
@@ -489,7 +489,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       const number = EndpointNumber(1000 + index);
       const outlet = powerStripServer.addChildDeviceType(id, [onOffPlugInUnit, electricalSensor], { id, number });
       outlet.createDefaultOnOffClusterServer(true);
-      this.addElectricalMeasurements(outlet, PowerTopology.Feature.TreeTopology, [], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 1_000_000);
+      this.addElectricalMeasurements(outlet, PowerTopology.Feature.TreeTopology, [], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
       outlet.addRequiredClusters();
       outlet.subscribeAttribute(OnOff, 'onOff', (value) => {
         this.log.info(`PowerStripServer ${id} onOff attribute changed to ${value}`);
