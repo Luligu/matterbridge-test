@@ -3,7 +3,7 @@
  * @description This file contains the class TestPlatform.
  * @author Luca Liguori
  * @created 2024-05-30
- * @version 2.0.0
+ * @version 2.0.1
  * @license Apache-2.0
  *
  * Copyright 2023, 2024, 2025, 2026 Luca Liguori.
@@ -83,6 +83,7 @@ export default function initializePlugin(matterbridge: PlatformMatterbridge, log
 
 export class TestPlatform extends MatterbridgeDynamicPlatform {
   private interval: NodeJS.Timeout | undefined;
+  private reachable: boolean = true;
 
   // oxfmt-ignore
   constructor(matterbridge: PlatformMatterbridge, log: AnsiLogger, override config: TestPlatformConfig) {
@@ -169,7 +170,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       );
       // Extraneous server cluster for Apple Home app to recognize the device as a switch and not a plug.
       // The on/off cluster server will be removed from required clusters of onOffSwitch in a future release.
-      if (process.env.MATTERBRIDGE_CHIP_TEST !== '1') switchDevice.createDefaultOnOffClusterServer();
+      if (process.env.MATTERBRIDGE_CHIP_TEST !== '1') switchDevice.createDefaultOnOffClusterServer(true);
       switchDevice.addCommandHandler('identify', (data) => {
         this.log.info(`Received identify command request ${data.request.identifyTime} for endpoint ${data.endpoint?.number}`);
       });
@@ -224,6 +225,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
+      outletDevice.createDefaultOnOffClusterServer(true);
       outletDevice.addCommandHandler('identify', (data) => {
         this.log.info(`Received identify command request ${data.request.identifyTime} for endpoint ${data.endpoint?.number}`);
       });
@@ -278,6 +280,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
         this.matterbridge.matterbridgeVersion,
       );
+      lightDevice.createDefaultOnOffClusterServer(true);
       lightDevice.addCommandHandler('identify', (data) => {
         this.log.info(`Received identify command request ${data.request.identifyTime} for endpoint ${data.endpoint?.number}`);
       });
@@ -462,6 +465,47 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       await this.registerDevice(outletServerComposed);
     }
 
+    const powerStripServer = new MatterbridgeEndpoint([powerSource], { id: 'PowerStripServer', number: EndpointNumber(1000), mode: 'server' }, this.config.debug);
+    powerStripServer.log.logName = 'PowerStripServer';
+    powerStripServer.createDefaultBasicInformationClusterServer(
+      'Power Strip Server',
+      'serial_power_strip_server',
+      0xfff1,
+      'Matterbridge',
+      0x8000,
+      'Matterbridge test plugin',
+      Number.parseInt(this.version.replace(/\D/g, '')),
+      this.version,
+      Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+      this.matterbridge.matterbridgeVersion,
+      undefined,
+      undefined,
+      CONFIGURATION_VERSION,
+    );
+    this.addPowerSource(powerStripServer, 'wired');
+
+    for (let index = 1; index <= 4; index++) {
+      const id = `onOff${index}`;
+      const number = EndpointNumber(1000 + index);
+      const outlet = powerStripServer.addChildDeviceType(id, [onOffPlugInUnit, electricalSensor], { id, number });
+      outlet.createDefaultOnOffClusterServer(true);
+      this.addElectricalMeasurements(outlet, PowerTopology.Feature.TreeTopology, [], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 1_000_000);
+      outlet.addRequiredClusters();
+      outlet.subscribeAttribute(OnOff, 'onOff', (value) => {
+        this.log.info(`PowerStripServer ${id} onOff attribute changed to ${value}`);
+        fireAndForget(
+          outlet.setCluster(ElectricalPowerMeasurement, { activeCurrent: value ? 1_000 : 0, activePower: value ? 220_000 : 0 }, outlet.log),
+          this.log,
+          `Error updating PowerStripServer ${id} electrical measurements`,
+        );
+      });
+    }
+
+    powerStripServer.addRequiredClusters();
+    if (!this.config.noDevices) {
+      await this.registerDevice(powerStripServer);
+    }
+
     // v8 ignore end
 
     this.log.info(`Finished starting platform ${this.config.name} with ${this.getDevices().length} devices:`);
@@ -520,13 +564,11 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       const previousState = device?.getAttribute(OnOff, 'onOff');
       const state = !previousState;
       await device?.setAttribute(OnOff, 'onOff', state, device?.log);
-      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation, 'reachable', previousState ?? false, device?.log);
+      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation, 'reachable', this.reachable, device?.log);
       if (this.config.enableElectrical) {
         const voltage = this.getRandomNumberInRange(220, 240);
         const current = this.getRandomNumberInRange(20, 30) * Number(state);
-        await device?.setAttribute(ElectricalPowerMeasurement, 'voltage', voltage * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement, 'activeCurrent', current * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement, 'activePower', voltage * current * 1000, device.log);
+        await device?.setCluster(ElectricalPowerMeasurement, { voltage: voltage * 1000, activeCurrent: current * 1000, activePower: voltage * current * 1000 }, device.log);
         const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported', device.log);
         await device?.setAttribute(
           ElectricalEnergyMeasurement,
@@ -553,13 +595,11 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       const previousState = device?.getAttribute(OnOff, 'onOff');
       const state = !previousState;
       await device?.setAttribute(OnOff, 'onOff', state, device?.log);
-      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation, 'reachable', previousState ?? false, device?.log);
+      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation, 'reachable', this.reachable, device?.log);
       if (this.config.enableElectrical) {
         const voltage = this.getRandomNumberInRange(220, 240);
         const current = this.getRandomNumberInRange(20, 30) * Number(state);
-        await device?.setAttribute(ElectricalPowerMeasurement, 'voltage', voltage * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement, 'activeCurrent', current * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement, 'activePower', voltage * current * 1000, device.log);
+        await device?.setCluster(ElectricalPowerMeasurement, { voltage: voltage * 1000, activeCurrent: current * 1000, activePower: voltage * current * 1000 }, device.log);
         const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported', device.log);
         await device?.setAttribute(
           ElectricalEnergyMeasurement,
@@ -588,13 +628,11 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       const previousState = device?.getAttribute(OnOff, 'onOff');
       const state = !previousState;
       await device?.setAttribute(OnOff, 'onOff', state, device?.log);
-      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation, 'reachable', previousState ?? false, device?.log);
+      if (this.config.enableReachable) await device?.setAttribute(BridgedDeviceBasicInformation, 'reachable', this.reachable, device?.log);
       if (this.config.enableElectrical) {
         const voltage = this.getRandomNumberInRange(220, 240);
         const current = this.getRandomNumberInRange(20, 30) * Number(state);
-        await device?.setAttribute(ElectricalPowerMeasurement, 'voltage', voltage * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement, 'activeCurrent', current * 1000, device.log);
-        await device?.setAttribute(ElectricalPowerMeasurement, 'activePower', voltage * current * 1000, device.log);
+        await device?.setCluster(ElectricalPowerMeasurement, { voltage: voltage * 1000, activeCurrent: current * 1000, activePower: voltage * current * 1000 }, device.log);
         const cumulativeEnergy = device?.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported', device.log);
         await device?.setAttribute(
           ElectricalEnergyMeasurement,
@@ -618,6 +656,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         }
       }
     }
+    this.reachable = !this.reachable;
   }
   /**
    * This method can be overridden in the extended class. Call super.onConfigure() to run checkEndpointNumbers().
@@ -631,7 +670,46 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       await this.onShutdown('Throwing error in configure');
       throw new Error('Throwing error in configure');
     }
-
+    for (let i = 0; i < this.config.loadSwitches; i += 1) {
+      const device = this.getDeviceByName('Switch ' + i);
+      const state = device?.getAttribute(OnOff, 'onOff', device?.log);
+      if (state !== true) {
+        await device?.setCluster(ElectricalPowerMeasurement, { activeCurrent: 0, activePower: 0 }, device.log);
+      }
+    }
+    for (let i = 0; i < this.config.loadOutlets; i += 1) {
+      const device = this.getDeviceByName('Outlet ' + i);
+      const state = device?.getAttribute(OnOff, 'onOff', device?.log);
+      if (state !== true) {
+        await device?.setCluster(ElectricalPowerMeasurement, { activeCurrent: 0, activePower: 0 }, device.log);
+      }
+    }
+    for (let i = 0; i < this.config.loadLights; i += 1) {
+      const device = this.getDeviceByName('Light ' + i);
+      const state = device?.getAttribute(OnOff, 'onOff', device?.log);
+      if (state !== true) {
+        await device?.setCluster(ElectricalPowerMeasurement, { activeCurrent: 0, activePower: 0 }, device.log);
+      }
+    }
+    for (const name of ['Light Server Flat', 'Outlet Server Flat']) {
+      const device = this.getDeviceByName(name);
+      if (device?.getAttribute(OnOff, 'onOff', device.log) !== true) {
+        await device?.setCluster(ElectricalPowerMeasurement, { activeCurrent: 0, activePower: 0 }, device.log);
+      }
+    }
+    const outletServerComposed = this.getDeviceByName('Outlet Server Composed');
+    const onOffChild = outletServerComposed?.getChildEndpointById('OnOffChild');
+    const electricalSensorChild = outletServerComposed?.getChildEndpointById('ElectricalSensorChild');
+    if (onOffChild?.getAttribute(OnOff, 'onOff', onOffChild.log) !== true) {
+      await electricalSensorChild?.setCluster(ElectricalPowerMeasurement, { activeCurrent: 0, activePower: 0 }, electricalSensorChild.log);
+    }
+    const powerStripServer = this.getDeviceByName('Power Strip Server');
+    for (let index = 1; index <= 4; index++) {
+      const outlet = powerStripServer?.getChildEndpointById(`onOff${index}`);
+      if (outlet?.getAttribute(OnOff, 'onOff', outlet.log) !== true) {
+        await outlet?.setCluster(ElectricalPowerMeasurement, { activeCurrent: 0, activePower: 0 }, outlet.log);
+      }
+    }
     if (this.config.setUpdateInterval !== 0) {
       this.interval = setInterval(() => {
         fireAndForget(this.intervalHandler(), this.log, 'Error in interval handler');

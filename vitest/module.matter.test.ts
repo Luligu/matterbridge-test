@@ -11,7 +11,7 @@ const MATTER_PORT = 8000;
 
 import type { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
 import { LogLevel } from 'matterbridge/logger';
-import { ColorControl, ElectricalEnergyMeasurement, ElectricalPowerMeasurement, Identify, LevelControl, ModeSelect, OnOff } from 'matterbridge/matter/clusters';
+import { ColorControl, ElectricalEnergyMeasurement, ElectricalPowerMeasurement, Identify, LevelControl, ModeSelect, OnOff, PowerSource } from 'matterbridge/matter/clusters';
 import { flushAsync, log, loggerErrorSpy, loggerFatalSpy, loggerInfoSpy, loggerLogSpy, loggerWarnSpy, setDebug, setupTest } from 'matterbridge/vitest-utils';
 import {
   addMatterbridge,
@@ -130,6 +130,24 @@ describe('TestPlatform', () => {
     await testPlatform.onStart('Starting test');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Starting platform ${config.name} with reason: Starting test...`);
 
+    const powerStripServer = registerDeviceSpy.mock.calls.map(([device]) => device).find((device) => device.id === 'PowerStripServer');
+    expect(powerStripServer).toBeDefined();
+    expect(powerStripServer?.mode).toBe('server');
+    expect(powerStripServer?.number).toBe(1000);
+    expect(powerStripServer?.hasClusterServer(PowerSource)).toBe(true);
+    expect(powerStripServer?.hasClusterServer(OnOff)).toBe(false);
+    expect(powerStripServer?.hasClusterServer(ElectricalPowerMeasurement)).toBe(false);
+    expect(powerStripServer?.parts.size).toBe(4);
+    for (let index = 1; index <= 4; index++) {
+      const outlet = powerStripServer?.parts.get(`onOff${index}`) as MatterbridgeEndpoint | undefined;
+      expect(outlet).toBeDefined();
+      expect(outlet?.number).toBe(1000 + index);
+      expect(outlet?.hasClusterServer(OnOff)).toBe(true);
+      expect(outlet?.hasClusterServer(ElectricalPowerMeasurement)).toBe(true);
+      expect(outlet?.hasClusterServer(ElectricalEnergyMeasurement)).toBe(true);
+      expect(outlet?.hasClusterServer(PowerSource)).toBe(false);
+    }
+
     // Invoke command handlers
     for (const device of testPlatform.getDevices()) {
       if (device.hasClusterServer(Identify)) {
@@ -224,6 +242,37 @@ describe('TestPlatform', () => {
     expect(unknownMethod).toBeUndefined();
 
     // Configure and interval tests
+    const standaloneDevices = registerDeviceSpy.mock.calls.map(([device]) => device).filter((device) => device.mode === 'server');
+    const getDeviceByName = testPlatform.getDeviceByName.bind(testPlatform);
+    const getDeviceByNameSpy = vi
+      .spyOn(testPlatform, 'getDeviceByName')
+      .mockImplementation((name) => standaloneDevices.find((device) => device.deviceName === name) ?? getDeviceByName(name));
+    const flatLight = standaloneDevices.find((device) => device.id === 'LightServerFlat');
+    const flatOutlet = standaloneDevices.find((device) => device.id === 'OutletServerFlat');
+    const composedOutlet = standaloneDevices.find((device) => device.id === 'OutletServerComposed');
+    if (!flatLight || !flatOutlet || !composedOutlet || !powerStripServer) throw new Error('Missing standalone server');
+    const composedOnOff = composedOutlet.getChildEndpointById('OnOffChild');
+    const composedSensor = composedOutlet.getChildEndpointById('ElectricalSensorChild');
+    if (!composedOnOff || !composedSensor) throw new Error('Missing composed outlet children');
+    const stripOutlets = Array.from({ length: 4 }, (_, index) => {
+      const outlet = powerStripServer.getChildEndpointById(`onOff${index + 1}`);
+      if (!outlet) throw new Error('Missing power-strip outlet');
+      return outlet;
+    });
+    const stateSpies = [flatLight, flatOutlet, composedOnOff, ...stripOutlets].map((device) => vi.spyOn(device, 'getAttribute').mockReturnValue(false));
+    const measurementSpies = [flatLight, flatOutlet, composedSensor, ...stripOutlets].map((device) => vi.spyOn(device, 'setCluster').mockResolvedValue(true));
+    testPlatform.config.setUpdateInterval = 0;
+    await testPlatform.onConfigure();
+    for (const spy of measurementSpies) {
+      expect(spy).toHaveBeenCalledWith(ElectricalPowerMeasurement, { activeCurrent: 0, activePower: 0 }, expect.anything());
+      spy.mockClear();
+    }
+    for (const spy of stateSpies) spy.mockReturnValue(true);
+    await testPlatform.onConfigure();
+    for (const spy of measurementSpies) expect(spy).not.toHaveBeenCalled();
+    for (const spy of [...stateSpies, ...measurementSpies]) spy.mockRestore();
+    getDeviceByNameSpy.mockRestore();
+
     testPlatform.config.setUpdateInterval = 0.2; // Set a short interval of 200ms for testing
     await testPlatform.onConfigure();
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Configuring platform ${config.name}...`);

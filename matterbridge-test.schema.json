@@ -99,7 +99,7 @@
     },
     "setUpdateInterval": {
       "title": "Update interval",
-      "description": "Set an update interval in seconds to update the device states periodically",
+      "description": "Set an update interval in seconds to update the device states periodically. Set to 0 to disable periodic updates.",
       "type": "number",
       "default": 60
     },
