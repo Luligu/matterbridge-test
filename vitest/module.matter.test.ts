@@ -110,7 +110,7 @@ describe('TestPlatform', () => {
 
   it('should throw error in load when version is not valid', () => {
     expect(() => new TestPlatform({ ...matterbridge, matterbridgeVersion: '1.5.0' }, log, config)).toThrow(
-      'The test plugin requires Matterbridge version >= "3.10.0". Please update Matterbridge to the latest version in the frontend.',
+      'The test plugin requires Matterbridge version >= "3.10.10". Please update Matterbridge to the latest version in the frontend.',
     );
   });
 
