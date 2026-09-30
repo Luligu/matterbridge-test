@@ -1,6 +1,6 @@
 /**
  * deep-clean.mjs
- * Version: 1.3.0
+ * Version: 1.3.1
  *
  * Dependency-free replacement for:
  *   npx shx rm -rf *.tsbuildinfo dist build coverage jest temp bun.lock package-lock.json npm-shrinkwrap.json \
@@ -33,7 +33,7 @@
 import { existsSync, lstatSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 
-const version = '1.3.0';
+const version = '1.3.1';
 const scriptName = path.basename(import.meta.filename);
 
 /**
@@ -111,8 +111,10 @@ const rm = (dir, target) => {
   let stats;
   try {
     stats = lstatSync(path.resolve(dir, target));
-  } catch {
-    return null; // Path does not exist, nothing to remove and nothing to log.
+  } catch (error) {
+    if (error.code === 'ENOENT') return null; // Path does not exist, nothing to remove and nothing to log.
+    console.warn(`Skipped unreadable path (${error.code}): ${error.path ?? target}`);
+    return null;
   }
 
   try {
