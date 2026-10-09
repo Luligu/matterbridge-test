@@ -12,16 +12,24 @@ const MATTER_PORT = 8000;
 import type { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
 import { LogLevel } from 'matterbridge/logger';
 import { ColorControl, ElectricalEnergyMeasurement, ElectricalPowerMeasurement, Identify, LevelControl, ModeSelect, OnOff, PowerSource } from 'matterbridge/matter/clusters';
-import { flushAsync, log, loggerErrorSpy, loggerFatalSpy, loggerInfoSpy, loggerLogSpy, loggerWarnSpy, setDebug, setupTest } from 'matterbridge/vitest-utils';
+import { flushAsync } from 'matterbridge/test-utils';
 import {
   addMatterbridge,
   createServerNode,
   createTestEnvironment,
   destroyTestEnvironment,
   getMatterbridge,
+  log,
+  loggerErrorSpy,
+  loggerFatalSpy,
+  loggerInfoSpy,
+  loggerLogSpy,
+  loggerWarnSpy,
+  setDebug,
+  setupTest,
   startServerNode,
   stopServerNode,
-} from 'matterbridge/vitest-utils/matter';
+} from 'matterbridge/test-utils/vitest';
 
 import initializePlugin, { TestPlatform, type TestPlatformConfig } from '../src/module.js';
 
