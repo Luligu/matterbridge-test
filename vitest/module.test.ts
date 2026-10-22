@@ -180,6 +180,51 @@ describe('TestPlatform', () => {
     await platform.onShutdown();
   });
 
+  it('should register server devices and update power when switched', async () => {
+    const platform = new TestPlatform(matterbridge, log, { ...config, enableServerDevices: true, loadSwitches: 0, loadOutlets: 0, loadLights: 0 });
+    addMatterbridge(platform);
+    const registerDeviceSpy = vi.spyOn(platform, 'registerDevice');
+    await platform.onStart();
+    expect(registerDeviceSpy).toHaveBeenCalledTimes(4);
+
+    for (const [device] of registerDeviceSpy.mock.calls) {
+      for (const endpoint of [device, ...device.getChildEndpoints()]) {
+        if (!endpoint.hasClusterServer(OnOff)) continue;
+        await endpoint.setAttribute(OnOff, 'onOff', false);
+        await endpoint.setAttribute(OnOff, 'onOff', true);
+      }
+    }
+    await flushAsync();
+    expect(loggerInfoSpy).toHaveBeenCalledWith('LightServerFlat onOff attribute changed to true');
+    expect(loggerInfoSpy).toHaveBeenCalledWith('OutletServerFlat onOff attribute changed to true');
+    expect(loggerInfoSpy).toHaveBeenCalledWith('OutletServerComposed onOff attribute changed to true');
+    expect(loggerInfoSpy).toHaveBeenCalledWith('PowerStripServer onOff4 onOff attribute changed to true');
+    await platform.onShutdown();
+    for (const [device] of registerDeviceSpy.mock.calls) await device.delete();
+  });
+
+  it.each([{ blackList: [] }, { blackList: ['Switch 0', 'Outlet 0', 'Light 0'] }])('should skip registration with blacklist $blackList', async ({ blackList }) => {
+    const platform = new TestPlatform(matterbridge, log, {
+      ...config,
+      noDevices: true,
+      enableServerDevices: true,
+      enableElectrical: false,
+      enablePowerSource: false,
+      enableModeSelect: false,
+      enableReachable: false,
+      setUpdateInterval: 0,
+      blackList,
+    });
+    addMatterbridge(platform);
+    const registerDeviceSpy = vi.spyOn(platform, 'registerDevice');
+    await platform.onStart();
+    await platform.onConfigure();
+    await platform.intervalHandler();
+    expect(registerDeviceSpy).not.toHaveBeenCalled();
+    expect(platform.getDevices()).toHaveLength(0);
+    await platform.onShutdown();
+  });
+
   it('should run the platform', async () => {
     testPlatform = initializePlugin(matterbridge, log, { ...config, unregisterOnShutdown: true });
     expect(testPlatform).toBeInstanceOf(TestPlatform);
@@ -392,6 +437,16 @@ describe('TestPlatform', () => {
       expect(device.getAttribute(ElectricalPowerMeasurement, 'activeCurrent')).toBe(20_000);
       expect(device.getAttribute(ElectricalPowerMeasurement, 'activePower')).toBe(4_400_000);
       expect(Number(device.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported')?.energy)).toBe(11_000);
+    }
+    for (const device of electricalDevices) {
+      await device.setAttribute(OnOff, 'onOff', false);
+      await device.setAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported', null);
+    }
+    testPlatform.config.setUpdateInterval = 0;
+    await testPlatform.onConfigure();
+    await testPlatform.intervalHandler();
+    for (const device of electricalDevices) {
+      expect(Number(device.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported')?.energy)).toBe(1_500_000);
     }
     randomSpy.mockRestore();
     registerDeviceSpy.mockRestore();

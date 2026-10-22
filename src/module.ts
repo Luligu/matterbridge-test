@@ -361,8 +361,6 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
     }
 
-    // v8 ignore start
-
     if (this.config.enableServerDevices) {
       const CONFIGURATION_VERSION = 3;
       const lightServerFlat = new MatterbridgeEndpoint(
@@ -547,8 +545,6 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
         await this.registerDevice(powerStripServer);
       }
     }
-
-    // v8 ignore end
 
     this.log.info(`Finished starting platform ${this.config.name} with ${this.getDevices().length} devices:`);
     for (const device of this.getDevices()) {
