@@ -29,7 +29,7 @@ If you like this project and find it useful, please consider giving it a star on
 
 <a href="https://www.buymeacoffee.com/luligugithub"><img src="https://matterbridge.io/assets/bmc-button.svg" alt="Buy me a coffee" width="120"></a>
 
-## [3.0.4] - Dev branch
+## [3.1.0] - 2026-10-23
 
 ### Breaking changes
 
@@ -49,7 +49,6 @@ If you like this project and find it useful, please consider giving it a star on
 
 ### Changed
 
-- [workflows]: Build and test against the matterbridge `dev` branch (`automator.workflow`).
 - [test]: Migrate tests from `matterbridge/vitest-utils` to the unified `matterbridge/test-utils`.
 - [oxc]: Exclude `scripts` directories from lint and format checks.
 - [styleguide]: Update [`STYLEGUIDE.md`](STYLEGUIDE.md) to v.1.1.0: align it with the lint and format config and add the Commit Messages and Changelog sections.
