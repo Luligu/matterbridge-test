@@ -35,6 +35,8 @@ The standalone `LightServerFlat`, `OutletServerFlat`, and `OutletServerComposed`
 
 The standalone `PowerStripServer` has a PowerSource parent at endpoint `1000` and four children, `onOff1`–`onOff4`, at endpoints `1001`–`1004`. Each child combines an on/off plug-in unit and an electrical sensor. Switching an outlet off sets only its own current and power to zero; switching it on restores `1_000` and `220_000`, respectively.
 
+Set `enableServerDevices` to `true` to create the four standalone server devices. It defaults to `false`.
+
 During configuration, all four standalone servers also reset current and power to zero for outlets or lights whose restored on/off state is off, including each power-strip outlet independently.
 
 If you want to write your plugin, the easiest way to start create a new plugin is to clone the [Matterbridge Plugin Template](https://github.com/Luligu/matterbridge-plugin-template) which has **Dev Container support for instant development environment** and all tools and extensions (like Node.js, npm, Bun, TypeScript Native, Oxc and Vitest) already loaded and configured.

@@ -37,6 +37,10 @@ If you like this project and find it useful, please consider giving it a star on
 
 ### Added
 
+- [config]: Apply defaults for all missing plugin configuration options.
+
+- [config]: Add `enableServerDevices` (default false) to enable the four standalone server devices.
+
 - [devcontainer]: Add [`Dev Container`](.devcontainer/README.md) v.2.2.0 with dual Node and Bun runtime support.
 - [agents]: Add a [`shared setup`](.agents/README.md) for all agents: OpenAI Codex, Claude Code, GitHub Copilot and Google Gemini / Antigravity.
 - [agents]: Add [`commit message instructions`](.github/commit-message-instructions.md) v.1.0.0 for the VS Code Copilot "Generate Commit Message" button (Conventional Commits).

@@ -11,6 +11,7 @@
     "whiteList": [],
     "blackList": [],
     "setUpdateInterval": 0,
+    "enableServerDevices": false,
     "enableElectrical": true,
     "enablePowerSource": true,
     "enableModeSelect": true,

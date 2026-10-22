@@ -103,6 +103,12 @@
       "type": "number",
       "default": 60
     },
+    "enableServerDevices": {
+      "title": "Enable server devices",
+      "description": "Create the standalone server devices",
+      "type": "boolean",
+      "default": false
+    },
     "enableElectrical": {
       "title": "Add electrical measurements",
       "description": "Add electrical measurements cluster to the devices",

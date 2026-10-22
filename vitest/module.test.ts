@@ -11,7 +11,19 @@ const MATTER_PORT = 8000;
 
 import type { MatterbridgeEndpoint, PlatformMatterbridge } from 'matterbridge';
 import { LogLevel } from 'matterbridge/logger';
-import { ColorControl, ElectricalEnergyMeasurement, ElectricalPowerMeasurement, Identify, LevelControl, ModeSelect, OnOff, PowerSource } from 'matterbridge/matter/clusters';
+import { CommonNumberTag } from 'matterbridge/matter';
+import {
+  ColorControl,
+  ElectricalEnergyMeasurement,
+  ElectricalPowerMeasurement,
+  Groups,
+  Identify,
+  LevelControl,
+  ModeSelect,
+  OnOff,
+  PowerSource,
+  ScenesManagement,
+} from 'matterbridge/matter/clusters';
 import { flushAsync } from 'matterbridge/test-utils';
 import {
   addMatterbridge,
@@ -36,7 +48,7 @@ import initializePlugin, { TestPlatform, type TestPlatformConfig } from '../src/
 // Warning: the tests in this unit are supposed to run sequentially.
 
 // Setup the test environment
-await setupTest(NAME, false);
+await setupTest(NAME);
 
 describe('TestPlatform', () => {
   let matterbridge: PlatformMatterbridge;
@@ -59,6 +71,7 @@ describe('TestPlatform', () => {
     whiteList: [],
     blackList: [],
     setUpdateInterval: 30,
+    enableServerDevices: true,
     enableElectrical: true,
     enablePowerSource: true,
     enableModeSelect: true,
@@ -122,16 +135,56 @@ describe('TestPlatform', () => {
     );
   });
 
+  it('should apply missing configuration defaults and preserve explicit values', () => {
+    const defaults = {
+      noDevices: false,
+      delayStart: false,
+      longDelayStart: false,
+      loadSwitches: 1,
+      loadOutlets: 1,
+      loadLights: 1,
+      whiteList: [],
+      blackList: [],
+      setUpdateInterval: 60,
+      enableServerDevices: false,
+      enableElectrical: true,
+      enablePowerSource: true,
+      enableModeSelect: true,
+      enableReachable: true,
+      throwLoad: false,
+      throwStart: false,
+      throwConfigure: false,
+      throwShutdown: false,
+      debug: false,
+      unregisterOnShutdown: false,
+    };
+    const missingConfig = { ...config };
+    for (const key of Object.keys(defaults)) Reflect.deleteProperty(missingConfig, key);
+    const platform = new TestPlatform(matterbridge, log, missingConfig);
+    expect(platform.config).toMatchObject(defaults);
+
+    const explicitConfig = { ...config, enableElectrical: false, loadSwitches: 0, setUpdateInterval: 12, whiteList: ['Switch 0'] };
+    const expectedConfig = structuredClone(explicitConfig);
+    const explicitPlatform = new TestPlatform(matterbridge, log, explicitConfig);
+    expect(explicitPlatform.config).toEqual(expectedConfig);
+  });
+
+  it.each([false, undefined])('should skip server devices when enableServerDevices is %s', async (enableServerDevices) => {
+    const platform = new TestPlatform(matterbridge, log, { ...config, enableServerDevices, loadSwitches: 0, loadOutlets: 0, loadLights: 0 });
+    addMatterbridge(platform);
+    const registerDeviceSpy = vi.spyOn(platform, 'registerDevice');
+    await platform.onStart();
+    expect(platform.config.enableServerDevices).toBe(false);
+    expect(registerDeviceSpy).not.toHaveBeenCalled();
+    expect(platform.getDevices()).toHaveLength(0);
+    await platform.onShutdown();
+  });
+
   it('should run the platform', async () => {
     testPlatform = initializePlugin(matterbridge, log, { ...config, unregisterOnShutdown: true });
     expect(testPlatform).toBeInstanceOf(TestPlatform);
     addMatterbridge(testPlatform);
-    // This harness has one bridge; standalone servers have their own endpoint number spaces.
-    const registerDevice = testPlatform.registerDevice.bind(testPlatform);
-    const registerDeviceSpy = vi.spyOn(testPlatform, 'registerDevice').mockImplementation(async (device) => {
-      if (device.mode === 'server') return;
-      await registerDevice(device);
-    });
+    const registerDeviceSpy = vi.spyOn(testPlatform, 'registerDevice');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Initializing platform ${config.name}...`);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Platform ${config.name} initialized successfully`);
 
@@ -141,19 +194,21 @@ describe('TestPlatform', () => {
     const powerStripServer = registerDeviceSpy.mock.calls.map(([device]) => device).find((device) => device.id === 'PowerStripServer');
     expect(powerStripServer).toBeDefined();
     expect(powerStripServer?.mode).toBe('server');
-    expect(powerStripServer?.number).toBe(1000);
+    expect(powerStripServer?.number).toBe(1300);
     expect(powerStripServer?.hasClusterServer(PowerSource)).toBe(true);
     expect(powerStripServer?.hasClusterServer(OnOff)).toBe(false);
     expect(powerStripServer?.hasClusterServer(ElectricalPowerMeasurement)).toBe(false);
     expect(powerStripServer?.parts.size).toBe(4);
+    const outletTags = [CommonNumberTag.One, CommonNumberTag.Two, CommonNumberTag.Three, CommonNumberTag.Four];
     for (let index = 1; index <= 4; index++) {
       const outlet = powerStripServer?.parts.get(`onOff${index}`) as MatterbridgeEndpoint | undefined;
       expect(outlet).toBeDefined();
-      expect(outlet?.number).toBe(1000 + index);
+      expect(outlet?.number).toBe(1300 + index);
       expect(outlet?.hasClusterServer(OnOff)).toBe(true);
       expect(outlet?.hasClusterServer(ElectricalPowerMeasurement)).toBe(true);
       expect(outlet?.hasClusterServer(ElectricalEnergyMeasurement)).toBe(true);
       expect(outlet?.hasClusterServer(PowerSource)).toBe(false);
+      expect(outlet?.tagList).toEqual([{ namespaceId: outletTags[index - 1].namespaceId, tag: outletTags[index - 1].tag, mfgCode: null }]);
     }
 
     // Invoke command handlers
@@ -262,6 +317,9 @@ describe('TestPlatform', () => {
     const composedOnOff = composedOutlet.getChildEndpointById('OnOffChild');
     const composedSensor = composedOutlet.getChildEndpointById('ElectricalSensorChild');
     if (!composedOnOff || !composedSensor) throw new Error('Missing composed outlet children');
+    for (const cluster of [Identify, Groups, ScenesManagement]) {
+      expect(composedOnOff.hasClusterServer(cluster)).toBe(true);
+    }
     const stripOutlets = Array.from({ length: 4 }, (_, index) => {
       const outlet = powerStripServer.getChildEndpointById(`onOff${index + 1}`);
       if (!outlet) throw new Error('Missing power-strip outlet');

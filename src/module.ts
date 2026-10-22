@@ -3,7 +3,7 @@
  * @description This file contains the class TestPlatform.
  * @author Luca Liguori
  * @created 2024-05-30
- * @version 2.0.1
+ * @version 2.0.2
  * @license Apache-2.0
  *
  * Copyright 2023, 2024, 2025, 2026 Luca Liguori.
@@ -25,6 +25,7 @@ import {
   bridgedNode,
   colorTemperatureLight,
   electricalSensor,
+  getSemtag,
   MatterbridgeDynamicPlatform,
   MatterbridgeEndpoint,
   modeSelect,
@@ -36,6 +37,7 @@ import {
   powerSource,
 } from 'matterbridge';
 import { type AnsiLogger, CYAN, db, er, type LogLevel, nf } from 'matterbridge/logger';
+import { CommonNumberTag } from 'matterbridge/matter';
 import {
   BridgedDeviceBasicInformation,
   ElectricalEnergyMeasurement,
@@ -58,6 +60,7 @@ export type TestPlatformConfig = PlatformConfig & {
   whiteList: string[];
   blackList: string[];
   setUpdateInterval: number;
+  enableServerDevices?: boolean;
   enableElectrical: boolean;
   enablePowerSource: boolean;
   enableModeSelect: boolean;
@@ -89,6 +92,27 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
   constructor(matterbridge: PlatformMatterbridge, log: AnsiLogger, override config: TestPlatformConfig) {
     super(matterbridge, log, config);
 
+    this.config.noDevices ??= false;
+    this.config.delayStart ??= false;
+    this.config.longDelayStart ??= false;
+    this.config.loadSwitches ??= 1;
+    this.config.loadOutlets ??= 1;
+    this.config.loadLights ??= 1;
+    this.config.whiteList ??= [];
+    this.config.blackList ??= [];
+    this.config.setUpdateInterval ??= 60;
+    this.config.enableServerDevices ??= false;
+    this.config.enableElectrical ??= true;
+    this.config.enablePowerSource ??= true;
+    this.config.enableModeSelect ??= true;
+    this.config.enableReachable ??= true;
+    this.config.throwLoad ??= false;
+    this.config.throwStart ??= false;
+    this.config.throwConfigure ??= false;
+    this.config.throwShutdown ??= false;
+    this.config.debug ??= false;
+    this.config.unregisterOnShutdown ??= false;
+
     // Verify that Matterbridge is the correct version
     if (typeof this.verifyMatterbridgeVersion !== 'function' || !this.verifyMatterbridgeVersion('3.11.0')) {
       throw new Error(`The test plugin requires Matterbridge version >= "3.11.0". Please update Matterbridge to the latest version in the frontend.`);
@@ -99,6 +123,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     this.log.debug('- with config:', this.config);
     this.log.debug('- with noDevice:', this.config.noDevices);
     this.log.debug('- with delayStart:', this.config.delayStart);
+    this.log.debug('- with enableServerDevices:', this.config.enableServerDevices);
     this.log.debug('- with enableElectrical:', this.config.enableElectrical);
     this.log.debug('- with enableModeSelect:', this.config.enableModeSelect);
     this.log.debug('- with enablePowerSource:', this.config.enablePowerSource);
@@ -338,172 +363,189 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
 
     // v8 ignore start
 
-    const CONFIGURATION_VERSION = 3;
-    const lightServerFlat = new MatterbridgeEndpoint(
-      [onOffLight, powerSource, electricalSensor],
-      { id: 'LightServerFlat', number: EndpointNumber(1000), mode: 'server' },
-      this.config.debug,
-    );
-    lightServerFlat.log.logName = 'LightServerFlat';
-    lightServerFlat.createDefaultBasicInformationClusterServer(
-      'Light Server Flat',
-      'serial_light_server_flat',
-      0xfff1,
-      'Matterbridge',
-      0x8000,
-      'Matterbridge test plugin',
-      Number.parseInt(this.version.replace(/\D/g, '')),
-      this.version,
-      Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
-      this.matterbridge.matterbridgeVersion,
-      undefined,
-      undefined,
-      CONFIGURATION_VERSION,
-    );
-    lightServerFlat.createDefaultOnOffClusterServer(true);
-    this.addPowerSource(lightServerFlat, 'wired');
-    this.addElectricalMeasurements(lightServerFlat, PowerTopology.Feature.NodeTopology, [EndpointNumber(1000)], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
-    lightServerFlat.addRequiredClusters();
-    lightServerFlat.subscribeAttribute(OnOff, 'onOff', (value) => {
-      this.log.info(`LightServerFlat onOff attribute changed to ${value}`);
-      fireAndForget(
-        lightServerFlat.setCluster(ElectricalPowerMeasurement, { activeCurrent: value ? 1_000 : 0, activePower: value ? 220_000 : 0 }, lightServerFlat.log),
-        this.log,
-        'Error updating LightServerFlat electrical measurements',
+    if (this.config.enableServerDevices) {
+      const CONFIGURATION_VERSION = 3;
+      const lightServerFlat = new MatterbridgeEndpoint(
+        [onOffLight, powerSource, electricalSensor],
+        { id: 'LightServerFlat', number: EndpointNumber(1000), mode: 'server', tagList: [getSemtag(CommonNumberTag.One)] },
+        this.config.debug,
       );
-    });
-    if (!this.config.noDevices) {
-      await this.registerDevice(lightServerFlat);
-    }
-
-    const outletServerFlat = new MatterbridgeEndpoint(
-      [onOffPlugInUnit, powerSource, electricalSensor],
-      { id: 'OutletServerFlat', number: EndpointNumber(1000), mode: 'server' },
-      this.config.debug,
-    );
-    outletServerFlat.log.logName = 'OutletServerFlat';
-    outletServerFlat.createDefaultBasicInformationClusterServer(
-      'Outlet Server Flat',
-      'serial_outlet_server_flat',
-      0xfff1,
-      'Matterbridge',
-      0x8000,
-      'Matterbridge test plugin',
-      Number.parseInt(this.version.replace(/\D/g, '')),
-      this.version,
-      Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
-      this.matterbridge.matterbridgeVersion,
-      undefined,
-      undefined,
-      CONFIGURATION_VERSION,
-    );
-    outletServerFlat.createDefaultOnOffClusterServer(true);
-    this.addPowerSource(outletServerFlat, 'wired');
-    this.addElectricalMeasurements(outletServerFlat, PowerTopology.Feature.NodeTopology, [EndpointNumber(1000)], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
-    outletServerFlat.addRequiredClusters();
-    outletServerFlat.subscribeAttribute(OnOff, 'onOff', (value) => {
-      this.log.info(`OutletServerFlat onOff attribute changed to ${value}`);
-      fireAndForget(
-        outletServerFlat.setCluster(ElectricalPowerMeasurement, { activeCurrent: value ? 1_000 : 0, activePower: value ? 220_000 : 0 }, outletServerFlat.log),
-        this.log,
-        'Error updating OutletServerFlat electrical measurements',
+      lightServerFlat.log.logName = 'LightServerFlat';
+      lightServerFlat.createDefaultBasicInformationClusterServer(
+        'Light Server Flat',
+        'serial_light_server_flat',
+        0xfff1,
+        'Matterbridge',
+        0x8000,
+        'Matterbridge test plugin',
+        Number.parseInt(this.version.replace(/\D/g, '')),
+        this.version,
+        Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        this.matterbridge.matterbridgeVersion,
+        undefined,
+        undefined,
+        CONFIGURATION_VERSION,
       );
-    });
-    if (!this.config.noDevices) {
-      await this.registerDevice(outletServerFlat);
-    }
-
-    const outletServerComposed = new MatterbridgeEndpoint([powerSource], { id: 'OutletServerComposed', number: EndpointNumber(1000), mode: 'server' }, this.config.debug);
-    outletServerComposed.log.logName = 'OutletServerComposed';
-    outletServerComposed.createDefaultBasicInformationClusterServer(
-      'Outlet Server Composed',
-      'serial_outlet_server_composed',
-      0xfff1,
-      'Matterbridge',
-      0x8000,
-      'Matterbridge test plugin',
-      Number.parseInt(this.version.replace(/\D/g, '')),
-      this.version,
-      Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
-      this.matterbridge.matterbridgeVersion,
-      undefined,
-      undefined,
-      CONFIGURATION_VERSION,
-    );
-    this.addPowerSource(outletServerComposed, 'wired');
-
-    const onOffChild = outletServerComposed.addChildDeviceType('OnOffChild', [onOffPlugInUnit], { id: 'OnOffChild', number: EndpointNumber(1001) });
-    onOffChild.createDefaultOnOffClusterServer(true);
-
-    const electricalSensorChild = outletServerComposed.addChildDeviceType('ElectricalSensorChild', [electricalSensor], {
-      id: 'ElectricalSensorChild',
-      number: EndpointNumber(1002),
-    });
-    this.addElectricalMeasurements(
-      electricalSensorChild,
-      PowerTopology.Feature.NodeTopology,
-      [EndpointNumber(1000), EndpointNumber(1001), EndpointNumber(1002)],
-      [],
-      220_000,
-      1_000,
-      220_000,
-      50_000,
-      1_000_000,
-      0,
-    );
-
-    outletServerComposed.addRequiredClusters();
-    onOffChild.subscribeAttribute(OnOff, 'onOff', (value) => {
-      this.log.info(`OutletServerComposed onOff attribute changed to ${value}`);
-      fireAndForget(
-        electricalSensorChild.setCluster(ElectricalPowerMeasurement, { activeCurrent: value ? 1_000 : 0, activePower: value ? 220_000 : 0 }, electricalSensorChild.log),
-        this.log,
-        'Error updating OutletServerComposed electrical measurements',
-      );
-    });
-    if (!this.config.noDevices) {
-      await this.registerDevice(outletServerComposed);
-    }
-
-    const powerStripServer = new MatterbridgeEndpoint([powerSource], { id: 'PowerStripServer', number: EndpointNumber(1000), mode: 'server' }, this.config.debug);
-    powerStripServer.log.logName = 'PowerStripServer';
-    powerStripServer.createDefaultBasicInformationClusterServer(
-      'Power Strip Server',
-      'serial_power_strip_server',
-      0xfff1,
-      'Matterbridge',
-      0x8000,
-      'Matterbridge test plugin',
-      Number.parseInt(this.version.replace(/\D/g, '')),
-      this.version,
-      Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
-      this.matterbridge.matterbridgeVersion,
-      undefined,
-      undefined,
-      CONFIGURATION_VERSION,
-    );
-    this.addPowerSource(powerStripServer, 'wired');
-
-    for (let index = 1; index <= 4; index++) {
-      const id = `onOff${index}`;
-      const number = EndpointNumber(1000 + index);
-      const outlet = powerStripServer.addChildDeviceType(id, [onOffPlugInUnit, electricalSensor], { id, number });
-      outlet.createDefaultOnOffClusterServer(true);
-      this.addElectricalMeasurements(outlet, PowerTopology.Feature.TreeTopology, [], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
-      outlet.addRequiredClusters();
-      outlet.subscribeAttribute(OnOff, 'onOff', (value) => {
-        this.log.info(`PowerStripServer ${id} onOff attribute changed to ${value}`);
+      lightServerFlat.createDefaultOnOffClusterServer(true);
+      this.addPowerSource(lightServerFlat, 'wired');
+      this.addElectricalMeasurements(lightServerFlat, PowerTopology.Feature.NodeTopology, [EndpointNumber(1000)], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
+      lightServerFlat.addRequiredClusters();
+      lightServerFlat.subscribeAttribute(OnOff, 'onOff', (value) => {
+        this.log.info(`LightServerFlat onOff attribute changed to ${value}`);
         fireAndForget(
-          outlet.setCluster(ElectricalPowerMeasurement, { activeCurrent: value ? 1_000 : 0, activePower: value ? 220_000 : 0 }, outlet.log),
+          lightServerFlat.setCluster(ElectricalPowerMeasurement, { activeCurrent: value ? 1_000 : 0, activePower: value ? 220_000 : 0 }, lightServerFlat.log),
           this.log,
-          `Error updating PowerStripServer ${id} electrical measurements`,
+          'Error updating LightServerFlat electrical measurements',
         );
       });
-    }
+      if (!this.config.noDevices) {
+        await this.registerDevice(lightServerFlat);
+      }
 
-    powerStripServer.addRequiredClusters();
-    if (!this.config.noDevices) {
-      await this.registerDevice(powerStripServer);
+      const outletServerFlat = new MatterbridgeEndpoint(
+        [onOffPlugInUnit, powerSource, electricalSensor],
+        { id: 'OutletServerFlat', number: EndpointNumber(1100), mode: 'server', tagList: [getSemtag(CommonNumberTag.Two)] },
+        this.config.debug,
+      );
+      outletServerFlat.log.logName = 'OutletServerFlat';
+      outletServerFlat.createDefaultBasicInformationClusterServer(
+        'Outlet Server Flat',
+        'serial_outlet_server_flat',
+        0xfff1,
+        'Matterbridge',
+        0x8000,
+        'Matterbridge test plugin',
+        Number.parseInt(this.version.replace(/\D/g, '')),
+        this.version,
+        Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        this.matterbridge.matterbridgeVersion,
+        undefined,
+        undefined,
+        CONFIGURATION_VERSION,
+      );
+      outletServerFlat.createDefaultOnOffClusterServer(true);
+      this.addPowerSource(outletServerFlat, 'wired');
+      this.addElectricalMeasurements(outletServerFlat, PowerTopology.Feature.NodeTopology, [EndpointNumber(1100)], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
+      outletServerFlat.addRequiredClusters();
+      outletServerFlat.subscribeAttribute(OnOff, 'onOff', (value) => {
+        this.log.info(`OutletServerFlat onOff attribute changed to ${value}`);
+        fireAndForget(
+          outletServerFlat.setCluster(ElectricalPowerMeasurement, { activeCurrent: value ? 1_000 : 0, activePower: value ? 220_000 : 0 }, outletServerFlat.log),
+          this.log,
+          'Error updating OutletServerFlat electrical measurements',
+        );
+      });
+      if (!this.config.noDevices) {
+        await this.registerDevice(outletServerFlat);
+      }
+
+      const outletServerComposed = new MatterbridgeEndpoint(
+        [powerSource],
+        { id: 'OutletServerComposed', number: EndpointNumber(1200), mode: 'server', tagList: [getSemtag(CommonNumberTag.Three)] },
+        this.config.debug,
+      );
+      outletServerComposed.log.logName = 'OutletServerComposed';
+      outletServerComposed.createDefaultBasicInformationClusterServer(
+        'Outlet Server Composed',
+        'serial_outlet_server_composed',
+        0xfff1,
+        'Matterbridge',
+        0x8000,
+        'Matterbridge test plugin',
+        Number.parseInt(this.version.replace(/\D/g, '')),
+        this.version,
+        Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        this.matterbridge.matterbridgeVersion,
+        undefined,
+        undefined,
+        CONFIGURATION_VERSION,
+      );
+      this.addPowerSource(outletServerComposed, 'wired');
+
+      const onOffChild = outletServerComposed.addChildDeviceType('OnOffChild', [onOffPlugInUnit], { id: 'OnOffChild', number: EndpointNumber(1201) });
+      onOffChild.createDefaultOnOffClusterServer(true);
+      onOffChild.addRequiredClusters();
+
+      const electricalSensorChild = outletServerComposed.addChildDeviceType('ElectricalSensorChild', [electricalSensor], {
+        id: 'ElectricalSensorChild',
+        number: EndpointNumber(1202),
+      });
+      this.addElectricalMeasurements(
+        electricalSensorChild,
+        PowerTopology.Feature.NodeTopology,
+        [EndpointNumber(1200), EndpointNumber(1201), EndpointNumber(1202)],
+        [],
+        220_000,
+        1_000,
+        220_000,
+        50_000,
+        1_000_000,
+        0,
+      );
+
+      electricalSensorChild.addRequiredClusters();
+      outletServerComposed.addRequiredClusters();
+      onOffChild.subscribeAttribute(OnOff, 'onOff', (value) => {
+        this.log.info(`OutletServerComposed onOff attribute changed to ${value}`);
+        fireAndForget(
+          electricalSensorChild.setCluster(ElectricalPowerMeasurement, { activeCurrent: value ? 1_000 : 0, activePower: value ? 220_000 : 0 }, electricalSensorChild.log),
+          this.log,
+          'Error updating OutletServerComposed electrical measurements',
+        );
+      });
+      if (!this.config.noDevices) {
+        await this.registerDevice(outletServerComposed);
+      }
+
+      const powerStripServer = new MatterbridgeEndpoint(
+        [powerSource],
+        { id: 'PowerStripServer', number: EndpointNumber(1300), mode: 'server', tagList: [getSemtag(CommonNumberTag.Four)] },
+        this.config.debug,
+      );
+      powerStripServer.log.logName = 'PowerStripServer';
+      powerStripServer.createDefaultBasicInformationClusterServer(
+        'Power Strip Server',
+        'serial_power_strip_server',
+        0xfff1,
+        'Matterbridge',
+        0x8000,
+        'Matterbridge test plugin',
+        Number.parseInt(this.version.replace(/\D/g, '')),
+        this.version,
+        Number.parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
+        this.matterbridge.matterbridgeVersion,
+        undefined,
+        undefined,
+        CONFIGURATION_VERSION,
+      );
+      this.addPowerSource(powerStripServer, 'wired');
+
+      const outletTags = [CommonNumberTag.One, CommonNumberTag.Two, CommonNumberTag.Three, CommonNumberTag.Four];
+      for (let index = 1; index <= 4; index++) {
+        const id = `onOff${index}`;
+        const number = EndpointNumber(1300 + index);
+        const outlet = powerStripServer.addChildDeviceType(id, [onOffPlugInUnit, electricalSensor], {
+          id,
+          number,
+          tagList: [getSemtag(outletTags[index - 1])],
+        });
+        outlet.createDefaultOnOffClusterServer(true);
+        this.addElectricalMeasurements(outlet, PowerTopology.Feature.TreeTopology, [], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
+        outlet.addRequiredClusters();
+        outlet.subscribeAttribute(OnOff, 'onOff', (value) => {
+          this.log.info(`PowerStripServer ${id} onOff attribute changed to ${value}`);
+          fireAndForget(
+            outlet.setCluster(ElectricalPowerMeasurement, { activeCurrent: value ? 1_000 : 0, activePower: value ? 220_000 : 0 }, outlet.log),
+            this.log,
+            `Error updating PowerStripServer ${id} electrical measurements`,
+          );
+        });
+      }
+
+      powerStripServer.addRequiredClusters();
+      if (!this.config.noDevices) {
+        await this.registerDevice(powerStripServer);
+      }
     }
 
     // v8 ignore end
