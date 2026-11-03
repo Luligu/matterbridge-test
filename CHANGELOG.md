@@ -33,6 +33,8 @@ If you like this project and find it useful, please consider giving it a star on
 
 ### Changed
 
+- [workflow]: Use the Matterbridge dev branch in workflows.
+
 - [platform]: Update flat outlet periodic energy measurements and emit `PeriodicEnergyMeasured` on each update interval.
 - [platform]: Accumulate the flat outlet period energy into the cumulative energy measurements and emit `CumulativeEnergyMeasured` on each update interval.
 - [platform]: Forward optional periodic energy measurements and initialize flat outlet periodic energy with timestamps spanning the configured update interval.
