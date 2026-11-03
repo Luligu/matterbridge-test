@@ -388,7 +388,7 @@ describe('TestPlatform', () => {
     const periodicEventSpy = vi.spyOn(flatOutlet, 'triggerEvent').mockResolvedValue(true);
     const initialImported = Number(flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported')?.energy ?? 0);
     const initialExported = Number(flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyExported')?.energy ?? 0);
-    const periodStart = initialEnd;
+    const periodStart = initialEnd + 1;
     const nowSpy = vi.spyOn(Date, 'now').mockReturnValue((periodStart + testPlatform.config.setUpdateInterval) * 1000);
     await flatOutlet.setAttribute(ElectricalPowerMeasurement, 'activePower', 220_000);
     await testPlatform.intervalHandler();
@@ -414,8 +414,8 @@ describe('TestPlatform', () => {
       { energyImported: cumulativeImported, energyExported: cumulativeExported },
       flatOutlet.log,
     );
-    // A callback before the configured duration still publishes the next contiguous period.
-    const nextStart = periodStart + testPlatform.config.setUpdateInterval;
+    // A callback before the configured duration still publishes the next non-overlapping period.
+    const nextStart = periodStart + testPlatform.config.setUpdateInterval + 1;
     nowSpy.mockReturnValue((nextStart + 1) * 1000);
     await flatOutlet.setAttribute(ElectricalPowerMeasurement, 'activePower', 0);
     await testPlatform.intervalHandler();
@@ -441,7 +441,7 @@ describe('TestPlatform', () => {
     // Subsequent manual callbacks must also represent distinct measurement periods.
     let callbackTime = (nextStart + 1) * 1000;
     nowSpy.mockImplementation(() => {
-      callbackTime += 1000;
+      callbackTime += 2000;
       return callbackTime;
     });
     periodicEventSpy.mockRestore();

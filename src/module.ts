@@ -717,10 +717,10 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     // Publish flat outlet periodic energy measurements on each interval callback.
     const outletServerFlat = this.getDeviceByName('Outlet Server Flat');
     if (outletServerFlat) {
-      // Continue from the previous period end, using Unix timestamps in seconds.
+      // Start one second after the previous period end, using Unix timestamps in seconds.
       const previous = outletServerFlat.getAttribute(ElectricalEnergyMeasurement, 'periodicEnergyImported', outletServerFlat.log);
       const endTimestamp = Math.floor(Date.now() / 1000);
-      const startTimestamp = previous?.endTimestamp ?? endTimestamp - this.config.setUpdateInterval;
+      const startTimestamp = previous?.endTimestamp === undefined ? endTimestamp - this.config.setUpdateInterval : previous.endTimestamp + 1;
       // Estimate imported energy in mWh from the current power in mW and elapsed seconds.
       const activePower = outletServerFlat.getAttribute(ElectricalPowerMeasurement, 'activePower', outletServerFlat.log);
       const energyImported = {
