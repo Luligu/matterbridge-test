@@ -33,6 +33,9 @@ If you like this project and find it useful, please consider giving it a star on
 
 ### Changed
 
+- [platform]: Update flat outlet periodic energy measurements and emit `PeriodicEnergyMeasured` on each update interval.
+- [platform]: Accumulate the flat outlet period energy into the cumulative energy measurements and emit `CumulativeEnergyMeasured` on each update interval.
+- [platform]: Forward optional periodic energy measurements and initialize flat outlet periodic energy with timestamps spanning the configured update interval.
 - [package]: Upgrade package.
 - [package]: Bump `@types/node` to v.26.6.6.
 - [package]: Bump `oxfmt` to v.0.75.0.

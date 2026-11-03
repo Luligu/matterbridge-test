@@ -180,10 +180,25 @@ describe('TestPlatform', () => {
     await platform.onShutdown();
   });
 
+  it('should skip server devices when regular device loops run', async () => {
+    const platform = new TestPlatform(matterbridge, log, { ...config, enableServerDevices: false, noDevices: true });
+    addMatterbridge(platform);
+    const registerDeviceSpy = vi.spyOn(platform, 'registerDevice');
+    await platform.onStart();
+    expect(registerDeviceSpy).not.toHaveBeenCalled();
+    await platform.onShutdown();
+  });
+
   it('should register server devices and update power when switched', async () => {
     const platform = new TestPlatform(matterbridge, log, { ...config, enableServerDevices: true, loadSwitches: 0, loadOutlets: 0, loadLights: 0 });
     addMatterbridge(platform);
     const registerDeviceSpy = vi.spyOn(platform, 'registerDevice');
+    await platform.onStart();
+    expect(registerDeviceSpy).toHaveBeenCalledTimes(4);
+    platform.config.enableServerDevices = false;
+    platform.config.loadSwitches = 0;
+    platform.config.loadOutlets = 0;
+    platform.config.loadLights = 0;
     await platform.onStart();
     expect(registerDeviceSpy).toHaveBeenCalledTimes(4);
 
@@ -304,6 +319,7 @@ describe('TestPlatform', () => {
     await testPlatform.onConfigChanged(config);
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('has been updated'));
 
+    await testPlatform.onAction('Test action', 'value', 'schema');
     await testPlatform.onAction('Test action');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, expect.stringContaining('Received action'));
     await testPlatform.onAction('turnOn');
@@ -315,6 +331,7 @@ describe('TestPlatform', () => {
     loggerErrorSpy.mockClear(); // Clear any errors from unmatched devices
 
     // Fetch tests
+    expect(await testPlatform.onFetch('GET')).toBeUndefined();
     const info = await testPlatform.onFetch('GET', 'info');
     expect(info).toEqual({ plugin: testPlatform.name, type: testPlatform.type, version: testPlatform.version, deviceCount: testPlatform.getDevices().length, query: null });
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.DEBUG, expect.stringContaining('received onFetch'));
@@ -359,6 +376,75 @@ describe('TestPlatform', () => {
     const flatOutlet = standaloneDevices.find((device) => device.id === 'OutletServerFlat');
     const composedOutlet = standaloneDevices.find((device) => device.id === 'OutletServerComposed');
     if (!flatLight || !flatOutlet || !composedOutlet || !powerStripServer) throw new Error('Missing standalone server');
+    const initialEnd = flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'periodicEnergyImported')?.endTimestamp;
+    if (initialEnd === undefined) throw new Error('Missing initial measurement end timestamp');
+    for (const attribute of ['periodicEnergyImported', 'periodicEnergyExported'] as const) {
+      expect(flatOutlet.getAttribute(ElectricalEnergyMeasurement, attribute)).toEqual({
+        energy: 0,
+        startTimestamp: initialEnd - testPlatform.config.setUpdateInterval,
+        endTimestamp: initialEnd,
+      });
+    }
+    const periodicEventSpy = vi.spyOn(flatOutlet, 'triggerEvent').mockResolvedValue(true);
+    const initialImported = Number(flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported')?.energy ?? 0);
+    const initialExported = Number(flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyExported')?.energy ?? 0);
+    const periodStart = initialEnd;
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue((periodStart + testPlatform.config.setUpdateInterval) * 1000);
+    await flatOutlet.setAttribute(ElectricalPowerMeasurement, 'activePower', 220_000);
+    await testPlatform.intervalHandler();
+    const energyImported = flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'periodicEnergyImported');
+    const energyExported = flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'periodicEnergyExported');
+    expect(energyImported).toEqual({
+      energy: Math.round((220_000 * testPlatform.config.setUpdateInterval) / 3600),
+      startTimestamp: periodStart,
+      endTimestamp: periodStart + testPlatform.config.setUpdateInterval,
+    });
+    expect(energyExported).toEqual({ energy: 0, startTimestamp: periodStart, endTimestamp: periodStart + testPlatform.config.setUpdateInterval });
+    expect(periodicEventSpy).toHaveBeenCalledTimes(2);
+    expect(periodicEventSpy).toHaveBeenNthCalledWith(1, ElectricalEnergyMeasurement, 'periodicEnergyMeasured', { energyImported, energyExported }, flatOutlet.log);
+    // The period energy is accumulated into the cumulative measurements and the cumulative event carries the same values.
+    const cumulativeImported = { energy: initialImported + Number(energyImported?.energy ?? 0), endTimestamp: periodStart + testPlatform.config.setUpdateInterval };
+    const cumulativeExported = { energy: initialExported, endTimestamp: periodStart + testPlatform.config.setUpdateInterval };
+    expect(flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported')).toEqual(cumulativeImported);
+    expect(flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyExported')).toEqual(cumulativeExported);
+    expect(periodicEventSpy).toHaveBeenNthCalledWith(
+      2,
+      ElectricalEnergyMeasurement,
+      'cumulativeEnergyMeasured',
+      { energyImported: cumulativeImported, energyExported: cumulativeExported },
+      flatOutlet.log,
+    );
+    // A callback before the configured duration still publishes the next contiguous period.
+    const nextStart = periodStart + testPlatform.config.setUpdateInterval;
+    nowSpy.mockReturnValue((nextStart + 1) * 1000);
+    await flatOutlet.setAttribute(ElectricalPowerMeasurement, 'activePower', 0);
+    await testPlatform.intervalHandler();
+    const nextMeasurement = { energy: 0, startTimestamp: nextStart, endTimestamp: nextStart + 1 };
+    expect(flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'periodicEnergyImported')).toEqual(nextMeasurement);
+    expect(flatOutlet.getAttribute(ElectricalEnergyMeasurement, 'periodicEnergyExported')).toEqual(nextMeasurement);
+    expect(periodicEventSpy).toHaveBeenCalledTimes(4);
+    expect(periodicEventSpy).toHaveBeenNthCalledWith(
+      3,
+      ElectricalEnergyMeasurement,
+      'periodicEnergyMeasured',
+      { energyImported: nextMeasurement, energyExported: nextMeasurement },
+      flatOutlet.log,
+    );
+    // No power in this period, so the cumulative energy does not grow but its timestamp moves on.
+    expect(periodicEventSpy).toHaveBeenNthCalledWith(
+      4,
+      ElectricalEnergyMeasurement,
+      'cumulativeEnergyMeasured',
+      { energyImported: { ...cumulativeImported, endTimestamp: nextStart + 1 }, energyExported: { ...cumulativeExported, endTimestamp: nextStart + 1 } },
+      flatOutlet.log,
+    );
+    // Subsequent manual callbacks must also represent distinct measurement periods.
+    let callbackTime = (nextStart + 1) * 1000;
+    nowSpy.mockImplementation(() => {
+      callbackTime += 1000;
+      return callbackTime;
+    });
+    periodicEventSpy.mockRestore();
     const composedOnOff = composedOutlet.getChildEndpointById('OnOffChild');
     const composedSensor = composedOutlet.getChildEndpointById('ElectricalSensorChild');
     if (!composedOnOff || !composedSensor) throw new Error('Missing composed outlet children');
@@ -448,9 +534,56 @@ describe('TestPlatform', () => {
     for (const device of electricalDevices) {
       expect(Number(device.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported')?.energy)).toBe(1_500_000);
     }
+    // Devices already on need no power reset during configuration.
+    for (const device of electricalDevices) await device.setAttribute(OnOff, 'onOff', true);
+    await testPlatform.onConfigure();
+    for (const device of electricalDevices) expect(device.getAttribute(OnOff, 'onOff')).toBe(true);
+
+    // Empty batteries remain empty; missing power-source attributes are skipped.
+    for (const device of electricalDevices.slice(1)) await device.setAttribute(PowerSource, 'batPercentRemaining', 0);
+    await testPlatform.intervalHandler();
+    for (const device of electricalDevices.slice(1)) expect(device.getAttribute(PowerSource, 'batPercentRemaining')).toBe(0);
+    const powerSourceSpies = electricalDevices.map((device) => vi.spyOn(device, 'hasAttributeServer').mockReturnValue(false));
+    await testPlatform.intervalHandler();
+    for (const spy of powerSourceSpies) {
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    }
+
+    // Missing initial measurements fall back to the configured period and zero energy.
+    const readAttribute = flatOutlet.getAttribute.bind(flatOutlet);
+    const missingMeasurementsSpy = vi.spyOn(flatOutlet, 'getAttribute').mockImplementation((cluster, attribute, logger) => {
+      if (['periodicEnergyImported', 'cumulativeEnergyImported', 'cumulativeEnergyExported', 'activePower'].includes(attribute)) return null;
+      return readAttribute(cluster, attribute, logger);
+    });
+    const findDeviceSpy = vi.spyOn(testPlatform, 'getDeviceByName').mockImplementation((name) => (name === 'Outlet Server Flat' ? flatOutlet : getDeviceByName(name)));
+    testPlatform.config.setUpdateInterval = 30;
+    const missingEnd = callbackTime / 1000 + 30;
+    nowSpy.mockReturnValue(missingEnd * 1000);
+    const missingEventSpy = vi.spyOn(flatOutlet, 'triggerEvent').mockResolvedValue(true);
+    await testPlatform.intervalHandler();
+    expect(missingEventSpy).toHaveBeenCalledWith(
+      ElectricalEnergyMeasurement,
+      'periodicEnergyMeasured',
+      {
+        energyImported: { energy: 0, startTimestamp: missingEnd - testPlatform.config.setUpdateInterval, endTimestamp: missingEnd },
+        energyExported: { energy: 0, startTimestamp: missingEnd - testPlatform.config.setUpdateInterval, endTimestamp: missingEnd },
+      },
+      flatOutlet.log,
+    );
+    missingMeasurementsSpy.mockRestore();
+    missingEventSpy.mockRestore();
+    findDeviceSpy.mockRestore();
+    // Invalid runtime input must not add a power-source cluster.
+    const wiredSpy = vi.spyOn(flatOutlet, 'createDefaultPowerSourceWiredClusterServer');
+    // @ts-expect-error Exercise an unsupported power-source type from untyped callers.
+    testPlatform.addPowerSource(flatOutlet, 'unknown');
+    expect(wiredSpy).not.toHaveBeenCalled();
+    wiredSpy.mockRestore();
     randomSpy.mockRestore();
     registerDeviceSpy.mockRestore();
 
+    nowSpy.mockRestore();
     await testPlatform.onShutdown('Closing test');
     expect(loggerLogSpy).toHaveBeenCalledWith(LogLevel.INFO, `Shutting down platform ${config.name} with reason: Closing test...`);
   }, 60000);

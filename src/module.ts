@@ -361,6 +361,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       }
     }
 
+    /* v8 ignore else */
     if (this.config.enableServerDevices) {
       const CONFIGURATION_VERSION = 3;
       const lightServerFlat = new MatterbridgeEndpoint(
@@ -423,7 +424,23 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       );
       outletServerFlat.createDefaultOnOffClusterServer(true);
       this.addPowerSource(outletServerFlat, 'wired');
-      this.addElectricalMeasurements(outletServerFlat, PowerTopology.Feature.NodeTopology, [EndpointNumber(1100)], [], 220_000, 1_000, 220_000, 50_000, 1_000_000, 0);
+      // Unix seconds; Matter.js converts to the Matter epoch when encoding.
+      const endTimestamp = Math.floor(Date.now() / 1000);
+      const startTimestamp = endTimestamp - this.config.setUpdateInterval;
+      this.addElectricalMeasurements(
+        outletServerFlat,
+        PowerTopology.Feature.NodeTopology,
+        [EndpointNumber(1100)],
+        [],
+        220_000,
+        1_000,
+        220_000,
+        50_000,
+        1_000_000,
+        0,
+        { energy: 0, startTimestamp, endTimestamp },
+        { energy: 0, startTimestamp, endTimestamp },
+      );
       outletServerFlat.addRequiredClusters();
       outletServerFlat.subscribeAttribute(OnOff, 'onOff', (value) => {
         this.log.info(`OutletServerFlat onOff attribute changed to ${value}`);
@@ -570,10 +587,12 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
     frequency: number | bigint | null = null,
     energyImported: number | bigint | null = null,
     energyExported: number | bigint | null = null,
+    periodicEnergyImported?: ElectricalEnergyMeasurement.EnergyMeasurement | null,
+    periodicEnergyExported?: ElectricalEnergyMeasurement.EnergyMeasurement | null,
   ): void {
     device.createDefaultPowerTopologyClusterServer(feature, availableEndpoints, activeEndpoints);
     device.createDefaultElectricalPowerMeasurementClusterServer(voltage ?? 220 * 1000, current ?? 2.5 * 1000, power ?? 220 * 2.5 * 1000, frequency ?? 50 * 1000);
-    device.createDefaultElectricalEnergyMeasurementClusterServer(energyImported ?? 1500 * 1000, energyExported ?? 0);
+    device.createDefaultElectricalEnergyMeasurementClusterServer(energyImported ?? 1500 * 1000, energyExported ?? 0, periodicEnergyImported, periodicEnergyExported);
   }
 
   addModeSelect(device: MatterbridgeEndpoint, description: string): MatterbridgeEndpoint {
@@ -694,6 +713,40 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
           }
         }
       }
+    }
+    // Publish flat outlet periodic energy measurements on each interval callback.
+    const outletServerFlat = this.getDeviceByName('Outlet Server Flat');
+    if (outletServerFlat) {
+      // Continue from the previous period end, using Unix timestamps in seconds.
+      const previous = outletServerFlat.getAttribute(ElectricalEnergyMeasurement, 'periodicEnergyImported', outletServerFlat.log);
+      const endTimestamp = Math.floor(Date.now() / 1000);
+      const startTimestamp = previous?.endTimestamp ?? endTimestamp - this.config.setUpdateInterval;
+      // Estimate imported energy in mWh from the current power in mW and elapsed seconds.
+      const activePower = outletServerFlat.getAttribute(ElectricalPowerMeasurement, 'activePower', outletServerFlat.log);
+      const energyImported = {
+        energy: Math.round((Math.max(0, Number(activePower ?? 0)) * (endTimestamp - startTimestamp)) / 3600),
+        startTimestamp,
+        endTimestamp,
+      };
+      // This outlet consumes energy only; both measurements cover the same period.
+      const energyExported = { energy: 0, startTimestamp, endTimestamp };
+      // Update both attributes before emitting the event with identical measurement values.
+      await outletServerFlat.setAttribute(ElectricalEnergyMeasurement, 'periodicEnergyImported', energyImported, outletServerFlat.log);
+      await outletServerFlat.setAttribute(ElectricalEnergyMeasurement, 'periodicEnergyExported', energyExported, outletServerFlat.log);
+      await outletServerFlat.triggerEvent(ElectricalEnergyMeasurement, 'periodicEnergyMeasured', { energyImported, energyExported }, outletServerFlat.log);
+      // Accumulate the period energy into the cumulative measurements, then emit the cumulative event with identical values.
+      const previousImported = outletServerFlat.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported', outletServerFlat.log);
+      const previousExported = outletServerFlat.getAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyExported', outletServerFlat.log);
+      const cumulativeImported = { energy: Number(previousImported?.energy ?? 0) + energyImported.energy, endTimestamp };
+      const cumulativeExported = { energy: Number(previousExported?.energy ?? 0) + energyExported.energy, endTimestamp };
+      await outletServerFlat.setAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyImported', cumulativeImported, outletServerFlat.log);
+      await outletServerFlat.setAttribute(ElectricalEnergyMeasurement, 'cumulativeEnergyExported', cumulativeExported, outletServerFlat.log);
+      await outletServerFlat.triggerEvent(
+        ElectricalEnergyMeasurement,
+        'cumulativeEnergyMeasured',
+        { energyImported: cumulativeImported, energyExported: cumulativeExported },
+        outletServerFlat.log,
+      );
     }
     this.reachable = !this.reachable;
   }
