@@ -587,6 +587,7 @@ export class TestPlatform extends MatterbridgeDynamicPlatform {
       1,
       1,
     );
+    composed.addRequiredClusters();
     device.parts.add(composed);
     return composed;
   }
