@@ -108,7 +108,7 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:verbose": "vitest run --reporter verbose",
-    "test:coverage": "vitest run --coverage --coverage.thresholds.lines=100 --coverage.thresholds.functions=100 --coverage.thresholds.statements=100 --coverage.thresholds.branches=100",
+    "test:coverage": "vitest run --coverage --coverage.thresholds.statements=100 --coverage.thresholds.branches=100 --coverage.thresholds.lines=100 --coverage.thresholds.functions=100",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
@@ -130,9 +130,9 @@
   "devDependencies": {
     "@types/node": "26.6.6",
     "@vitest/coverage-v8": "5.1.0",
-    "oxfmt": "0.75.0",
-    "oxlint": "1.90.0",
-    "oxlint-tsgolint": "7.0.2005",
+    "oxfmt": "0.78.0",
+    "oxlint": "1.93.0",
+    "oxlint-tsgolint": "7.0.2006",
     "typescript": "7.0.2",
     "vitest": "5.1.0"
   }
