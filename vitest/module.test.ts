@@ -1,5 +1,5 @@
 /**
- * @file vitest/module.matter.test.ts
+ * @file vitest/module.test.ts
  * @description This file contains the tests for the TestPlatform.
  * @author Luca Liguori
  */
